@@ -8,6 +8,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import meldexun.entityculling.proxy.ClientProxy;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -42,10 +43,14 @@ public class ClientEventHandler {
 	public static void onConfigChangedEvent(ConfigChangedEvent.OnConfigChangedEvent event) {
 		if (event.getModID().equals(EntityCulling.MOD_ID)) {
 			ConfigManager.sync(EntityCulling.MOD_ID, Config.Type.INSTANCE);
-			BLACKLIST.clear();
-			for (String s : ModConfig.blacklist) {
-				BLACKLIST.add(new ResourceLocation(s));
-			}
+			ClientProxy.updateConfig();
+		}
+	}
+
+	public static void updateBlacklist() {
+		BLACKLIST.clear();
+		for (String s : ModConfig.blacklist) {
+			BLACKLIST.add(new ResourceLocation(s));
 		}
 	}
 
