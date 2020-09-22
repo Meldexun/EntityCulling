@@ -18,7 +18,7 @@ public class ModRenderHelper {
 		if (fieldRenderInfos == null) {
 			try {
 				try {
-					fieldRenderInfos = RenderGlobal.class.getDeclaredField("renderInfos");
+					fieldRenderInfos = RenderGlobal.class.getDeclaredField("field_72755_R");
 				} catch (NoSuchFieldException e) {
 					fieldRenderInfos = RenderGlobal.class.getDeclaredField("renderInfos");
 				}
