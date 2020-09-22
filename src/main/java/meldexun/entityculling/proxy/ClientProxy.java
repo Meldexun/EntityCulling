@@ -1,6 +1,7 @@
 package meldexun.entityculling.proxy;
 
 import meldexun.entityculling.ClientEventHandler;
+import net.minecraft.client.renderer.entity.ModShadowHelper;
 
 public class ClientProxy implements IProxy {
 
@@ -21,6 +22,7 @@ public class ClientProxy implements IProxy {
 
 	public static void updateConfig() {
 		ClientEventHandler.updateBlacklist();
+		ModShadowHelper.disableShadows();
 	}
 
 }
