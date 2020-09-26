@@ -17,7 +17,7 @@ public class EntityCulling {
 	public static final String ACCEPTED_VERSIONS = "[1.12.2]";
 
 	public static final String CLIENT_PROXY_CLASS = "meldexun.entityculling.proxy.ClientProxy";
-	public static final String SERVER_PROXY_CLASS = "meldexun.entityculling.proxy.ClientProxy";
+	public static final String SERVER_PROXY_CLASS = "meldexun.entityculling.proxy.ServerProxy";
 
 	@SidedProxy(clientSide = CLIENT_PROXY_CLASS, serverSide = SERVER_PROXY_CLASS)
 	public static IProxy proxy;
