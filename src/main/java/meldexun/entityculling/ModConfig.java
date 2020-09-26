@@ -20,7 +20,7 @@ public class ModConfig {
 	public static double maxEntitySizeToSkipRendering = 3.0D;
 	@Config.Comment("Entities which will always get rendered. (Format: 'modid:entity_name')")
 	public static String[] blacklist = {};
-	public static boolean disableItemEntityShadows = false;
-	public static boolean disableXPOrbEntityShadows = false;
+	@Config.Comment("The shadow of entities listed here will not get rendered. Does not affect shaders. (Format: 'modid:entity_name')")
+	public static String[] entityShadowBlacklist = {};
 
 }
