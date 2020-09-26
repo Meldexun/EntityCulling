@@ -76,7 +76,9 @@ public class ClientEventHandler {
 			return;
 		}
 		shouldRenderAll = true;
-		ENTITIES_TO_RENDER.clear();
+		if (!ENTITIES_TO_RENDER.isEmpty()) {
+			ENTITIES_TO_RENDER.clear();
+		}
 		if (!ModConfig.limitEntityRendering) {
 			return;
 		}
@@ -167,7 +169,7 @@ public class ClientEventHandler {
 				int l = MathHelper.floor(vec31.x);
 				int i1 = MathHelper.floor(vec31.y);
 				int j1 = MathHelper.floor(vec31.z);
-				BlockPos blockpos = new BlockPos(l, i1, j1);
+				BlockPos.MutableBlockPos blockpos = new BlockPos.MutableBlockPos(l, i1, j1);
 				IBlockState iblockstate = world.getBlockState(blockpos);
 				Block block = iblockstate.getBlock();
 
@@ -180,9 +182,12 @@ public class ClientEventHandler {
 				}
 
 				int k1 = 200;
+				double x = vec31.x;
+				double y = vec31.y;
+				double z = vec31.z;
 
 				while (k1-- >= 0) {
-					if (Double.isNaN(vec31.x) || Double.isNaN(vec31.y) || Double.isNaN(vec31.z)) {
+					if (Double.isNaN(x) || Double.isNaN(y) || Double.isNaN(z)) {
 						return null;
 					}
 
@@ -224,20 +229,20 @@ public class ClientEventHandler {
 					double d3 = 999.0D;
 					double d4 = 999.0D;
 					double d5 = 999.0D;
-					double d6 = vec32.x - vec31.x;
-					double d7 = vec32.y - vec31.y;
-					double d8 = vec32.z - vec31.z;
+					double d6 = vec32.x - x;
+					double d7 = vec32.y - y;
+					double d8 = vec32.z - z;
 
 					if (flag2) {
-						d3 = (d0 - vec31.x) / d6;
+						d3 = (d0 - x) / d6;
 					}
 
 					if (flag) {
-						d4 = (d1 - vec31.y) / d7;
+						d4 = (d1 - y) / d7;
 					}
 
 					if (flag1) {
-						d5 = (d2 - vec31.z) / d8;
+						d5 = (d2 - z) / d8;
 					}
 
 					if (d3 == -0.0D) {
@@ -256,24 +261,30 @@ public class ClientEventHandler {
 
 					if (d3 < d4 && d3 < d5) {
 						enumfacing = i > l ? EnumFacing.WEST : EnumFacing.EAST;
-						vec31 = new Vec3d(d0, vec31.y + d7 * d3, vec31.z + d8 * d3);
+						x = d0;
+						y = y + d7 * d3;
+						z = z + d8 * d3;
 					} else if (d4 < d5) {
 						enumfacing = j > i1 ? EnumFacing.DOWN : EnumFacing.UP;
-						vec31 = new Vec3d(vec31.x + d6 * d4, d1, vec31.z + d8 * d4);
+						x = x + d6 * d4;
+						y = y + d1;
+						z = z + d8 * d4;
 					} else {
 						enumfacing = k > j1 ? EnumFacing.NORTH : EnumFacing.SOUTH;
-						vec31 = new Vec3d(vec31.x + d6 * d5, vec31.y + d7 * d5, d2);
+						x = x + d6 * d5;
+						y = y + d7 * d5;
+						z = z + d2;
 					}
 
-					l = MathHelper.floor(vec31.x) - (enumfacing == EnumFacing.EAST ? 1 : 0);
-					i1 = MathHelper.floor(vec31.y) - (enumfacing == EnumFacing.UP ? 1 : 0);
-					j1 = MathHelper.floor(vec31.z) - (enumfacing == EnumFacing.SOUTH ? 1 : 0);
-					blockpos = new BlockPos(l, i1, j1);
+					l = MathHelper.floor(x) - (enumfacing == EnumFacing.EAST ? 1 : 0);
+					i1 = MathHelper.floor(y) - (enumfacing == EnumFacing.UP ? 1 : 0);
+					j1 = MathHelper.floor(z) - (enumfacing == EnumFacing.SOUTH ? 1 : 0);
+					blockpos.setPos(l, i1, j1);
 					iblockstate = world.getBlockState(blockpos);
 					block = iblockstate.getBlock();
 
 					if (iblockstate.isOpaqueCube() && iblockstate.getCollisionBoundingBox(world, blockpos) != Block.NULL_AABB && block.canCollideCheck(iblockstate, stopOnLiquid)) {
-						RayTraceResult raytraceresult1 = iblockstate.collisionRayTrace(world, blockpos, vec31, vec32);
+						RayTraceResult raytraceresult1 = iblockstate.collisionRayTrace(world, blockpos, new Vec3d(x, y, z), vec32);
 
 						if (raytraceresult1 != null) {
 							return raytraceresult1;
