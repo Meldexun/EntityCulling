@@ -14,7 +14,7 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-version = '1.0.3'
+version = '1.12.2-2.0.0'
 group = 'meldexun.entity_culling'
 archivesBaseName = 'EntityCulling'
 
@@ -42,6 +42,14 @@ minecraft {
             // Recommended logging level for the console
             property 'forge.logging.console.level', 'debug'
         }
+    }
+}
+
+jar {
+    manifest {
+        attributes 'ModSide': 'CLIENT'
+        attributes 'FMLCorePlugin': 'meldexun.entityculling.plugin.EntityCullingPlugin'
+        attributes 'FMLCorePluginContainsFMLMod': 'true'
     }
 }
 
