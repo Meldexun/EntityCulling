@@ -46,6 +46,7 @@ public class ClassTransformer implements IClassTransformer {
 		IS_OPTIFINE_DETECTED = flag;
 
 		if (!IS_OPTIFINE_DETECTED) {
+			/*
 			registerMethodTransformer(new MethodTransformer("buo", "net.minecraft.client.renderer.EntityRenderer", "a", "renderWorldPass", "(IFJ)V", "(IFJ)V", method -> {
 				// printMethodInstructions(method);
 
@@ -56,6 +57,7 @@ public class ClassTransformer implements IClassTransformer {
 				method.instructions.insertBefore(targetNode1, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "updateEntityLists", "(Lnet/minecraft/client/renderer/culling/ICamera;)V", false));
 				method.instructions.insertBefore(targetNode2, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "clearEntityLists", "()V", false));
 			}));
+			*/
 			registerMethodTransformer(new MethodTransformer("buw", "net.minecraft.client.renderer.RenderGlobal", "a", "renderEntities", "(Lvg;Lbxy;F)V", "(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;F)V", method -> {
 				// printMethodInstructions(method);
 
@@ -70,6 +72,7 @@ public class ClassTransformer implements IClassTransformer {
 				method.instructions.insertBefore(targetNode2, new JumpInsnNode(Opcodes.IFNE, (LabelNode) popNode2));
 			}));
 		} else {
+			/*
 			registerMethodTransformer(new MethodTransformer("buo", "net.minecraft.client.renderer.EntityRenderer", "a", "renderWorldPass", "(IFJ)V", "(IFJ)V", method -> {
 				// printMethodInstructions(method);
 
@@ -80,6 +83,7 @@ public class ClassTransformer implements IClassTransformer {
 				method.instructions.insertBefore(targetNode1, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook$Optifine", "updateEntityLists", "(Lnet/minecraft/client/renderer/culling/ICamera;)V", false));
 				method.instructions.insertBefore(targetNode2, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook$Optifine", "clearEntityLists", "()V", false));
 			}));
+			*/
 			registerMethodTransformer(new MethodTransformer("buw", "net.minecraft.client.renderer.RenderGlobal", "a", "renderEntities", "(Lvg;Lbxy;F)V", "(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;F)V", method -> {
 				// printMethodInstructions(method);
 

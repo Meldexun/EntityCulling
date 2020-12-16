@@ -19,6 +19,7 @@ import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.RenderUtil;
 import net.minecraft.client.renderer.chunk.RenderChunk;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -86,7 +87,7 @@ public class Hook {
 		}
 	}
 
-	public static void updateEntityLists(ICamera camera) {
+	private static void updateEntityLists() {
 		if (!EntityCullingConfig.enabled) {
 			return;
 		}
@@ -97,6 +98,8 @@ public class Hook {
 		double x = renderViewEntity.prevPosX + (renderViewEntity.posX - renderViewEntity.prevPosX) * (double) partialTicks;
 		double y = renderViewEntity.prevPosY + (renderViewEntity.posY - renderViewEntity.prevPosY) * (double) partialTicks;
 		double z = renderViewEntity.prevPosZ + (renderViewEntity.posZ - renderViewEntity.prevPosZ) * (double) partialTicks;
+		ICamera camera = new Frustum();
+		camera.setPosition(x, y, z);
 		Vec3d camVec = new Vec3d(x, y, z);
 		boolean isThirdPersonView = mc.gameSettings.thirdPersonView != 0;
 		boolean isSleeping = renderViewEntity instanceof EntityLivingBase && ((EntityLivingBase) renderViewEntity).isPlayerSleeping();
@@ -194,7 +197,7 @@ public class Hook {
 		}
 	}
 
-	public static void clearEntityLists() {
+	private static void clearEntityLists() {
 		if (!ENTITY_LIST_NORMAL_0.isEmpty()) {
 			ENTITY_LIST_NORMAL_0.clear();
 		}
@@ -225,72 +228,81 @@ public class Hook {
 	}
 
 	public static boolean renderEntities() {
-		if (!EntityCullingConfig.enabled) {
-			return false;
-		}
-		Minecraft mc = Minecraft.getMinecraft();
-		RenderManager renderManager = mc.getRenderManager();
-		float partialTicks = mc.getRenderPartialTicks();
 		int pass = MinecraftForgeClient.getRenderPass();
 
 		if (pass == 0) {
-			if (!ENTITY_LIST_NORMAL_0.isEmpty()) {
-				for (Entity entity : ENTITY_LIST_NORMAL_0) {
-					renderManager.renderEntityStatic(entity, partialTicks, false);
-				}
-			}
-			if (!ENTITY_LIST_MULTIPASS_0.isEmpty()) {
-				for (Entity entity : ENTITY_LIST_MULTIPASS_0) {
-					renderManager.renderEntityStatic(entity, partialTicks, false);
-				}
-			}
-			if (isRenderEntityOutlines() && (!ENTITY_LIST_OUTLINE_0.isEmpty() || entityOutlinesRendered)) {
-				Framebuffer entityOutlineFramebuffer = FIELD_ENTITY_OUTLINE_FRAMEBUFFER.get(mc.renderGlobal);
-				ShaderGroup entityOutlineShader = FIELD_ENTITY_OUTLINE_SHADER.get(mc.renderGlobal);
-				mc.world.profiler.endStartSection("entityOutlines");
-				entityOutlineFramebuffer.framebufferClear();
-				entityOutlinesRendered = !ENTITY_LIST_OUTLINE_0.isEmpty();
+			updateEntityLists();
+		}
 
-				if (!ENTITY_LIST_OUTLINE_0.isEmpty()) {
-					GlStateManager.depthFunc(519);
-					GlStateManager.disableFog();
-					entityOutlineFramebuffer.bindFramebuffer(false);
-					RenderHelper.disableStandardItemLighting();
-					renderManager.setRenderOutlines(true);
+		if (EntityCullingConfig.enabled) {
+			Minecraft mc = Minecraft.getMinecraft();
+			RenderManager renderManager = mc.getRenderManager();
+			float partialTicks = mc.getRenderPartialTicks();
 
-					for (Entity entity : ENTITY_LIST_OUTLINE_0) {
+			if (pass == 0) {
+				if (!ENTITY_LIST_NORMAL_0.isEmpty()) {
+					for (Entity entity : ENTITY_LIST_NORMAL_0) {
 						renderManager.renderEntityStatic(entity, partialTicks, false);
 					}
-
-					renderManager.setRenderOutlines(false);
-					RenderHelper.enableStandardItemLighting();
-					GlStateManager.depthMask(false);
-					entityOutlineShader.render(partialTicks);
-					GlStateManager.enableLighting();
-					GlStateManager.depthMask(true);
-					GlStateManager.enableFog();
-					GlStateManager.enableBlend();
-					GlStateManager.enableColorMaterial();
-					GlStateManager.depthFunc(515);
-					GlStateManager.enableDepth();
-					GlStateManager.enableAlpha();
 				}
-
-				mc.getFramebuffer().bindFramebuffer(false);
-			}
-		} else if (pass == 1) {
-			if (!ENTITY_LIST_NORMAL_1.isEmpty()) {
-				for (Entity entity : ENTITY_LIST_NORMAL_1) {
-					renderManager.renderEntityStatic(entity, partialTicks, false);
+				if (!ENTITY_LIST_MULTIPASS_0.isEmpty()) {
+					for (Entity entity : ENTITY_LIST_MULTIPASS_0) {
+						renderManager.renderEntityStatic(entity, partialTicks, false);
+					}
 				}
-			}
-			if (!ENTITY_LIST_MULTIPASS_1.isEmpty()) {
-				for (Entity entity : ENTITY_LIST_MULTIPASS_1) {
-					renderManager.renderEntityStatic(entity, partialTicks, false);
+				if (isRenderEntityOutlines() && (!ENTITY_LIST_OUTLINE_0.isEmpty() || entityOutlinesRendered)) {
+					Framebuffer entityOutlineFramebuffer = FIELD_ENTITY_OUTLINE_FRAMEBUFFER.get(mc.renderGlobal);
+					ShaderGroup entityOutlineShader = FIELD_ENTITY_OUTLINE_SHADER.get(mc.renderGlobal);
+					mc.world.profiler.endStartSection("entityOutlines");
+					entityOutlineFramebuffer.framebufferClear();
+					entityOutlinesRendered = !ENTITY_LIST_OUTLINE_0.isEmpty();
+
+					if (!ENTITY_LIST_OUTLINE_0.isEmpty()) {
+						GlStateManager.depthFunc(519);
+						GlStateManager.disableFog();
+						entityOutlineFramebuffer.bindFramebuffer(false);
+						RenderHelper.disableStandardItemLighting();
+						renderManager.setRenderOutlines(true);
+
+						for (Entity entity : ENTITY_LIST_OUTLINE_0) {
+							renderManager.renderEntityStatic(entity, partialTicks, false);
+						}
+
+						renderManager.setRenderOutlines(false);
+						RenderHelper.enableStandardItemLighting();
+						GlStateManager.depthMask(false);
+						entityOutlineShader.render(partialTicks);
+						GlStateManager.enableLighting();
+						GlStateManager.depthMask(true);
+						GlStateManager.enableFog();
+						GlStateManager.enableBlend();
+						GlStateManager.enableColorMaterial();
+						GlStateManager.depthFunc(515);
+						GlStateManager.enableDepth();
+						GlStateManager.enableAlpha();
+					}
+
+					mc.getFramebuffer().bindFramebuffer(false);
+				}
+			} else if (pass == 1) {
+				if (!ENTITY_LIST_NORMAL_1.isEmpty()) {
+					for (Entity entity : ENTITY_LIST_NORMAL_1) {
+						renderManager.renderEntityStatic(entity, partialTicks, false);
+					}
+				}
+				if (!ENTITY_LIST_MULTIPASS_1.isEmpty()) {
+					for (Entity entity : ENTITY_LIST_MULTIPASS_1) {
+						renderManager.renderEntityStatic(entity, partialTicks, false);
+					}
 				}
 			}
 		}
-		return true;
+
+		if (pass == 1) {
+			clearEntityLists();
+		}
+
+		return EntityCullingConfig.enabled;
 	}
 
 	private static boolean isRenderEntityOutlines() {
@@ -593,7 +605,7 @@ public class Hook {
 
 		}
 
-		public static void updateEntityLists(ICamera camera) {
+		private static void updateEntityLists() {
 			if (!EntityCullingConfig.enabled) {
 				return;
 			}
@@ -604,6 +616,8 @@ public class Hook {
 			double x = renderViewEntity.prevPosX + (renderViewEntity.posX - renderViewEntity.prevPosX) * (double) partialTicks;
 			double y = renderViewEntity.prevPosY + (renderViewEntity.posY - renderViewEntity.prevPosY) * (double) partialTicks;
 			double z = renderViewEntity.prevPosZ + (renderViewEntity.posZ - renderViewEntity.prevPosZ) * (double) partialTicks;
+			ICamera camera = new Frustum();
+			camera.setPosition(x, y, z);
 			Vec3d camVec = new Vec3d(x, y, z);
 			boolean isThirdPersonView = mc.gameSettings.thirdPersonView != 0;
 			boolean isSleeping = renderViewEntity instanceof EntityLivingBase && ((EntityLivingBase) renderViewEntity).isPlayerSleeping();
@@ -711,7 +725,7 @@ public class Hook {
 			}
 		}
 
-		public static void clearEntityLists() {
+		private static void clearEntityLists() {
 			if (!ENTITY_LIST_NORMAL_0.isEmpty()) {
 				ENTITY_LIST_NORMAL_0.clear();
 			}
@@ -745,112 +759,121 @@ public class Hook {
 		}
 
 		public static boolean renderEntities() {
-			if (!EntityCullingConfig.enabled) {
-				return false;
-			}
-			Minecraft mc = Minecraft.getMinecraft();
-			RenderManager renderManager = mc.getRenderManager();
-			float partialTicks = mc.getRenderPartialTicks();
 			int pass = MinecraftForgeClient.getRenderPass();
-			boolean shadersEnabled = Boolean.TRUE.equals(METHOD_IS_SHADERS.invoke(null));
 
 			if (pass == 0) {
-				if (!ENTITY_LIST_NORMAL_0.isEmpty()) {
-					for (Entity entity : ENTITY_LIST_NORMAL_0) {
-						if (shadersEnabled) {
-							METHOD_NEXT_ENTITY.invoke(null, entity);
-						}
-						renderManager.renderEntityStatic(entity, partialTicks, false);
-					}
-				}
-				if (!ENTITY_LIST_MULTIPASS_0.isEmpty()) {
-					for (Entity entity : ENTITY_LIST_MULTIPASS_0) {
-						if (shadersEnabled) {
-							METHOD_NEXT_ENTITY.invoke(null, entity);
-						}
-						renderManager.renderEntityStatic(entity, partialTicks, false);
-					}
-				}
-				if (isRenderEntityOutlines() && (!ENTITY_LIST_OUTLINE_0.isEmpty() || entityOutlinesRendered)) {
-					Framebuffer entityOutlineFramebuffer = FIELD_ENTITY_OUTLINE_FRAMEBUFFER.get(mc.renderGlobal);
-					ShaderGroup entityOutlineShader = FIELD_ENTITY_OUTLINE_SHADER.get(mc.renderGlobal);
-					mc.world.profiler.endStartSection("entityOutlines");
-					entityOutlineFramebuffer.framebufferClear();
-					entityOutlinesRendered = !ENTITY_LIST_OUTLINE_0.isEmpty();
+				updateEntityLists();
+			}
 
-					if (!ENTITY_LIST_OUTLINE_0.isEmpty()) {
-						GlStateManager.depthFunc(519);
+			if (EntityCullingConfig.enabled) {
+				Minecraft mc = Minecraft.getMinecraft();
+				RenderManager renderManager = mc.getRenderManager();
+				float partialTicks = mc.getRenderPartialTicks();
+				boolean shadersEnabled = Boolean.TRUE.equals(METHOD_IS_SHADERS.invoke(null));
+
+				if (pass == 0) {
+					if (!ENTITY_LIST_NORMAL_0.isEmpty()) {
+						for (Entity entity : ENTITY_LIST_NORMAL_0) {
+							if (shadersEnabled) {
+								METHOD_NEXT_ENTITY.invoke(null, entity);
+							}
+							renderManager.renderEntityStatic(entity, partialTicks, false);
+						}
+					}
+					if (!ENTITY_LIST_MULTIPASS_0.isEmpty()) {
+						for (Entity entity : ENTITY_LIST_MULTIPASS_0) {
+							if (shadersEnabled) {
+								METHOD_NEXT_ENTITY.invoke(null, entity);
+							}
+							renderManager.renderEntityStatic(entity, partialTicks, false);
+						}
+					}
+					if (isRenderEntityOutlines() && (!ENTITY_LIST_OUTLINE_0.isEmpty() || entityOutlinesRendered)) {
+						Framebuffer entityOutlineFramebuffer = FIELD_ENTITY_OUTLINE_FRAMEBUFFER.get(mc.renderGlobal);
+						ShaderGroup entityOutlineShader = FIELD_ENTITY_OUTLINE_SHADER.get(mc.renderGlobal);
+						mc.world.profiler.endStartSection("entityOutlines");
+						entityOutlineFramebuffer.framebufferClear();
+						entityOutlinesRendered = !ENTITY_LIST_OUTLINE_0.isEmpty();
+
+						if (!ENTITY_LIST_OUTLINE_0.isEmpty()) {
+							GlStateManager.depthFunc(519);
+							GlStateManager.disableFog();
+							entityOutlineFramebuffer.bindFramebuffer(false);
+							RenderHelper.disableStandardItemLighting();
+							renderManager.setRenderOutlines(true);
+
+							for (Entity entity : ENTITY_LIST_OUTLINE_0) {
+								renderManager.renderEntityStatic(entity, partialTicks, false);
+							}
+
+							renderManager.setRenderOutlines(false);
+							RenderHelper.enableStandardItemLighting();
+							GlStateManager.depthMask(false);
+							entityOutlineShader.render(partialTicks);
+							GlStateManager.enableLighting();
+							GlStateManager.depthMask(true);
+							GlStateManager.enableFog();
+							GlStateManager.enableBlend();
+							GlStateManager.enableColorMaterial();
+							GlStateManager.depthFunc(515);
+							GlStateManager.enableDepth();
+							GlStateManager.enableAlpha();
+						}
+
+						mc.getFramebuffer().bindFramebuffer(false);
+					}
+				} else if (pass == 1) {
+					if (!ENTITY_LIST_NORMAL_1.isEmpty()) {
+						for (Entity entity : ENTITY_LIST_NORMAL_1) {
+							if (shadersEnabled) {
+								METHOD_NEXT_ENTITY.invoke(null, entity);
+							}
+							renderManager.renderEntityStatic(entity, partialTicks, false);
+						}
+					}
+					if (!ENTITY_LIST_MULTIPASS_1.isEmpty()) {
+						for (Entity entity : ENTITY_LIST_MULTIPASS_1) {
+							if (shadersEnabled) {
+								METHOD_NEXT_ENTITY.invoke(null, entity);
+							}
+							renderManager.renderEntityStatic(entity, partialTicks, false);
+						}
+					}
+					if (!ENTITY_LIST_OUTLINE_1.isEmpty() && !isRenderEntityOutlines()) {
+						mc.world.profiler.endStartSection("entityOutlines");
+						if (shadersEnabled) {
+							METHOD_BEGIN_ENTITIES_GLOWING.invoke(null);
+						}
 						GlStateManager.disableFog();
-						entityOutlineFramebuffer.bindFramebuffer(false);
+						GlStateManager.disableDepth();
+						mc.entityRenderer.disableLightmap();
 						RenderHelper.disableStandardItemLighting();
 						renderManager.setRenderOutlines(true);
 
-						for (Entity entity : ENTITY_LIST_OUTLINE_0) {
+						for (Entity entity : ENTITY_LIST_OUTLINE_1) {
+							if (shadersEnabled) {
+								METHOD_NEXT_ENTITY.invoke(null, entity);
+							}
 							renderManager.renderEntityStatic(entity, partialTicks, false);
 						}
 
 						renderManager.setRenderOutlines(false);
 						RenderHelper.enableStandardItemLighting();
-						GlStateManager.depthMask(false);
-						entityOutlineShader.render(partialTicks);
-						GlStateManager.enableLighting();
-						GlStateManager.depthMask(true);
-						GlStateManager.enableFog();
-						GlStateManager.enableBlend();
-						GlStateManager.enableColorMaterial();
-						GlStateManager.depthFunc(515);
+						mc.entityRenderer.enableLightmap();
 						GlStateManager.enableDepth();
-						GlStateManager.enableAlpha();
-					}
-
-					mc.getFramebuffer().bindFramebuffer(false);
-				}
-			} else if (pass == 1) {
-				if (!ENTITY_LIST_NORMAL_1.isEmpty()) {
-					for (Entity entity : ENTITY_LIST_NORMAL_1) {
+						GlStateManager.enableFog();
 						if (shadersEnabled) {
-							METHOD_NEXT_ENTITY.invoke(null, entity);
+							METHOD_END_ENTITIES_GLOWING.invoke(null);
 						}
-						renderManager.renderEntityStatic(entity, partialTicks, false);
-					}
-				}
-				if (!ENTITY_LIST_MULTIPASS_1.isEmpty()) {
-					for (Entity entity : ENTITY_LIST_MULTIPASS_1) {
-						if (shadersEnabled) {
-							METHOD_NEXT_ENTITY.invoke(null, entity);
-						}
-						renderManager.renderEntityStatic(entity, partialTicks, false);
-					}
-				}
-				if (!ENTITY_LIST_OUTLINE_1.isEmpty() && !isRenderEntityOutlines()) {
-					mc.world.profiler.endStartSection("entityOutlines");
-					if (shadersEnabled) {
-						METHOD_BEGIN_ENTITIES_GLOWING.invoke(null);
-					}
-					GlStateManager.disableFog();
-					GlStateManager.disableDepth();
-					mc.entityRenderer.disableLightmap();
-					RenderHelper.disableStandardItemLighting();
-					renderManager.setRenderOutlines(true);
-
-					for (Entity entity : ENTITY_LIST_OUTLINE_1) {
-						if (shadersEnabled) {
-							METHOD_NEXT_ENTITY.invoke(null, entity);
-						}
-						renderManager.renderEntityStatic(entity, partialTicks, false);
-					}
-
-					renderManager.setRenderOutlines(false);
-					RenderHelper.enableStandardItemLighting();
-					mc.entityRenderer.enableLightmap();
-					GlStateManager.enableDepth();
-					GlStateManager.enableFog();
-					if (shadersEnabled) {
-						METHOD_END_ENTITIES_GLOWING.invoke(null);
 					}
 				}
 			}
-			return true;
+
+			if (pass == 1) {
+				clearEntityLists();
+			}
+
+			return EntityCullingConfig.enabled;
 		}
 
 		private static boolean isRenderEntityOutlines() {
