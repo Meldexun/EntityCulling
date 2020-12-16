@@ -106,9 +106,6 @@ public class Hook {
 		for (RenderChunk renderChunk : RenderUtil.getRenderChunks()) {
 			BlockPos chunkPos = renderChunk.getPosition();
 			Chunk chunk = mc.world.getChunk(chunkPos);
-			if (chunk.isEmpty()) {
-				continue;
-			}
 
 			ClassInheritanceMultiMap<Entity> entityList = chunk.getEntityLists()[chunkPos.getY() >> 4];
 			if (!entityList.isEmpty()) {
@@ -142,6 +139,10 @@ public class Hook {
 						}
 					}
 				}
+			}
+
+			if (chunk.isEmpty()) {
+				continue;
 			}
 
 			List<TileEntity> tileEntityList = renderChunk.compiledChunk.getTileEntities();
@@ -609,12 +610,9 @@ public class Hook {
 			boolean flag = !isThirdPersonView && !isSleeping;
 			boolean flag1 = mc.player.isSpectator() && mc.gameSettings.keyBindSpectatorOutlines.isKeyDown();
 
-			for (RenderChunk renderChunk : RenderUtil.getRenderChunks()) {
+			for (RenderChunk renderChunk : RenderUtil.Optifine.getRenderChunksEntities()) {
 				BlockPos chunkPos = renderChunk.getPosition();
 				Chunk chunk = mc.world.getChunk(chunkPos);
-				if (chunk.isEmpty()) {
-					continue;
-				}
 
 				ClassInheritanceMultiMap<Entity> entityList = chunk.getEntityLists()[chunkPos.getY() >> 4];
 				if (!entityList.isEmpty()) {
@@ -653,6 +651,15 @@ public class Hook {
 							}
 						}
 					}
+				}
+			}
+
+			for (RenderChunk renderChunk : RenderUtil.Optifine.getRenderChunksTileEntities()) {
+				BlockPos chunkPos = renderChunk.getPosition();
+				Chunk chunk = mc.world.getChunk(chunkPos);
+
+				if (chunk.isEmpty()) {
+					continue;
 				}
 
 				List<TileEntity> tileEntityList = renderChunk.compiledChunk.getTileEntities();

@@ -36,4 +36,51 @@ public class RenderUtil {
 		};
 	}
 
+	public static class Optifine {
+
+		private static final ReflectionField<List<RenderGlobal.ContainerLocalRenderInformation>> FIELD_RENDER_INFOS_ENITTIES = new ReflectionField<>(RenderGlobal.class, "renderInfosEntities", "renderInfosEntities");
+		private static final ReflectionField<List<RenderGlobal.ContainerLocalRenderInformation>> FIELD_RENDER_INFOS_TILE_ENITTIES = new ReflectionField<>(RenderGlobal.class, "renderInfosTileEntities", "renderInfosTileEntities");
+
+		public static Iterable<RenderChunk> getRenderChunksEntities() {
+			return () -> new Iterator<RenderChunk>() {
+				private List<RenderGlobal.ContainerLocalRenderInformation> renderInfos = FIELD_RENDER_INFOS_ENITTIES.get(Minecraft.getMinecraft().renderGlobal);
+				private int index;
+
+				@Override
+				public boolean hasNext() {
+					return this.index < this.renderInfos.size();
+				}
+
+				@Override
+				public RenderChunk next() {
+					if (!this.hasNext()) {
+						throw new NoSuchElementException();
+					}
+					return this.renderInfos.get(this.index++).renderChunk;
+				}
+			};
+		}
+
+		public static Iterable<RenderChunk> getRenderChunksTileEntities() {
+			return () -> new Iterator<RenderChunk>() {
+				private List<RenderGlobal.ContainerLocalRenderInformation> renderInfos = FIELD_RENDER_INFOS_TILE_ENITTIES.get(Minecraft.getMinecraft().renderGlobal);
+				private int index;
+
+				@Override
+				public boolean hasNext() {
+					return this.index < this.renderInfos.size();
+				}
+
+				@Override
+				public RenderChunk next() {
+					if (!this.hasNext()) {
+						throw new NoSuchElementException();
+					}
+					return this.renderInfos.get(this.index++).renderChunk;
+				}
+			};
+		}
+
+	}
+
 }
