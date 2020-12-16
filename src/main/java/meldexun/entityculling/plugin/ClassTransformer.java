@@ -1,13 +1,10 @@
 package meldexun.entityculling.plugin;
 
-import java.io.File;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.FileUtils;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -28,7 +25,7 @@ public class ClassTransformer implements IClassTransformer {
 
 	private static final Map<String, Map<String, List<MethodTransformer>>> METHOD_TRANSFORMERS = new HashMap<>();
 
-	public static boolean isOptifineDetected = false;
+	public static final boolean IS_OPTIFINE_DETECTED;
 
 	private static void registerMethodTransformer(MethodTransformer methodTransformer) {
 		Map<String, List<MethodTransformer>> map = METHOD_TRANSFORMERS.computeIfAbsent(methodTransformer.transformedClassName, key -> new HashMap<>());
@@ -39,19 +36,16 @@ public class ClassTransformer implements IClassTransformer {
 	}
 
 	static {
+		boolean flag = false;
 		try {
-			File modsFolder = new File(EntityCullingPlugin.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile();
-			for (File mod : FileUtils.listFiles(modsFolder, new String[] { "jar" }, false)) {
-				if (mod.getName().contains("OptiFine")) {
-					isOptifineDetected = true;
-					break;
-				}
-			}
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
+			Class.forName("optifine.OptiFineClassTransformer", false, ClassTransformer.class.getClassLoader());
+			flag = true;
+		} catch (ClassNotFoundException e) {
+			// ignore
 		}
+		IS_OPTIFINE_DETECTED = flag;
 
-		if (!isOptifineDetected) {
+		if (!IS_OPTIFINE_DETECTED) {
 			registerMethodTransformer(new MethodTransformer("buo", "net.minecraft.client.renderer.EntityRenderer", "a", "renderWorldPass", "(IFJ)V", "(IFJ)V", method -> {
 				// printMethodInstructions(method);
 
