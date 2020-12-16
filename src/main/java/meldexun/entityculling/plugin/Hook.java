@@ -60,6 +60,7 @@ public class Hook {
 	private static final List<TileEntity> TILE_ENTITY_LIST_SYNCHRONIZED_1 = new ArrayList<>();
 	private static final Set<Class<? extends Entity>> ENTITY_BLACKLIST = new HashSet<>();
 	private static final Set<Class<? extends TileEntity>> TILE_ENTITY_BLACKLIST = new HashSet<>();
+	private static boolean entityOutlinesRendered = false;
 
 	private Hook() {
 
@@ -242,37 +243,39 @@ public class Hook {
 					renderManager.renderEntityStatic(entity, partialTicks, false);
 				}
 			}
-			if (!ENTITY_LIST_OUTLINE_0.isEmpty()) {
+			if (isRenderEntityOutlines() && (!ENTITY_LIST_OUTLINE_0.isEmpty() || entityOutlinesRendered)) {
 				Framebuffer entityOutlineFramebuffer = FIELD_ENTITY_OUTLINE_FRAMEBUFFER.get(mc.renderGlobal);
-				if (entityOutlineFramebuffer != null) {
-					ShaderGroup entityOutlineShader = FIELD_ENTITY_OUTLINE_SHADER.get(mc.renderGlobal);
-					if (entityOutlineShader != null) {
-						mc.world.profiler.endStartSection("entityOutlines");
-						entityOutlineFramebuffer.framebufferClear();
-						GlStateManager.depthFunc(519);
-						GlStateManager.disableFog();
-						entityOutlineFramebuffer.bindFramebuffer(false);
-						RenderHelper.disableStandardItemLighting();
-						renderManager.setRenderOutlines(true);
+				ShaderGroup entityOutlineShader = FIELD_ENTITY_OUTLINE_SHADER.get(mc.renderGlobal);
+				mc.world.profiler.endStartSection("entityOutlines");
+				entityOutlineFramebuffer.framebufferClear();
+				entityOutlinesRendered = !ENTITY_LIST_OUTLINE_0.isEmpty();
 
-						for (Entity entity : ENTITY_LIST_OUTLINE_0) {
-							renderManager.renderEntityStatic(entity, partialTicks, false);
-						}
+				if (!ENTITY_LIST_OUTLINE_0.isEmpty()) {
+					GlStateManager.depthFunc(519);
+					GlStateManager.disableFog();
+					entityOutlineFramebuffer.bindFramebuffer(false);
+					RenderHelper.disableStandardItemLighting();
+					renderManager.setRenderOutlines(true);
 
-						renderManager.setRenderOutlines(false);
-						RenderHelper.enableStandardItemLighting();
-						GlStateManager.depthMask(false);
-						entityOutlineShader.render(partialTicks);
-						GlStateManager.enableLighting();
-						GlStateManager.depthMask(true);
-						GlStateManager.enableFog();
-						GlStateManager.enableBlend();
-						GlStateManager.enableColorMaterial();
-						GlStateManager.depthFunc(515);
-						GlStateManager.enableDepth();
-						GlStateManager.enableAlpha();
+					for (Entity entity : ENTITY_LIST_OUTLINE_0) {
+						renderManager.renderEntityStatic(entity, partialTicks, false);
 					}
+
+					renderManager.setRenderOutlines(false);
+					RenderHelper.enableStandardItemLighting();
+					GlStateManager.depthMask(false);
+					entityOutlineShader.render(partialTicks);
+					GlStateManager.enableLighting();
+					GlStateManager.depthMask(true);
+					GlStateManager.enableFog();
+					GlStateManager.enableBlend();
+					GlStateManager.enableColorMaterial();
+					GlStateManager.depthFunc(515);
+					GlStateManager.enableDepth();
+					GlStateManager.enableAlpha();
 				}
+
+				mc.getFramebuffer().bindFramebuffer(false);
 			}
 		} else if (pass == 1) {
 			if (!ENTITY_LIST_NORMAL_1.isEmpty()) {
@@ -287,6 +290,14 @@ public class Hook {
 			}
 		}
 		return true;
+	}
+
+	private static boolean isRenderEntityOutlines() {
+		RenderGlobal renderGlobal = Minecraft.getMinecraft().renderGlobal;
+		if (FIELD_ENTITY_OUTLINE_FRAMEBUFFER.get(renderGlobal) == null) {
+			return false;
+		}
+		return FIELD_ENTITY_OUTLINE_SHADER.get(renderGlobal) != null;
 	}
 
 	public static boolean renderTileEntities() {
@@ -753,36 +764,39 @@ public class Hook {
 						renderManager.renderEntityStatic(entity, partialTicks, false);
 					}
 				}
-				if (!ENTITY_LIST_OUTLINE_0.isEmpty() && isRenderEntityOutlines()) {
+				if (isRenderEntityOutlines() && (!ENTITY_LIST_OUTLINE_0.isEmpty() || entityOutlinesRendered)) {
 					Framebuffer entityOutlineFramebuffer = FIELD_ENTITY_OUTLINE_FRAMEBUFFER.get(mc.renderGlobal);
 					ShaderGroup entityOutlineShader = FIELD_ENTITY_OUTLINE_SHADER.get(mc.renderGlobal);
 					mc.world.profiler.endStartSection("entityOutlines");
 					entityOutlineFramebuffer.framebufferClear();
-					GlStateManager.depthFunc(519);
-					GlStateManager.disableFog();
-					entityOutlineFramebuffer.bindFramebuffer(false);
-					RenderHelper.disableStandardItemLighting();
-					renderManager.setRenderOutlines(true);
+					entityOutlinesRendered = !ENTITY_LIST_OUTLINE_0.isEmpty();
 
-					for (Entity entity : ENTITY_LIST_OUTLINE_0) {
-						if (shadersEnabled) {
-							METHOD_NEXT_ENTITY.invoke(null, entity);
+					if (!ENTITY_LIST_OUTLINE_0.isEmpty()) {
+						GlStateManager.depthFunc(519);
+						GlStateManager.disableFog();
+						entityOutlineFramebuffer.bindFramebuffer(false);
+						RenderHelper.disableStandardItemLighting();
+						renderManager.setRenderOutlines(true);
+
+						for (Entity entity : ENTITY_LIST_OUTLINE_0) {
+							renderManager.renderEntityStatic(entity, partialTicks, false);
 						}
-						renderManager.renderEntityStatic(entity, partialTicks, false);
+
+						renderManager.setRenderOutlines(false);
+						RenderHelper.enableStandardItemLighting();
+						GlStateManager.depthMask(false);
+						entityOutlineShader.render(partialTicks);
+						GlStateManager.enableLighting();
+						GlStateManager.depthMask(true);
+						GlStateManager.enableFog();
+						GlStateManager.enableBlend();
+						GlStateManager.enableColorMaterial();
+						GlStateManager.depthFunc(515);
+						GlStateManager.enableDepth();
+						GlStateManager.enableAlpha();
 					}
 
-					renderManager.setRenderOutlines(false);
-					RenderHelper.enableStandardItemLighting();
-					GlStateManager.depthMask(false);
-					entityOutlineShader.render(partialTicks);
-					GlStateManager.enableLighting();
-					GlStateManager.depthMask(true);
-					GlStateManager.enableFog();
-					GlStateManager.enableBlend();
-					GlStateManager.enableColorMaterial();
-					GlStateManager.depthFunc(515);
-					GlStateManager.enableDepth();
-					GlStateManager.enableAlpha();
+					mc.getFramebuffer().bindFramebuffer(false);
 				}
 			} else if (pass == 1) {
 				if (!ENTITY_LIST_NORMAL_1.isEmpty()) {
