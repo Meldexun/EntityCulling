@@ -364,7 +364,13 @@ public class Hook {
 		if (entity.ignoreFrustumCheck) {
 			return true;
 		}
-		return camera.isBoundingBoxInFrustum(entity.getRenderBoundingBox());
+		AxisAlignedBB axisalignedbb = entity.getRenderBoundingBox().grow(0.5D);
+
+		if (axisalignedbb.hasNaN()) {
+			axisalignedbb = new AxisAlignedBB(entity.posX - 2.0D, entity.posY - 2.0D, entity.posZ - 2.0D, entity.posX + 2.0D, entity.posY + 2.0D, entity.posZ + 2.0D);
+		}
+
+		return camera.isBoundingBoxInFrustum(axisalignedbb);
 	}
 
 	public static boolean render(TileEntity tileEntity, int destroyStage, boolean drawingBatch) {
