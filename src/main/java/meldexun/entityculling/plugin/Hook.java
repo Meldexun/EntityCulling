@@ -298,10 +298,6 @@ public class Hook {
 			}
 		}
 
-		if (pass == 1) {
-			clearEntityLists();
-		}
-
 		return EntityCullingConfig.enabled;
 	}
 
@@ -314,38 +310,42 @@ public class Hook {
 	}
 
 	public static boolean renderTileEntities() {
-		if (!EntityCullingConfig.enabled) {
-			return false;
-		}
 		int pass = MinecraftForgeClient.getRenderPass();
-		Minecraft mc = Minecraft.getMinecraft();
-		float partialTicks = mc.getRenderPartialTicks();
 
-		if (pass == 0) {
-			if (!TILE_ENTITY_LIST_NORMAL_0.isEmpty()) {
-				for (TileEntity tileEntity : TILE_ENTITY_LIST_NORMAL_0) {
-					TileEntityRendererDispatcher.instance.render(tileEntity, partialTicks, -1);
+		if (EntityCullingConfig.enabled) {
+			Minecraft mc = Minecraft.getMinecraft();
+			float partialTicks = mc.getRenderPartialTicks();
+
+			if (pass == 0) {
+				if (!TILE_ENTITY_LIST_NORMAL_0.isEmpty()) {
+					for (TileEntity tileEntity : TILE_ENTITY_LIST_NORMAL_0) {
+						TileEntityRendererDispatcher.instance.render(tileEntity, partialTicks, -1);
+					}
 				}
-			}
-			if (!TILE_ENTITY_LIST_SYNCHRONIZED_0.isEmpty()) {
-				for (TileEntity tileEntity : TILE_ENTITY_LIST_SYNCHRONIZED_0) {
-					TileEntityRendererDispatcher.instance.render(tileEntity, partialTicks, -1);
+				if (!TILE_ENTITY_LIST_SYNCHRONIZED_0.isEmpty()) {
+					for (TileEntity tileEntity : TILE_ENTITY_LIST_SYNCHRONIZED_0) {
+						TileEntityRendererDispatcher.instance.render(tileEntity, partialTicks, -1);
+					}
 				}
-			}
-		} else if (pass == 1) {
-			if (!TILE_ENTITY_LIST_NORMAL_1.isEmpty()) {
-				for (TileEntity tileEntity : TILE_ENTITY_LIST_NORMAL_1) {
-					TileEntityRendererDispatcher.instance.render(tileEntity, partialTicks, -1);
+			} else if (pass == 1) {
+				if (!TILE_ENTITY_LIST_NORMAL_1.isEmpty()) {
+					for (TileEntity tileEntity : TILE_ENTITY_LIST_NORMAL_1) {
+						TileEntityRendererDispatcher.instance.render(tileEntity, partialTicks, -1);
+					}
 				}
-			}
-			if (!TILE_ENTITY_LIST_SYNCHRONIZED_1.isEmpty()) {
-				for (TileEntity tileEntity : TILE_ENTITY_LIST_SYNCHRONIZED_1) {
-					TileEntityRendererDispatcher.instance.render(tileEntity, partialTicks, -1);
+				if (!TILE_ENTITY_LIST_SYNCHRONIZED_1.isEmpty()) {
+					for (TileEntity tileEntity : TILE_ENTITY_LIST_SYNCHRONIZED_1) {
+						TileEntityRendererDispatcher.instance.render(tileEntity, partialTicks, -1);
+					}
 				}
 			}
 		}
 
-		return true;
+		if (pass == 1) {
+			clearEntityLists();
+		}
+
+		return EntityCullingConfig.enabled;
 	}
 
 	public static boolean shouldRender(Render<?> render, Entity entity, ICamera camera, double camX, double camY, double camZ) {
@@ -869,10 +869,6 @@ public class Hook {
 				}
 			}
 
-			if (pass == 1) {
-				clearEntityLists();
-			}
-
 			return EntityCullingConfig.enabled;
 		}
 
@@ -894,51 +890,55 @@ public class Hook {
 		}
 
 		public static boolean renderTileEntities() {
-			if (!EntityCullingConfig.enabled) {
-				return false;
-			}
 			int pass = MinecraftForgeClient.getRenderPass();
-			Minecraft mc = Minecraft.getMinecraft();
-			float partialTicks = mc.getRenderPartialTicks();
-			boolean shadersEnabled = Boolean.TRUE.equals(METHOD_IS_SHADERS.invoke(null));
 
-			if (pass == 0) {
-				if (!TILE_ENTITY_LIST_NORMAL_0.isEmpty()) {
-					for (TileEntity tileEntity : TILE_ENTITY_LIST_NORMAL_0) {
-						if (shadersEnabled) {
-							METHOD_NEXT_BLOCK_ENTITY.invoke(null, tileEntity);
+			if (EntityCullingConfig.enabled) {
+				Minecraft mc = Minecraft.getMinecraft();
+				float partialTicks = mc.getRenderPartialTicks();
+				boolean shadersEnabled = Boolean.TRUE.equals(METHOD_IS_SHADERS.invoke(null));
+
+				if (pass == 0) {
+					if (!TILE_ENTITY_LIST_NORMAL_0.isEmpty()) {
+						for (TileEntity tileEntity : TILE_ENTITY_LIST_NORMAL_0) {
+							if (shadersEnabled) {
+								METHOD_NEXT_BLOCK_ENTITY.invoke(null, tileEntity);
+							}
+							TileEntityRendererDispatcher.instance.render(tileEntity, partialTicks, -1);
 						}
-						TileEntityRendererDispatcher.instance.render(tileEntity, partialTicks, -1);
 					}
-				}
-				if (!TILE_ENTITY_LIST_SYNCHRONIZED_0.isEmpty()) {
-					for (TileEntity tileEntity : TILE_ENTITY_LIST_SYNCHRONIZED_0) {
-						if (shadersEnabled) {
-							METHOD_NEXT_BLOCK_ENTITY.invoke(null, tileEntity);
+					if (!TILE_ENTITY_LIST_SYNCHRONIZED_0.isEmpty()) {
+						for (TileEntity tileEntity : TILE_ENTITY_LIST_SYNCHRONIZED_0) {
+							if (shadersEnabled) {
+								METHOD_NEXT_BLOCK_ENTITY.invoke(null, tileEntity);
+							}
+							TileEntityRendererDispatcher.instance.render(tileEntity, partialTicks, -1);
 						}
-						TileEntityRendererDispatcher.instance.render(tileEntity, partialTicks, -1);
 					}
-				}
-			} else if (pass == 1) {
-				if (!TILE_ENTITY_LIST_NORMAL_1.isEmpty()) {
-					for (TileEntity tileEntity : TILE_ENTITY_LIST_NORMAL_1) {
-						if (shadersEnabled) {
-							METHOD_NEXT_BLOCK_ENTITY.invoke(null, tileEntity);
+				} else if (pass == 1) {
+					if (!TILE_ENTITY_LIST_NORMAL_1.isEmpty()) {
+						for (TileEntity tileEntity : TILE_ENTITY_LIST_NORMAL_1) {
+							if (shadersEnabled) {
+								METHOD_NEXT_BLOCK_ENTITY.invoke(null, tileEntity);
+							}
+							TileEntityRendererDispatcher.instance.render(tileEntity, partialTicks, -1);
 						}
-						TileEntityRendererDispatcher.instance.render(tileEntity, partialTicks, -1);
 					}
-				}
-				if (!TILE_ENTITY_LIST_SYNCHRONIZED_1.isEmpty()) {
-					for (TileEntity tileEntity : TILE_ENTITY_LIST_SYNCHRONIZED_1) {
-						if (shadersEnabled) {
-							METHOD_NEXT_BLOCK_ENTITY.invoke(null, tileEntity);
+					if (!TILE_ENTITY_LIST_SYNCHRONIZED_1.isEmpty()) {
+						for (TileEntity tileEntity : TILE_ENTITY_LIST_SYNCHRONIZED_1) {
+							if (shadersEnabled) {
+								METHOD_NEXT_BLOCK_ENTITY.invoke(null, tileEntity);
+							}
+							TileEntityRendererDispatcher.instance.render(tileEntity, partialTicks, -1);
 						}
-						TileEntityRendererDispatcher.instance.render(tileEntity, partialTicks, -1);
 					}
 				}
 			}
 
-			return true;
+			if (pass == 1) {
+				clearEntityLists();
+			}
+
+			return EntityCullingConfig.enabled;
 		}
 
 	}
