@@ -408,11 +408,11 @@ public class Hook {
 		if (camVec.squareDistanceTo(end) <= maxDiffSquared) {
 			return true;
 		}
-		RayTraceResult result1 = rayTraceBlocks(mc.world, camVec, end, false, true);
+		RayTraceResult result1 = rayTraceBlocks(mc.world, camVec, end, false, true, null);
 		if (result1 == null || result1.hitVec.squareDistanceTo(end) <= maxDiffSquared) {
 			return true;
 		}
-		RayTraceResult result2 = rayTraceBlocks(mc.world, end, camVec, false, true);
+		RayTraceResult result2 = rayTraceBlocks(mc.world, end, camVec, false, true, null);
 		if (result2 == null) {
 			return true;
 		}
@@ -437,11 +437,11 @@ public class Hook {
 		if (camVec.squareDistanceTo(end) <= maxDiffSquared) {
 			return true;
 		}
-		RayTraceResult result1 = rayTraceBlocks(mc.world, camVec, end, false, true);
+		RayTraceResult result1 = rayTraceBlocks(mc.world, camVec, end, false, true, pos);
 		if (result1 == null || result1.hitVec.squareDistanceTo(end) <= maxDiffSquared) {
 			return true;
 		}
-		RayTraceResult result2 = rayTraceBlocks(mc.world, end, camVec, false, true);
+		RayTraceResult result2 = rayTraceBlocks(mc.world, end, camVec, false, true, pos);
 		if (result2 == null) {
 			return true;
 		}
@@ -449,7 +449,7 @@ public class Hook {
 	}
 
 	@Nullable
-	private static RayTraceResult rayTraceBlocks(World world, Vec3d vec31, Vec3d vec32, boolean stopOnLiquid, boolean ignoreBlockWithoutBoundingBox) {
+	private static RayTraceResult rayTraceBlocks(World world, Vec3d vec31, Vec3d vec32, boolean stopOnLiquid, boolean ignoreBlockWithoutBoundingBox, @Nullable BlockPos toIgnore) {
 		if (!Double.isNaN(vec31.x) && !Double.isNaN(vec31.y) && !Double.isNaN(vec31.z)) {
 			if (!Double.isNaN(vec32.x) && !Double.isNaN(vec32.y) && !Double.isNaN(vec32.z)) {
 				int i = MathHelper.floor(vec32.x);
@@ -462,7 +462,7 @@ public class Hook {
 				IBlockState iblockstate = world.getBlockState(blockpos);
 				Block block = iblockstate.getBlock();
 
-				if (iblockstate.isOpaqueCube() && iblockstate.getCollisionBoundingBox(world, blockpos) != Block.NULL_AABB && block.canCollideCheck(iblockstate, stopOnLiquid)) {
+				if ((toIgnore == null || !blockpos.equals(toIgnore)) && iblockstate.isOpaqueCube() && iblockstate.getCollisionBoundingBox(world, blockpos) != Block.NULL_AABB && block.canCollideCheck(iblockstate, stopOnLiquid)) {
 					RayTraceResult raytraceresult = iblockstate.collisionRayTrace(world, blockpos, vec31, vec32);
 
 					if (raytraceresult != null) {
@@ -572,7 +572,7 @@ public class Hook {
 					iblockstate = world.getBlockState(blockpos);
 					block = iblockstate.getBlock();
 
-					if (iblockstate.isOpaqueCube() && iblockstate.getCollisionBoundingBox(world, blockpos) != Block.NULL_AABB && block.canCollideCheck(iblockstate, stopOnLiquid)) {
+					if ((toIgnore == null || !blockpos.equals(toIgnore)) && iblockstate.isOpaqueCube() && iblockstate.getCollisionBoundingBox(world, blockpos) != Block.NULL_AABB && block.canCollideCheck(iblockstate, stopOnLiquid)) {
 						RayTraceResult raytraceresult1 = iblockstate.collisionRayTrace(world, blockpos, new Vec3d(x, y, z), vec32);
 
 						if (raytraceresult1 != null) {
