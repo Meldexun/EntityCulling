@@ -96,11 +96,11 @@ public class Hook {
 		Entity renderViewEntity = mc.getRenderViewEntity();
 		float partialTicks = mc.getRenderPartialTicks();
 		double x = renderViewEntity.prevPosX + (renderViewEntity.posX - renderViewEntity.prevPosX) * (double) partialTicks;
-		double y = renderViewEntity.prevPosY + (renderViewEntity.posY - renderViewEntity.prevPosY) * (double) partialTicks + renderViewEntity.getEyeHeight();
+		double y = renderViewEntity.prevPosY + (renderViewEntity.posY - renderViewEntity.prevPosY) * (double) partialTicks;
 		double z = renderViewEntity.prevPosZ + (renderViewEntity.posZ - renderViewEntity.prevPosZ) * (double) partialTicks;
 		ICamera camera = new Frustum();
 		camera.setPosition(x, y, z);
-		Vec3d camVec = new Vec3d(x, y, z);
+		Vec3d camVec = new Vec3d(x, y + renderViewEntity.getEyeHeight(), z);
 		boolean isThirdPersonView = mc.gameSettings.thirdPersonView != 0;
 		boolean isSleeping = renderViewEntity instanceof EntityLivingBase && ((EntityLivingBase) renderViewEntity).isPlayerSleeping();
 		boolean flag = !isThirdPersonView && !isSleeping;
@@ -614,11 +614,11 @@ public class Hook {
 			Entity renderViewEntity = mc.getRenderViewEntity();
 			float partialTicks = mc.getRenderPartialTicks();
 			double x = renderViewEntity.prevPosX + (renderViewEntity.posX - renderViewEntity.prevPosX) * (double) partialTicks;
-			double y = renderViewEntity.prevPosY + (renderViewEntity.posY - renderViewEntity.prevPosY) * (double) partialTicks + renderViewEntity.getEyeHeight();
+			double y = renderViewEntity.prevPosY + (renderViewEntity.posY - renderViewEntity.prevPosY) * (double) partialTicks;
 			double z = renderViewEntity.prevPosZ + (renderViewEntity.posZ - renderViewEntity.prevPosZ) * (double) partialTicks;
 			ICamera camera = new Frustum();
 			camera.setPosition(x, y, z);
-			Vec3d camVec = new Vec3d(x, y, z);
+			Vec3d camVec = new Vec3d(x, y + renderViewEntity.getEyeHeight(), z);
 			boolean isThirdPersonView = mc.gameSettings.thirdPersonView != 0;
 			boolean isSleeping = renderViewEntity instanceof EntityLivingBase && ((EntityLivingBase) renderViewEntity).isPlayerSleeping();
 			boolean flag = !isThirdPersonView && !isSleeping;
