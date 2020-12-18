@@ -96,7 +96,7 @@ public class Hook {
 		Entity renderViewEntity = mc.getRenderViewEntity();
 		float partialTicks = mc.getRenderPartialTicks();
 		double x = renderViewEntity.prevPosX + (renderViewEntity.posX - renderViewEntity.prevPosX) * (double) partialTicks;
-		double y = renderViewEntity.prevPosY + (renderViewEntity.posY - renderViewEntity.prevPosY) * (double) partialTicks;
+		double y = renderViewEntity.prevPosY + (renderViewEntity.posY - renderViewEntity.prevPosY) * (double) partialTicks + renderViewEntity.getEyeHeight();
 		double z = renderViewEntity.prevPosZ + (renderViewEntity.posZ - renderViewEntity.prevPosZ) * (double) partialTicks;
 		ICamera camera = new Frustum();
 		camera.setPosition(x, y, z);
@@ -614,7 +614,7 @@ public class Hook {
 			Entity renderViewEntity = mc.getRenderViewEntity();
 			float partialTicks = mc.getRenderPartialTicks();
 			double x = renderViewEntity.prevPosX + (renderViewEntity.posX - renderViewEntity.prevPosX) * (double) partialTicks;
-			double y = renderViewEntity.prevPosY + (renderViewEntity.posY - renderViewEntity.prevPosY) * (double) partialTicks;
+			double y = renderViewEntity.prevPosY + (renderViewEntity.posY - renderViewEntity.prevPosY) * (double) partialTicks + renderViewEntity.getEyeHeight();
 			double z = renderViewEntity.prevPosZ + (renderViewEntity.posZ - renderViewEntity.prevPosZ) * (double) partialTicks;
 			ICamera camera = new Frustum();
 			camera.setPosition(x, y, z);
