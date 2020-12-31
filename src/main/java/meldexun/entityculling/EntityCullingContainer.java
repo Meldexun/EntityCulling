@@ -44,6 +44,7 @@ public class EntityCullingContainer extends DummyModContainer {
 	@Subscribe
 	public void onFMLConstructionEvent(FMLConstructionEvent event) {
 		ConfigManager.sync(MOD_ID, Config.Type.INSTANCE);
+		Hook.updateBlacklists();
 		MinecraftForge.EVENT_BUS.register(this);
 	}
 
