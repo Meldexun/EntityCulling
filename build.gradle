@@ -53,6 +53,16 @@ jar {
     }
 }
 
+repositories {
+    maven {
+        url = "https://www.cursemaven.com"
+    }
+}
+
 dependencies {
     minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2854'
+
+    if (project.hasProperty('buildjar')) {
+        compile 'curse.maven:CubicChunks-292243:3120272'
+    }
 }
