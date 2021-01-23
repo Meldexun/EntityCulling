@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import meldexun.entityculling.EntityCullingConfig;
+import meldexun.entityculling.integration.CubicChunks;
 import meldexun.entityculling.reflection.ReflectionField;
 import meldexun.entityculling.reflection.ReflectionMethod;
 import net.minecraft.block.Block;
@@ -43,6 +44,7 @@ import net.minecraft.util.registry.RegistryNamespaced;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.client.MinecraftForgeClient;
+import net.minecraftforge.fml.common.Loader;
 
 public class Hook {
 
@@ -110,7 +112,7 @@ public class Hook {
 			BlockPos chunkPos = renderChunk.getPosition();
 			Chunk chunk = mc.world.getChunk(chunkPos);
 
-			ClassInheritanceMultiMap<Entity> entityList = chunk.getEntityLists()[chunkPos.getY() >> 4];
+			ClassInheritanceMultiMap<Entity> entityList = !Loader.isModLoaded("cubicchunks") ? chunk.getEntityLists()[chunkPos.getY() >> 4] : CubicChunks.getEntityList(mc.world, renderChunk.getPosition());
 			if (!entityList.isEmpty()) {
 				for (Entity entity : entityList) {
 					Render<Entity> render = renderManager.getEntityRenderObject(entity);
@@ -634,7 +636,7 @@ public class Hook {
 				BlockPos chunkPos = renderChunk.getPosition();
 				Chunk chunk = mc.world.getChunk(chunkPos);
 
-				ClassInheritanceMultiMap<Entity> entityList = chunk.getEntityLists()[chunkPos.getY() >> 4];
+				ClassInheritanceMultiMap<Entity> entityList = !Loader.isModLoaded("cubicchunks") ? chunk.getEntityLists()[chunkPos.getY() >> 4] : CubicChunks.getEntityList(mc.world, renderChunk.getPosition());
 				if (!entityList.isEmpty()) {
 					for (Entity entity : entityList) {
 						Render<Entity> render = renderManager.getEntityRenderObject(entity);
