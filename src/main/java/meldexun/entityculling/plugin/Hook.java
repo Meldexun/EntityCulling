@@ -601,6 +601,7 @@ public class Hook {
 	public static class Optifine {
 
 		private static final ReflectionMethod<Boolean> METHOD_IS_SHADERS = new ReflectionMethod<>("Config", "isShaders", "isShaders");
+		private static final ReflectionField<Entity> FIELD_RENDERED_ENTITY = new ReflectionField<>(RenderGlobal.class, "renderedEntity", "renderedEntity");
 		private static final ReflectionMethod<?> METHOD_NEXT_ENTITY = new ReflectionMethod<>("net.optifine.shaders.Shaders", "nextEntity", "nextEntity", Entity.class);
 		private static final ReflectionMethod<Boolean> METHOD_IS_FAST_RENDER = new ReflectionMethod<>("Config", "isFastRender", "isFastRender");
 		private static final ReflectionMethod<Boolean> METHOD_IS_ANTIALIASING = new ReflectionMethod<>("Config", "isAntialiasing", "isAntialiasing");
@@ -782,10 +783,12 @@ public class Hook {
 				if (pass == 0) {
 					if (!ENTITY_LIST_NORMAL_0.isEmpty()) {
 						for (Entity entity : ENTITY_LIST_NORMAL_0) {
+							FIELD_RENDERED_ENTITY.set(mc.renderGlobal, entity);
 							if (shadersEnabled) {
 								METHOD_NEXT_ENTITY.invoke(null, entity);
 							}
 							renderManager.renderEntityStatic(entity, partialTicks, false);
+							FIELD_RENDERED_ENTITY.set(mc.renderGlobal, null);
 						}
 					}
 					if (!ENTITY_LIST_MULTIPASS_0.isEmpty()) {
@@ -833,10 +836,12 @@ public class Hook {
 				} else if (pass == 1) {
 					if (!ENTITY_LIST_NORMAL_1.isEmpty()) {
 						for (Entity entity : ENTITY_LIST_NORMAL_1) {
+							FIELD_RENDERED_ENTITY.set(mc.renderGlobal, entity);
 							if (shadersEnabled) {
 								METHOD_NEXT_ENTITY.invoke(null, entity);
 							}
 							renderManager.renderEntityStatic(entity, partialTicks, false);
+							FIELD_RENDERED_ENTITY.set(mc.renderGlobal, null);
 						}
 					}
 					if (!ENTITY_LIST_MULTIPASS_1.isEmpty()) {
