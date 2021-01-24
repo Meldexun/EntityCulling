@@ -11,7 +11,7 @@ public class CubicChunks {
 		if (!((io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld) world).isCubicWorld()) {
 			return world.getChunk(pos).getEntityLists()[pos.getY() >> 4];
 		}
-		return ((io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld) world).getCubeCache().getCube(pos.getX(), pos.getY(), pos.getZ()).getEntitySet();
+		return ((io.github.opencubicchunks.cubicchunks.api.world.ICubicWorld) world).getCubeCache().getCube(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4).getEntitySet();
 	}
 
 }
