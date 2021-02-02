@@ -87,10 +87,10 @@ public class ClassTransformer implements IClassTransformer {
 			registerMethodTransformer(new MethodTransformer("buw", "net.minecraft.client.renderer.RenderGlobal", "a", "renderEntities", "(Lvg;Lbxy;F)V", "(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;F)V", method -> {
 				// printMethodInstructions(method);
 
-				AbstractInsnNode targetNode1 = method.instructions.get(388);
-				AbstractInsnNode popNode1 = method.instructions.get(1034);
-				AbstractInsnNode targetNode2 = method.instructions.get(1076);
-				AbstractInsnNode popNode2 = method.instructions.get(1271);
+				AbstractInsnNode targetNode1 = method.instructions.get(374);
+				AbstractInsnNode popNode1 = method.instructions.get(1039);
+				AbstractInsnNode targetNode2 = method.instructions.get(1074);
+				AbstractInsnNode popNode2 = method.instructions.get(1269);
 
 				method.instructions.insertBefore(targetNode1, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook$Optifine", "renderEntities", "()Z", false));
 				method.instructions.insertBefore(targetNode1, new JumpInsnNode(Opcodes.IFNE, (LabelNode) popNode1));
