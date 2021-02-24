@@ -249,7 +249,7 @@ public class Hook {
 				}
 				if (!ENTITY_LIST_MULTIPASS_0.isEmpty()) {
 					for (Entity entity : ENTITY_LIST_MULTIPASS_0) {
-						renderManager.renderEntityStatic(entity, partialTicks, false);
+						renderManager.renderMultipass(entity, partialTicks);
 					}
 				}
 				if (isRenderEntityOutlines() && (!ENTITY_LIST_OUTLINE_0.isEmpty() || entityOutlinesRendered)) {
@@ -294,7 +294,7 @@ public class Hook {
 				}
 				if (!ENTITY_LIST_MULTIPASS_1.isEmpty()) {
 					for (Entity entity : ENTITY_LIST_MULTIPASS_1) {
-						renderManager.renderEntityStatic(entity, partialTicks, false);
+						renderManager.renderMultipass(entity, partialTicks);
 					}
 				}
 			}
@@ -796,7 +796,7 @@ public class Hook {
 							if (shadersEnabled) {
 								METHOD_NEXT_ENTITY.invoke(null, entity);
 							}
-							renderManager.renderEntityStatic(entity, partialTicks, false);
+							renderManager.renderMultipass(entity, partialTicks);
 						}
 					}
 					if (isRenderEntityOutlines() && (!ENTITY_LIST_OUTLINE_0.isEmpty() || entityOutlinesRendered)) {
@@ -849,7 +849,7 @@ public class Hook {
 							if (shadersEnabled) {
 								METHOD_NEXT_ENTITY.invoke(null, entity);
 							}
-							renderManager.renderEntityStatic(entity, partialTicks, false);
+							renderManager.renderMultipass(entity, partialTicks);
 						}
 					}
 					if (!ENTITY_LIST_OUTLINE_1.isEmpty() && !isRenderEntityOutlines()) {
