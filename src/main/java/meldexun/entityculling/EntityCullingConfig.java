@@ -13,9 +13,6 @@ public class EntityCullingConfig {
 	@Config.Comment("Entities with a width or height greater than this value will always get rendered.")
 	@Config.RangeDouble(min = 0.0D, max = 256.0D)
 	public static double skipHiddenEntityRenderingSize = 3.0D;
-	@Config.Comment("It raytraces from the eyes of the player to the eyes of the entity and the other way around. Then it compares the positions that were hit and only renders the entity when no block was hit or the distance between both points is lower than this setting.")
-	@Config.RangeDouble(min = 0.0D, max = 256.0D)
-	public static double skipHiddenEntityRenderingDiff = 16.0D;
 	@Config.Comment("Tile entities which will always be rendered. (Format: 'modid:entity_name')")
 	public static String[] skipHiddenEntityRenderingBlacklist = new String[0];
 
@@ -24,9 +21,6 @@ public class EntityCullingConfig {
 	@Config.Comment("Tile entities with a width or height greater than this value will always get rendered.")
 	@Config.RangeDouble(min = 0.0D, max = 256.0D)
 	public static double skipHiddenTileEntityRenderingSize = 3.0D;
-	@Config.Comment("It raytraces from the eyes of the player to the tile entity and the other way around. Then it compares the positions that were hit and only renders the tile entity when no block was hit or the distance between both points is lower than this setting.")
-	@Config.RangeDouble(min = 0.0D, max = 256.0D)
-	public static double skipHiddenTileEntityRenderingDiff = 16.0D;
 	@Config.Comment("Tile entities which will always be rendered. (Format: 'modid:tile_entity_name')")
 	public static String[] skipHiddenTileEntityRenderingBlacklist = new String[0];
 
