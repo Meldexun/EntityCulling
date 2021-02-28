@@ -56,6 +56,11 @@ public final class Hook {
 
 	}
 
+	public static int getLimitFramerate() {
+		Minecraft mc = Minecraft.getMinecraft();
+		return mc.world == null ? MathHelper.clamp(mc.gameSettings.limitFramerate, 30, 240) : mc.gameSettings.limitFramerate;
+	}
+
 	private static void updateEntityLists() {
 		if (!EntityCullingConfig.enabled) {
 			return;

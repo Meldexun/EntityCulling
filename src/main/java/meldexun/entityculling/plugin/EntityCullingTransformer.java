@@ -156,6 +156,15 @@ public class EntityCullingTransformer implements IClassTransformer {
 			method.instructions.insertBefore(targetNode, new JumpInsnNode(Opcodes.IFEQ, (LabelNode) targetNode));
 			method.instructions.insertBefore(targetNode, new InsnNode(Opcodes.RETURN));
 		}));
+		registerMethodTransformer(new MethodTransformer("bhz", "net.minecraft.client.Minecraft", "k", "getLimitFramerate", "()I", "()I", method -> {
+			// printMethodInstructions(method);
+
+			AbstractInsnNode targetNode1 = method.instructions.get(0);
+			AbstractInsnNode popNode1 = method.instructions.get(15);
+
+			method.instructions.insertBefore(targetNode1, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "getLimitFramerate", "()I", false));
+			method.instructions.insertBefore(targetNode1, new JumpInsnNode(Opcodes.GOTO, (LabelNode) popNode1));
+		}));
 	}
 
 	@Override
