@@ -175,13 +175,19 @@ public class CullingThread extends Thread {
 		double dist = dx * dx + dy * dy + dz * dz;
 
 		if (dist <= 32.0D * 32.0D) {
-			if (this.checkVisibility(entity.world, camX, camY, camZ, entity.posX, entity.posY + entity.getEyeHeight(), entity.posZ, null, 1.0D)) {
+			if (this.checkVisibility(entity.world, camX, camY, camZ, entity.posX, entity.posY + entity.height * 0.5D, entity.posZ, null, 2.0D)) {
+				return true;
+			}
+
+			return this.checkBoundingBoxVisibility(entity.world, minX, minY, minZ, maxX, maxY, maxZ, camX, camY, camZ, 2, 2.0D);
+		} else if (dist <= 64.0D * 64.0D) {
+			if (this.checkVisibility(entity.world, camX, camY, camZ, entity.posX, entity.posY + entity.height * 0.5D, entity.posZ, null, 1.0D)) {
 				return true;
 			}
 
 			return this.checkBoundingBoxVisibility(entity.world, minX, minY, minZ, maxX, maxY, maxZ, camX, camY, camZ, 2, 1.0D);
 		} else if (dist <= 128.0D * 128.0D) {
-			return this.checkVisibility(entity.world, camX, camY, camZ, entity.posX, entity.posY + entity.getEyeHeight(), entity.posZ, null, 1.0D);
+			return this.checkVisibility(entity.world, camX, camY, camZ, entity.posX, entity.posY + entity.height * 0.5D, entity.posZ, null, 1.0D);
 		} else {
 			return false;
 		}
@@ -228,6 +234,12 @@ public class CullingThread extends Thread {
 		BlockPos pos = tileEntity.getPos();
 
 		if (dist <= 32.0D * 32.0D) {
+			if (this.checkVisibility(tileEntity.getWorld(), camX, camY, camZ, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, pos, 2.0D)) {
+				return true;
+			}
+
+			return this.checkBoundingBoxVisibility(tileEntity.getWorld(), minX, minY, minZ, maxX, maxY, maxZ, camX, camY, camZ, 2, 2.0D);
+		} else if (dist <= 64.0D * 64.0D) {
 			if (this.checkVisibility(tileEntity.getWorld(), camX, camY, camZ, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, pos, 1.0D)) {
 				return true;
 			}
