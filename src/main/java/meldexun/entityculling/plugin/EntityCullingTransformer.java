@@ -11,6 +11,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.FrameNode;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.JumpInsnNode;
@@ -19,26 +20,40 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
+import meldexun.entityculling.EntityCullingContainer;
+import meldexun.entityculling.plugin.transformer.ClassTransformer;
+import meldexun.entityculling.plugin.transformer.FieldTransformer;
+import meldexun.entityculling.plugin.transformer.MethodTransformer;
 import net.minecraft.launchwrapper.IClassTransformer;
 
-public class ClassTransformer implements IClassTransformer {
+public class EntityCullingTransformer implements IClassTransformer {
 
+	private static final Map<String, List<ClassTransformer>> CLASS_TRANSFORMERS = new HashMap<>();
+	private static final Map<String, Map<String, List<FieldTransformer>>> FIELD_TRANSFORMERS = new HashMap<>();
 	private static final Map<String, Map<String, List<MethodTransformer>>> METHOD_TRANSFORMERS = new HashMap<>();
 
 	public static final boolean IS_OPTIFINE_DETECTED;
 
-	private static void registerMethodTransformer(MethodTransformer methodTransformer) {
+	public static void registerClassTransformer(ClassTransformer classTransformer) {
+		CLASS_TRANSFORMERS.computeIfAbsent(classTransformer.transformedClassName, key -> new ArrayList<>()).add(classTransformer);
+	}
+
+	public static void registerFieldTransformer(FieldTransformer fieldTransformer) {
+		Map<String, List<FieldTransformer>> map = FIELD_TRANSFORMERS.computeIfAbsent(fieldTransformer.transformedClassName, key -> new HashMap<>());
+		map.computeIfAbsent(fieldTransformer.fieldName, key -> new ArrayList<>()).add(fieldTransformer);
+		map.computeIfAbsent(fieldTransformer.transformedFieldName, key -> new ArrayList<>()).add(fieldTransformer);
+	}
+
+	public static void registerMethodTransformer(MethodTransformer methodTransformer) {
 		Map<String, List<MethodTransformer>> map = METHOD_TRANSFORMERS.computeIfAbsent(methodTransformer.transformedClassName, key -> new HashMap<>());
-		List<MethodTransformer> list1 = map.computeIfAbsent(methodTransformer.methodName, key -> new ArrayList<>());
-		List<MethodTransformer> list2 = map.computeIfAbsent(methodTransformer.transformedMethodName, key -> new ArrayList<>());
-		list1.add(methodTransformer);
-		list2.add(methodTransformer);
+		map.computeIfAbsent(methodTransformer.methodName, key -> new ArrayList<>()).add(methodTransformer);
+		map.computeIfAbsent(methodTransformer.transformedMethodName, key -> new ArrayList<>()).add(methodTransformer);
 	}
 
 	static {
 		boolean flag = false;
 		try {
-			Class.forName("optifine.OptiFineClassTransformer", false, ClassTransformer.class.getClassLoader());
+			Class.forName("optifine.OptiFineClassTransformer", false, EntityCullingTransformer.class.getClassLoader());
 			flag = true;
 		} catch (ClassNotFoundException e) {
 			// ignore
@@ -46,18 +61,6 @@ public class ClassTransformer implements IClassTransformer {
 		IS_OPTIFINE_DETECTED = flag;
 
 		if (!IS_OPTIFINE_DETECTED) {
-			/*
-			registerMethodTransformer(new MethodTransformer("buo", "net.minecraft.client.renderer.EntityRenderer", "a", "renderWorldPass", "(IFJ)V", "(IFJ)V", method -> {
-				// printMethodInstructions(method);
-
-				AbstractInsnNode targetNode1 = method.instructions.get(465);
-				AbstractInsnNode targetNode2 = method.instructions.get(808);
-
-				method.instructions.insertBefore(targetNode1, new VarInsnNode(Opcodes.ALOAD, 8));
-				method.instructions.insertBefore(targetNode1, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "updateEntityLists", "(Lnet/minecraft/client/renderer/culling/ICamera;)V", false));
-				method.instructions.insertBefore(targetNode2, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "clearEntityLists", "()V", false));
-			}));
-			*/
 			registerMethodTransformer(new MethodTransformer("buw", "net.minecraft.client.renderer.RenderGlobal", "a", "renderEntities", "(Lvg;Lbxy;F)V", "(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;F)V", method -> {
 				// printMethodInstructions(method);
 
@@ -72,18 +75,6 @@ public class ClassTransformer implements IClassTransformer {
 				method.instructions.insertBefore(targetNode2, new JumpInsnNode(Opcodes.IFNE, (LabelNode) popNode2));
 			}));
 		} else {
-			/*
-			registerMethodTransformer(new MethodTransformer("buo", "net.minecraft.client.renderer.EntityRenderer", "a", "renderWorldPass", "(IFJ)V", "(IFJ)V", method -> {
-				// printMethodInstructions(method);
-
-				AbstractInsnNode targetNode1 = method.instructions.get(724);
-				AbstractInsnNode targetNode2 = method.instructions.get(1042);
-
-				method.instructions.insertBefore(targetNode1, new VarInsnNode(Opcodes.ALOAD, 10));
-				method.instructions.insertBefore(targetNode1, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook$Optifine", "updateEntityLists", "(Lnet/minecraft/client/renderer/culling/ICamera;)V", false));
-				method.instructions.insertBefore(targetNode2, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook$Optifine", "clearEntityLists", "()V", false));
-			}));
-			*/
 			registerMethodTransformer(new MethodTransformer("buw", "net.minecraft.client.renderer.RenderGlobal", "a", "renderEntities", "(Lvg;Lbxy;F)V", "(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;F)V", method -> {
 				// printMethodInstructions(method);
 
@@ -129,44 +120,59 @@ public class ClassTransformer implements IClassTransformer {
 
 	@Override
 	public byte[] transform(String name, String transformedName, byte[] basicClass) {
-		Map<String, List<MethodTransformer>> map = METHOD_TRANSFORMERS.get(transformedName);
+		List<ClassTransformer> classTransformers = CLASS_TRANSFORMERS.get(transformedName);
+		Map<String, List<FieldTransformer>> fieldTransformerMap = FIELD_TRANSFORMERS.get(transformedName);
+		Map<String, List<MethodTransformer>> methodTransformerMap = METHOD_TRANSFORMERS.get(transformedName);
 
-		if (map == null || map.isEmpty()) {
+		if ((classTransformers == null || classTransformers.isEmpty()) && (fieldTransformerMap == null || fieldTransformerMap.isEmpty()) && (methodTransformerMap == null || methodTransformerMap.isEmpty())) {
 			return basicClass;
 		}
 
-		try {
-			ClassNode classNode = new ClassNode();
-			ClassReader classReader = new ClassReader(basicClass);
-			classReader.accept(classNode, 0);
+		ClassNode classNode = new ClassNode();
+		ClassReader classReader = new ClassReader(basicClass);
+		classReader.accept(classNode, 0);
 
-			for (MethodNode method : classNode.methods) {
-				List<MethodTransformer> list = map.get(method.name);
+		if (classTransformers != null) {
+			for (ClassTransformer classTransformer : classTransformers) {
+				classTransformer.transformer.accept(classNode);
+			}
+		}
 
-				if (list == null || list.isEmpty()) {
+		if (fieldTransformerMap != null) {
+			for (FieldNode fieldNode : classNode.fields) {
+				List<FieldTransformer> fieldTransformers = fieldTransformerMap.get(fieldNode.name);
+
+				if (fieldTransformers == null || fieldTransformers.isEmpty()) {
 					continue;
 				}
 
-				for (MethodTransformer methodTransformer : list) {
-					if (methodTransformer.canApplyMethodTransform(method)) {
-						methodTransformer.applyMethodTransform(method);
+				for (FieldTransformer fieldTransformer : fieldTransformers) {
+					if (fieldTransformer.canApplyTransform(fieldNode)) {
+						fieldTransformer.transformer.accept(fieldNode);
 					}
 				}
 			}
-
-			ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-			try {
-				classNode.accept(classWriter);
-			} catch (Exception e) {
-				e.printStackTrace();
-				return basicClass;
-			}
-			return classWriter.toByteArray();
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 
-		return basicClass;
+		if (methodTransformerMap != null) {
+			for (MethodNode methodNode : classNode.methods) {
+				List<MethodTransformer> methodTransformers = methodTransformerMap.get(methodNode.name);
+
+				if (methodTransformers == null || methodTransformers.isEmpty()) {
+					continue;
+				}
+
+				for (MethodTransformer methodTransformer : methodTransformers) {
+					if (methodTransformer.canApplyTransform(methodNode)) {
+						methodTransformer.transformer.accept(methodNode);
+					}
+				}
+			}
+		}
+
+		ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+		classNode.accept(classWriter);
+		return classWriter.toByteArray();
 	}
 
 	public static void printMethodInstructions(MethodNode method) {
@@ -178,7 +184,7 @@ public class ClassTransformer implements IClassTransformer {
 			}
 			i++;
 		}
-		System.out.println(sb.toString());
+		EntityCullingContainer.LOGGER.info(sb);
 	}
 
 	public static String insnToString(AbstractInsnNode insn) {
