@@ -1,18 +1,14 @@
 package meldexun.entityculling.plugin;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import meldexun.entityculling.EntityCullingConfig;
+import meldexun.entityculling.ICullable;
 import meldexun.entityculling.integration.CubicChunks;
 import meldexun.entityculling.reflection.ReflectionField;
 import meldexun.entityculling.reflection.ReflectionMethod;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
@@ -28,27 +24,20 @@ import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.client.shader.ShaderGroup;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ClassInheritanceMultiMap;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.RegistryNamespaced;
-import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.fml.common.Loader;
 
-public class Hook {
+public final class Hook {
 
-	private static final ReflectionField<RegistryNamespaced<ResourceLocation, Class<? extends TileEntity>>> FIELD_REGISTRY = new ReflectionField<>(TileEntity.class, "field_190562_f", "REGISTRY");
+	private static final ReflectionField<Integer> FIELD_COUNT_ENTITIES_RENDERED = new ReflectionField<>(RenderGlobal.class, "field_72749_I", "countEntitiesRendered");
 	private static final ReflectionField<Set<TileEntity>> FIELD_SET_TILE_ENTITIES = new ReflectionField<>(RenderGlobal.class, "field_181024_n", "setTileEntities");
 	private static final ReflectionField<Framebuffer> FIELD_ENTITY_OUTLINE_FRAMEBUFFER = new ReflectionField<>(RenderGlobal.class, "field_175015_z", "entityOutlineFramebuffer");
 	private static final ReflectionField<ShaderGroup> FIELD_ENTITY_OUTLINE_SHADER = new ReflectionField<>(RenderGlobal.class, "field_174991_A", "entityOutlineShader");
@@ -61,38 +50,17 @@ public class Hook {
 	private static final List<TileEntity> TILE_ENTITY_LIST_SYNCHRONIZED_0 = new ArrayList<>();
 	private static final List<TileEntity> TILE_ENTITY_LIST_NORMAL_1 = new ArrayList<>();
 	private static final List<TileEntity> TILE_ENTITY_LIST_SYNCHRONIZED_1 = new ArrayList<>();
-	private static final Set<Class<? extends Entity>> ENTITY_BLACKLIST = new HashSet<>();
-	private static final Set<Class<? extends TileEntity>> TILE_ENTITY_BLACKLIST = new HashSet<>();
 	private static boolean entityOutlinesRendered = false;
 
 	private Hook() {
 
 	}
 
-	public static void updateBlacklists() {
-		ENTITY_BLACKLIST.clear();
-		TILE_ENTITY_BLACKLIST.clear();
-
-		for (String s : EntityCullingConfig.skipHiddenEntityRenderingBlacklist) {
-			Class<? extends Entity> entityClass = EntityList.getClassFromName(s);
-			if (entityClass != null) {
-				ENTITY_BLACKLIST.add(entityClass);
-			}
-		}
-
-		RegistryNamespaced<ResourceLocation, Class<? extends TileEntity>> tileEntityRegistry = FIELD_REGISTRY.get(null);
-		for (String s : EntityCullingConfig.skipHiddenTileEntityRenderingBlacklist) {
-			Class<? extends TileEntity> entityClass = tileEntityRegistry.getObject(new ResourceLocation(s));
-			if (entityClass != null) {
-				TILE_ENTITY_BLACKLIST.add(entityClass);
-			}
-		}
-	}
-
 	private static void updateEntityLists() {
 		if (!EntityCullingConfig.enabled) {
 			return;
 		}
+
 		Minecraft mc = Minecraft.getMinecraft();
 		RenderManager renderManager = mc.getRenderManager();
 		Entity renderViewEntity = mc.getRenderViewEntity();
@@ -102,11 +70,11 @@ public class Hook {
 		double z = renderViewEntity.prevPosZ + (renderViewEntity.posZ - renderViewEntity.prevPosZ) * (double) partialTicks;
 		ICamera camera = new Frustum();
 		camera.setPosition(x, y, z);
-		Vec3d camVec = new Vec3d(x, y + renderViewEntity.getEyeHeight(), z);
 		boolean isThirdPersonView = mc.gameSettings.thirdPersonView != 0;
 		boolean isSleeping = renderViewEntity instanceof EntityLivingBase && ((EntityLivingBase) renderViewEntity).isPlayerSleeping();
 		boolean flag = !isThirdPersonView && !isSleeping;
 		boolean flag1 = mc.player.isSpectator() && mc.gameSettings.keyBindSpectatorOutlines.isKeyDown();
+		int entitiesRendered = 0;
 
 		for (RenderChunk renderChunk : RenderUtil.getRenderChunks()) {
 			BlockPos chunkPos = renderChunk.getPosition();
@@ -125,23 +93,29 @@ public class Hook {
 					if (entity == renderViewEntity && flag) {
 						continue;
 					}
-					boolean flag2 = checkEntityVisibility(entity, camVec);
+					boolean flag2 = false;
 					if (entity.shouldRenderInPass(0)) {
 						if (entity.isGlowing() || (flag1 && entity instanceof EntityPlayer)) {
 							ENTITY_LIST_OUTLINE_0.add(entity);
+							flag2 = true;
 						}
-						if (flag2) {
+						if (!((ICullable) entity).isCulled()) {
 							ENTITY_LIST_NORMAL_0.add(entity);
 							if (render.isMultipass()) {
 								ENTITY_LIST_MULTIPASS_0.add(entity);
 							}
+							flag2 = true;
 						}
 					}
-					if (entity.shouldRenderInPass(1) && flag2) {
+					if (entity.shouldRenderInPass(1) && !((ICullable) entity).isCulled()) {
 						ENTITY_LIST_NORMAL_1.add(entity);
 						if (render.isMultipass()) {
 							ENTITY_LIST_MULTIPASS_1.add(entity);
 						}
+						flag2 = true;
+					}
+					if (flag2) {
+						entitiesRendered++;
 					}
 				}
 			}
@@ -159,7 +133,7 @@ public class Hook {
 					if (!camera.isBoundingBoxInFrustum(tileEntity.getRenderBoundingBox())) {
 						continue;
 					}
-					if (!checkTileEntityVisibility(tileEntity, camVec)) {
+					if (((ICullable) tileEntity).isCulled()) {
 						continue;
 					}
 					if (tileEntity.shouldRenderInPass(0)) {
@@ -171,6 +145,7 @@ public class Hook {
 				}
 			}
 		}
+		FIELD_COUNT_ENTITIES_RENDERED.set(mc.renderGlobal, FIELD_COUNT_ENTITIES_RENDERED.get(mc.renderGlobal) + entitiesRendered);
 
 		Set<TileEntity> setTileEntities = FIELD_SET_TILE_ENTITIES.get(mc.renderGlobal);
 		if (!setTileEntities.isEmpty()) {
@@ -185,7 +160,7 @@ public class Hook {
 					if (!mc.world.isBlockLoaded(tileEntity.getPos(), false)) {
 						continue;
 					}
-					if (!checkTileEntityVisibility(tileEntity, camVec)) {
+					if (((ICullable) tileEntity).isCulled()) {
 						continue;
 					}
 					if (tileEntity.shouldRenderInPass(0)) {
@@ -360,19 +335,22 @@ public class Hook {
 
 			return entity.isInRangeToRender3d(camX, camY, camZ) && (entity.ignoreFrustumCheck || camera.isBoundingBoxInFrustum(axisalignedbb));
 		}
+
 		if (!entity.isInRangeToRender3d(camX, camY, camZ)) {
 			return false;
 		}
+
 		if (entity.ignoreFrustumCheck) {
 			return true;
 		}
-		AxisAlignedBB axisalignedbb = entity.getRenderBoundingBox().grow(0.5D);
 
-		if (axisalignedbb.hasNaN()) {
-			axisalignedbb = new AxisAlignedBB(entity.posX - 2.0D, entity.posY - 2.0D, entity.posZ - 2.0D, entity.posX + 2.0D, entity.posY + 2.0D, entity.posZ + 2.0D);
+		AxisAlignedBB aabb = entity.getRenderBoundingBox();
+
+		if (aabb.hasNaN()) {
+			return ((Frustum) camera).isBoxInFrustum(entity.posX - 2.0D, entity.posY - 2.0D, entity.posZ - 2.0D, entity.posX + 2.0D, entity.posY + 2.0D, entity.posZ + 2.0D);
 		}
 
-		return camera.isBoundingBoxInFrustum(axisalignedbb);
+		return ((Frustum) camera).isBoxInFrustum(aabb.minX - 0.5D, aabb.minY - 0.5D, aabb.minZ - 0.5D, aabb.maxX + 0.5D, aabb.maxY + 0.5D, aabb.maxZ + 0.5D);
 	}
 
 	public static boolean render(TileEntity tileEntity, int destroyStage, boolean drawingBatch) {
@@ -397,208 +375,7 @@ public class Hook {
 		return true;
 	}
 
-	private static boolean checkEntityVisibility(Entity entity, Vec3d camVec) {
-		if (!EntityCullingConfig.skipHiddenEntityRendering) {
-			return true;
-		}
-		if (!entity.isNonBoss()) {
-			return true;
-		}
-		if (entity.width >= EntityCullingConfig.skipHiddenEntityRenderingSize || entity.height >= EntityCullingConfig.skipHiddenEntityRenderingSize) {
-			return true;
-		}
-		if (!ENTITY_BLACKLIST.isEmpty() && ENTITY_BLACKLIST.contains(entity.getClass())) {
-			return true;
-		}
-		double maxDiffSquared = EntityCullingConfig.skipHiddenEntityRenderingDiff * EntityCullingConfig.skipHiddenEntityRenderingDiff;
-		Minecraft mc = Minecraft.getMinecraft();
-		Vec3d end = entity.getPositionEyes(mc.getRenderPartialTicks());
-		if (camVec.squareDistanceTo(end) <= maxDiffSquared) {
-			return true;
-		}
-		RayTraceResult result1 = rayTraceBlocks(mc.world, camVec, end, false, true, null);
-		if (result1 == null || result1.hitVec.squareDistanceTo(end) <= maxDiffSquared) {
-			return true;
-		}
-		RayTraceResult result2 = rayTraceBlocks(mc.world, end, camVec, false, true, null);
-		if (result2 == null) {
-			return true;
-		}
-		return result1.hitVec.squareDistanceTo(result2.hitVec) <= maxDiffSquared;
-	}
-
-	private static boolean checkTileEntityVisibility(TileEntity tileEntity, Vec3d camVec) {
-		if (!EntityCullingConfig.skipHiddenTileEntityRendering) {
-			return true;
-		}
-		AxisAlignedBB aabb = tileEntity.getRenderBoundingBox();
-		if (aabb.maxX - aabb.minX > EntityCullingConfig.skipHiddenTileEntityRenderingSize || aabb.maxY - aabb.minY > EntityCullingConfig.skipHiddenTileEntityRenderingSize || aabb.maxZ - aabb.minZ > EntityCullingConfig.skipHiddenTileEntityRenderingSize) {
-			return true;
-		}
-		if (!TILE_ENTITY_BLACKLIST.isEmpty() && TILE_ENTITY_BLACKLIST.contains(tileEntity.getClass())) {
-			return true;
-		}
-		double maxDiffSquared = EntityCullingConfig.skipHiddenTileEntityRenderingDiff * EntityCullingConfig.skipHiddenTileEntityRenderingDiff;
-		Minecraft mc = Minecraft.getMinecraft();
-		BlockPos pos = tileEntity.getPos();
-		Vec3d end = new Vec3d(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
-		if (camVec.squareDistanceTo(end) <= maxDiffSquared) {
-			return true;
-		}
-		RayTraceResult result1 = rayTraceBlocks(mc.world, camVec, end, false, true, pos);
-		if (result1 == null || result1.hitVec.squareDistanceTo(end) <= maxDiffSquared) {
-			return true;
-		}
-		RayTraceResult result2 = rayTraceBlocks(mc.world, end, camVec, false, true, pos);
-		if (result2 == null) {
-			return true;
-		}
-		return result1.hitVec.squareDistanceTo(result2.hitVec) <= maxDiffSquared;
-	}
-
-	@Nullable
-	private static RayTraceResult rayTraceBlocks(World world, Vec3d vec31, Vec3d vec32, boolean stopOnLiquid, boolean ignoreBlockWithoutBoundingBox, @Nullable BlockPos toIgnore) {
-		if (!Double.isNaN(vec31.x) && !Double.isNaN(vec31.y) && !Double.isNaN(vec31.z)) {
-			if (!Double.isNaN(vec32.x) && !Double.isNaN(vec32.y) && !Double.isNaN(vec32.z)) {
-				int i = MathHelper.floor(vec32.x);
-				int j = MathHelper.floor(vec32.y);
-				int k = MathHelper.floor(vec32.z);
-				int l = MathHelper.floor(vec31.x);
-				int i1 = MathHelper.floor(vec31.y);
-				int j1 = MathHelper.floor(vec31.z);
-				BlockPos.MutableBlockPos blockpos = new BlockPos.MutableBlockPos(l, i1, j1);
-				IBlockState iblockstate = world.getBlockState(blockpos);
-				Block block = iblockstate.getBlock();
-
-				if ((toIgnore == null || !blockpos.equals(toIgnore)) && iblockstate.isOpaqueCube() && iblockstate.getCollisionBoundingBox(world, blockpos) != Block.NULL_AABB && block.canCollideCheck(iblockstate, stopOnLiquid)) {
-					RayTraceResult raytraceresult = iblockstate.collisionRayTrace(world, blockpos, vec31, vec32);
-
-					if (raytraceresult != null) {
-						return raytraceresult;
-					}
-				}
-
-				int k1 = 200;
-				double x = vec31.x;
-				double y = vec31.y;
-				double z = vec31.z;
-
-				while (k1-- >= 0) {
-					if (Double.isNaN(x) || Double.isNaN(y) || Double.isNaN(z)) {
-						return null;
-					}
-
-					if (l == i && i1 == j && j1 == k) {
-						return null;
-					}
-
-					boolean flag2 = true;
-					boolean flag = true;
-					boolean flag1 = true;
-					double d0 = 999.0D;
-					double d1 = 999.0D;
-					double d2 = 999.0D;
-
-					if (i > l) {
-						d0 = (double) l + 1.0D;
-					} else if (i < l) {
-						d0 = (double) l + 0.0D;
-					} else {
-						flag2 = false;
-					}
-
-					if (j > i1) {
-						d1 = (double) i1 + 1.0D;
-					} else if (j < i1) {
-						d1 = (double) i1 + 0.0D;
-					} else {
-						flag = false;
-					}
-
-					if (k > j1) {
-						d2 = (double) j1 + 1.0D;
-					} else if (k < j1) {
-						d2 = (double) j1 + 0.0D;
-					} else {
-						flag1 = false;
-					}
-
-					double d3 = 999.0D;
-					double d4 = 999.0D;
-					double d5 = 999.0D;
-					double d6 = vec32.x - x;
-					double d7 = vec32.y - y;
-					double d8 = vec32.z - z;
-
-					if (flag2) {
-						d3 = (d0 - x) / d6;
-					}
-
-					if (flag) {
-						d4 = (d1 - y) / d7;
-					}
-
-					if (flag1) {
-						d5 = (d2 - z) / d8;
-					}
-
-					if (d3 == -0.0D) {
-						d3 = -1.0E-4D;
-					}
-
-					if (d4 == -0.0D) {
-						d4 = -1.0E-4D;
-					}
-
-					if (d5 == -0.0D) {
-						d5 = -1.0E-4D;
-					}
-
-					EnumFacing enumfacing;
-
-					if (d3 < d4 && d3 < d5) {
-						enumfacing = i > l ? EnumFacing.WEST : EnumFacing.EAST;
-						x = d0;
-						y = y + d7 * d3;
-						z = z + d8 * d3;
-					} else if (d4 < d5) {
-						enumfacing = j > i1 ? EnumFacing.DOWN : EnumFacing.UP;
-						x = x + d6 * d4;
-						y = d1;
-						z = z + d8 * d4;
-					} else {
-						enumfacing = k > j1 ? EnumFacing.NORTH : EnumFacing.SOUTH;
-						x = x + d6 * d5;
-						y = y + d7 * d5;
-						z = d2;
-					}
-
-					l = MathHelper.floor(x) - (enumfacing == EnumFacing.EAST ? 1 : 0);
-					i1 = MathHelper.floor(y) - (enumfacing == EnumFacing.UP ? 1 : 0);
-					j1 = MathHelper.floor(z) - (enumfacing == EnumFacing.SOUTH ? 1 : 0);
-					blockpos.setPos(l, i1, j1);
-					iblockstate = world.getBlockState(blockpos);
-					block = iblockstate.getBlock();
-
-					if ((toIgnore == null || !blockpos.equals(toIgnore)) && iblockstate.isOpaqueCube() && iblockstate.getCollisionBoundingBox(world, blockpos) != Block.NULL_AABB && block.canCollideCheck(iblockstate, stopOnLiquid)) {
-						RayTraceResult raytraceresult1 = iblockstate.collisionRayTrace(world, blockpos, new Vec3d(x, y, z), vec32);
-
-						if (raytraceresult1 != null) {
-							return raytraceresult1;
-						}
-					}
-				}
-
-				return null;
-			} else {
-				return null;
-			}
-		} else {
-			return null;
-		}
-	}
-
-	public static class Optifine {
+	public static final class Optifine {
 
 		private static final ReflectionMethod<Boolean> METHOD_IS_SHADERS = new ReflectionMethod<>("Config", "isShaders", "isShaders");
 		private static final ReflectionField<Entity> FIELD_RENDERED_ENTITY = new ReflectionField<>(RenderGlobal.class, "renderedEntity", "renderedEntity");
@@ -627,11 +404,11 @@ public class Hook {
 			double z = renderViewEntity.prevPosZ + (renderViewEntity.posZ - renderViewEntity.prevPosZ) * (double) partialTicks;
 			ICamera camera = new Frustum();
 			camera.setPosition(x, y, z);
-			Vec3d camVec = new Vec3d(x, y + renderViewEntity.getEyeHeight(), z);
 			boolean isThirdPersonView = mc.gameSettings.thirdPersonView != 0;
 			boolean isSleeping = renderViewEntity instanceof EntityLivingBase && ((EntityLivingBase) renderViewEntity).isPlayerSleeping();
 			boolean flag = !isThirdPersonView && !isSleeping;
 			boolean flag1 = mc.player.isSpectator() && mc.gameSettings.keyBindSpectatorOutlines.isKeyDown();
+			int entitiesRendered = 0;
 
 			for (RenderChunk renderChunk : RenderUtil.Optifine.getRenderChunksEntities()) {
 				BlockPos chunkPos = renderChunk.getPosition();
@@ -650,32 +427,41 @@ public class Hook {
 						if (entity == renderViewEntity && flag) {
 							continue;
 						}
-						boolean flag2 = checkEntityVisibility(entity, camVec);
+						boolean flag2 = false;
 						if (entity.shouldRenderInPass(0)) {
 							if (entity.isGlowing() || (flag1 && entity instanceof EntityPlayer)) {
 								ENTITY_LIST_OUTLINE_0.add(entity);
+								flag2 = true;
 							}
-							if (flag2) {
+							if (!((ICullable) entity).isCulled()) {
 								ENTITY_LIST_NORMAL_0.add(entity);
 								if (render.isMultipass()) {
 									ENTITY_LIST_MULTIPASS_0.add(entity);
 								}
+								flag2 = true;
 							}
 						}
 						if (entity.shouldRenderInPass(1)) {
 							if (entity.isGlowing() || (flag1 && entity instanceof EntityPlayer)) {
 								ENTITY_LIST_OUTLINE_1.add(entity);
+								flag2 = true;
 							}
-							if (flag2) {
+							if (!((ICullable) entity).isCulled()) {
 								ENTITY_LIST_NORMAL_1.add(entity);
 								if (render.isMultipass()) {
 									ENTITY_LIST_MULTIPASS_1.add(entity);
 								}
+								flag2 = true;
 							}
+						}
+						if (flag2) {
+							entitiesRendered++;
 						}
 					}
 				}
 			}
+
+			FIELD_COUNT_ENTITIES_RENDERED.set(mc.renderGlobal, FIELD_COUNT_ENTITIES_RENDERED.get(mc.renderGlobal) + entitiesRendered);
 
 			for (RenderChunk renderChunk : RenderUtil.Optifine.getRenderChunksTileEntities()) {
 				BlockPos chunkPos = renderChunk.getPosition();
@@ -694,7 +480,7 @@ public class Hook {
 						if (!camera.isBoundingBoxInFrustum(tileEntity.getRenderBoundingBox())) {
 							continue;
 						}
-						if (!checkTileEntityVisibility(tileEntity, camVec)) {
+						if (((ICullable) tileEntity).isCulled()) {
 							continue;
 						}
 						if (tileEntity.shouldRenderInPass(0)) {
@@ -720,7 +506,7 @@ public class Hook {
 						if (!mc.world.isBlockLoaded(tileEntity.getPos(), false)) {
 							continue;
 						}
-						if (!checkTileEntityVisibility(tileEntity, camVec)) {
+						if (((ICullable) tileEntity).isCulled()) {
 							continue;
 						}
 						if (tileEntity.shouldRenderInPass(0)) {

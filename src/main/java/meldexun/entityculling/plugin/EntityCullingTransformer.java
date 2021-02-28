@@ -60,6 +60,46 @@ public class EntityCullingTransformer implements IClassTransformer {
 		}
 		IS_OPTIFINE_DETECTED = flag;
 
+		registerClassTransformer(new ClassTransformer("ve", "net.minecraft.entity.Entity", classNode -> {
+			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "isCulled", "Z", null, false));
+
+			classNode.interfaces.add("meldexun/entityculling/ICullable");
+
+			MethodNode methodNode1 = new MethodNode(Opcodes.ACC_PUBLIC, "isCulled", "()Z", null, null);
+			methodNode1.instructions.clear();
+			methodNode1.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodNode1.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/entity/Entity", "isCulled", "Z"));
+			methodNode1.instructions.add(new InsnNode(Opcodes.IRETURN));
+			classNode.methods.add(methodNode1);
+
+			MethodNode methodNode2 = new MethodNode(Opcodes.ACC_PUBLIC, "setCulled", "(Z)V", null, null);
+			methodNode2.instructions.clear();
+			methodNode2.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodNode2.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
+			methodNode2.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/entity/Entity", "isCulled", "Z"));
+			methodNode2.instructions.add(new InsnNode(Opcodes.RETURN));
+			classNode.methods.add(methodNode2);
+		}));
+		registerClassTransformer(new ClassTransformer("avh", "net.minecraft.tileentity.TileEntity", classNode -> {
+			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "isCulled", "Z", null, false));
+
+			classNode.interfaces.add("meldexun/entityculling/ICullable");
+
+			MethodNode methodNode1 = new MethodNode(Opcodes.ACC_PUBLIC, "isCulled", "()Z", null, null);
+			methodNode1.instructions.clear();
+			methodNode1.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodNode1.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/tileentity/TileEntity", "isCulled", "Z"));
+			methodNode1.instructions.add(new InsnNode(Opcodes.IRETURN));
+			classNode.methods.add(methodNode1);
+
+			MethodNode methodNode2 = new MethodNode(Opcodes.ACC_PUBLIC, "setCulled", "(Z)V", null, null);
+			methodNode2.instructions.clear();
+			methodNode2.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodNode2.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
+			methodNode2.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/tileentity/TileEntity", "isCulled", "Z"));
+			methodNode2.instructions.add(new InsnNode(Opcodes.RETURN));
+			classNode.methods.add(methodNode2);
+		}));
 		if (!IS_OPTIFINE_DETECTED) {
 			registerMethodTransformer(new MethodTransformer("buw", "net.minecraft.client.renderer.RenderGlobal", "a", "renderEntities", "(Lvg;Lbxy;F)V", "(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;F)V", method -> {
 				// printMethodInstructions(method);
