@@ -15,14 +15,6 @@ public class EntityCullingConfig {
 	public static double skipHiddenEntityRenderingSize = 3.0D;
 	@Config.Comment("Tile entities which will always be rendered. (Format: 'modid:entity_name')")
 	public static String[] skipHiddenEntityRenderingBlacklist = new String[0];
-	@Config.Comment("Culling threshold for entities which are 32 or less blocks away. Lower values grant more performance but increase the chance of visual artifacts.")
-	public static double skipHiddenEntityRenderingDiff32 = 2.0D;
-	@Config.Comment("Culling threshold for entities which are 64 or less blocks away. Lower values grant more performance but increase the chance of visual artifacts.")
-	public static double skipHiddenEntityRenderingDiff64 = 1.0D;
-	@Config.Comment("Culling threshold for entities which are 128 or less blocks away. Lower values grant more performance but increase the chance of visual artifacts. Note: The culling accuracy for entities this far away is reduced.")
-	public static double skipHiddenEntityRenderingDiff128 = 1.0D;
-	@Config.Comment("If true entities which are more than 128 blocks away won't be rendered (bosses, entities with a size bigger than skipHiddenEntityRenderingSize or blacklisted entities will still be rendered).")
-	public static boolean skipHiddenEntityRenderingHideFarAway = true;
 
 	@Config.Comment("Skip rendering of entities that are not visible (hidden behind blocks). This might cause issues where a tile entity is partly behind a block and thus does not get rendered but it's usually not really noticable.")
 	public static boolean skipHiddenTileEntityRendering = true;
@@ -31,16 +23,35 @@ public class EntityCullingConfig {
 	public static double skipHiddenTileEntityRenderingSize = 3.0D;
 	@Config.Comment("Tile entities which will always be rendered. (Format: 'modid:tile_entity_name')")
 	public static String[] skipHiddenTileEntityRenderingBlacklist = new String[0];
-	@Config.Comment("Culling threshold for tile entities which are 32 or less blocks away. Lower values grant more performance but increase the chance of visual artifacts.")
-	public static double skipHiddenTileEntityRenderingDiff32 = 2.0D;
-	@Config.Comment("Culling threshold for tile entities which are 64 or less blocks away. Lower values grant more performance but increase the chance of visual artifacts.")
-	public static double skipHiddenTileEntityRenderingDiff64 = 1.0D;
-	@Config.Comment("Culling threshold for tile entities which are 128 or less blocks away. Lower values grant more performance but increase the chance of visual artifacts. Note: The culling accuracy for tile entities this far away is reduced.")
-	public static double skipHiddenTileEntityRenderingDiff128 = 1.0D;
-	@Config.Comment("If true entities which are more than 128 blocks away won't be rendered (tile entities with a size bigger than skipHiddenTileEntityRenderingSize or blacklisted tile entities will still be rendered).")
-	public static boolean skipHiddenTileEntityRenderingHideFarAway = true;
+
+	public static boolean debug = false;
+
+	public static OptifineShaderOptions optifineShaderOptions = new OptifineShaderOptions();
 
 	private EntityCullingConfig() {
+
+	}
+
+	public static class OptifineShaderOptions {
+
+		public boolean entityShadowsCulling = true;
+		public boolean entityShadowsCullingLessAggressiveMode = false;
+		public double entityShadowsCullingLessAggressiveModeDiff = 4.0D;
+		public boolean entityShadowsDisabled = false;
+		public boolean entityShadowsDistanceLimited = false;
+		public double entityShadowsMaxDistance = 64.0D;
+
+		public boolean terrainShadowsDisabled = false;
+		public boolean terrainShadowsDistanceLimited = false;
+		public double terrainShadowsMaxHorizontalDistance = 128.0D;
+		public double terrainShadowsMaxVerticalDistance = 64.0D;
+
+		public boolean tileEntityShadowsCulling = true;
+		public boolean tileEntityShadowsCullingLessAggressiveMode = false;
+		public double tileEntityShadowsCullingLessAggressiveModeDiff = 4.0D;
+		public boolean tileEntityShadowsDisabled = false;
+		public boolean tileEntityShadowsDistanceLimited = false;
+		public double tileEntityShadowsMaxDistance = 64.0D;
 
 	}
 

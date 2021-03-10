@@ -1,324 +1,228 @@
 package meldexun.entityculling;
 
-import javax.annotation.Nullable;
-
-import net.minecraft.block.Block;
+import meldexun.entityculling.integration.CubicChunks;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.EnumFacing.Axis;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockPos.MutableBlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
+import net.minecraftforge.fml.common.Loader;
 
-/**
- * Copy of vanilla ray trace algorithm which uses {@link MutableRayTraceResult}, {@link MutableBlockPos}, {@link MutableVec3d} to save memory.
- */
+@SuppressWarnings("unused")
 public final class RayTracingEngine {
 
 	private static final BlockPos.MutableBlockPos MUTABLE_POS = new BlockPos.MutableBlockPos();
-	private static final MutableVec3d MUTABLE_VEC1 = new MutableVec3d();
-	private static final MutableVec3d MUTABLE_VEC2 = new MutableVec3d();
+
+	private static int cachedChunkX = 0;
+	private static int cachedChunkY = 0;
+	private static int cachedChunkZ = 0;
+	private static ExtendedBlockStorage cachedChunk = null;
+	private static boolean isChunkCached = false;
 
 	private RayTracingEngine() {
 
 	}
 
-	/** Copied from {@link World#rayTraceBlocks(Vec3d, Vec3d, boolean, boolean, boolean)} */
-	@Nullable
-	public static MutableRayTraceResult rayTraceBlocks(World world, double startX, double startY, double startZ, double endX, double endY, double endZ, @Nullable BlockPos toIgnore, MutableRayTraceResult returnValue) {
-		if (!Double.isNaN(startX) && !Double.isNaN(startY) && !Double.isNaN(startZ)) {
-			if (!Double.isNaN(endX) && !Double.isNaN(endY) && !Double.isNaN(endZ)) {
-				int blockStartX = MathHelper.floor(startX);
-				int blockStartY = MathHelper.floor(startY);
-				int blockStartZ = MathHelper.floor(startZ);
-				IBlockState state;
-				Block block;
-
-				MUTABLE_POS.setPos(blockStartX, blockStartY, blockStartZ);
-				if (toIgnore == null || !MUTABLE_POS.equals(toIgnore)) {
-					state = world.getBlockState(MUTABLE_POS);
-					block = state.getBlock();
-
-					if (state.isOpaqueCube() && state.getCollisionBoundingBox(world, MUTABLE_POS) != Block.NULL_AABB && block.canCollideCheck(state, false)) {
-						MutableRayTraceResult rayTraceResult = rayTrace(world, state, MUTABLE_POS, startX, startY, startZ, endX, endY, endZ, returnValue);
-
-						if (rayTraceResult != null) {
-							return rayTraceResult;
-						}
-					}
-				}
-
-				int i = 256;
-				double x = startX;
-				double y = startY;
-				double z = startZ;
-				int blockEndX = MathHelper.floor(endX);
-				int blockEndY = MathHelper.floor(endY);
-				int blockEndZ = MathHelper.floor(endZ);
-
-				while (i-- >= 0) {
-					if (Double.isNaN(x) || Double.isNaN(y) || Double.isNaN(z)) {
-						return null;
-					}
-
-					if (blockStartX == blockEndX && blockStartY == blockEndY && blockStartZ == blockEndZ) {
-						return null;
-					}
-
-					boolean flagX = true;
-					boolean flagY = true;
-					boolean flagZ = true;
-					double dx = 999.0D;
-					double dy = 999.0D;
-					double dz = 999.0D;
-
-					if (blockEndX > blockStartX) {
-						dx = (double) blockStartX + 1.0D;
-					} else if (blockEndX < blockStartX) {
-						dx = (double) blockStartX + 0.0D;
-					} else {
-						flagX = false;
-					}
-
-					if (blockEndY > blockStartY) {
-						dy = (double) blockStartY + 1.0D;
-					} else if (blockEndY < blockStartY) {
-						dy = (double) blockStartY + 0.0D;
-					} else {
-						flagY = false;
-					}
-
-					if (blockEndZ > blockStartZ) {
-						dz = (double) blockStartZ + 1.0D;
-					} else if (blockEndZ < blockStartZ) {
-						dz = (double) blockStartZ + 0.0D;
-					} else {
-						flagZ = false;
-					}
-
-					double d3 = 999.0D;
-					double d4 = 999.0D;
-					double d5 = 999.0D;
-					double d6 = endX - x;
-					double d7 = endY - y;
-					double d8 = endZ - z;
-
-					if (flagX) {
-						d3 = (dx - x) / d6;
-					}
-
-					if (flagY) {
-						d4 = (dy - y) / d7;
-					}
-
-					if (flagZ) {
-						d5 = (dz - z) / d8;
-					}
-
-					if (d3 == -0.0D) {
-						d3 = -1.0E-4D;
-					}
-
-					if (d4 == -0.0D) {
-						d4 = -1.0E-4D;
-					}
-
-					if (d5 == -0.0D) {
-						d5 = -1.0E-4D;
-					}
-
-					EnumFacing enumfacing;
-
-					if (d3 < d4 && d3 < d5) {
-						enumfacing = blockEndX > blockStartX ? EnumFacing.WEST : EnumFacing.EAST;
-						x = dx;
-						y = y + d7 * d3;
-						z = z + d8 * d3;
-					} else if (d4 < d5) {
-						enumfacing = blockEndY > blockStartY ? EnumFacing.DOWN : EnumFacing.UP;
-						x = x + d6 * d4;
-						y = dy;
-						z = z + d8 * d4;
-					} else {
-						enumfacing = blockEndZ > blockStartZ ? EnumFacing.NORTH : EnumFacing.SOUTH;
-						x = x + d6 * d5;
-						y = y + d7 * d5;
-						z = dz;
-					}
-
-					blockStartX = MathHelper.floor(x) - (enumfacing == EnumFacing.EAST ? 1 : 0);
-					blockStartY = MathHelper.floor(y) - (enumfacing == EnumFacing.UP ? 1 : 0);
-					blockStartZ = MathHelper.floor(z) - (enumfacing == EnumFacing.SOUTH ? 1 : 0);
-
-					MUTABLE_POS.setPos(blockStartX, blockStartY, blockStartZ);
-					if (toIgnore == null || !MUTABLE_POS.equals(toIgnore)) {
-						state = world.getBlockState(MUTABLE_POS);
-						block = state.getBlock();
-
-						if (state.isOpaqueCube() && state.getCollisionBoundingBox(world, MUTABLE_POS) != Block.NULL_AABB && block.canCollideCheck(state, false)) {
-							MutableRayTraceResult rayTraceResult = rayTrace(world, state, MUTABLE_POS, x, y, z, endX, endY, endZ, returnValue);
-
-							if (rayTraceResult != null) {
-								return rayTraceResult;
-							}
-						}
-					}
-				}
-
-				return null;
+	private static boolean isOpaqueBlock(World world, int x, int y, int z) {
+		if (world.isOutsideBuildHeight(MUTABLE_POS.setPos(x, y, z))) {
+			return false;
+		}
+		if (!isChunkCached || x >> 4 != cachedChunkX || y >> 4 != cachedChunkY || z >> 4 != cachedChunkZ) {
+			cachedChunkX = x >> 4;
+			cachedChunkY = y >> 4;
+			cachedChunkZ = z >> 4;
+			if (!Loader.isModLoaded("cubicchunks")) {
+				cachedChunk = world.getChunkProvider().provideChunk(cachedChunkX, cachedChunkZ).getBlockStorageArray()[cachedChunkY];
 			} else {
-				return null;
+				cachedChunk = CubicChunks.getBlockStorage(world, cachedChunkX, cachedChunkY, cachedChunkZ);
 			}
-		} else {
+			isChunkCached = true;
+		}
+		if (cachedChunk == null) {
+			return false;
+		}
+		IBlockState state = cachedChunk.get(x & 15, y & 15, z & 15);
+		return state.isOpaqueCube();
+	}
+
+	public static void resetCache() {
+		cachedChunkX = 0;
+		cachedChunkY = 0;
+		cachedChunkZ = 0;
+		cachedChunk = null;
+		isChunkCached = false;
+	}
+
+	public static MutableRayTraceResult rayTraceBlocks(World world, double startX, double startY, double startZ, double endX, double endY, double endZ, boolean ignoreStart, double maxIgnore, MutableRayTraceResult returnValue) {
+		// double x1 = lerp(-1.0E-7D, startX, endX);
+		// double y1 = lerp(-1.0E-7D, startY, endY);
+		// double z1 = lerp(-1.0E-7D, startZ, endZ);
+		// double x2 = lerp(-1.0E-7D, endX, startX);
+		// double y2 = lerp(-1.0E-7D, endY, startY);
+		// double z2 = lerp(-1.0E-7D, endZ, startZ);
+		double x1 = startX;
+		double y1 = startY;
+		double z1 = startZ;
+		double x2 = endX;
+		double y2 = endY;
+		double z2 = endZ;
+		double dirX = x2 - x1;
+		double dirY = y2 - y1;
+		double dirZ = z2 - z1;
+
+		if (maxIgnore <= 0.0D) {
+			return returnValue.set(x1, y1, z1, EnumFacing.getFacingFromVector((float) dirX, (float) dirY, (float) dirZ).getOpposite());
+		}
+
+		if (dirX * dirX + dirY * dirY + dirZ * dirZ < maxIgnore * maxIgnore) {
 			return null;
 		}
-	}
 
-	/** Copied from {@link Block#collisionRayTrace(IBlockState, World, BlockPos, Vec3d, Vec3d)} and {@link Block#rayTrace(BlockPos, Vec3d, Vec3d, AxisAlignedBB)} */
-	@Nullable
-	private static MutableRayTraceResult rayTrace(World world, IBlockState state, BlockPos pos, double x1, double y1, double z1, double x2, double y2, double z2, MutableRayTraceResult returnValue) {
-		AxisAlignedBB aabb = state.getCollisionBoundingBox(world, pos);
-		MutableRayTraceResult mutableRayTraceResult = calculateIntercept(aabb, x1 - pos.getX(), y1 - pos.getY(), z1 - pos.getZ(), x2 - pos.getX(), y2 - pos.getY(), z2 - pos.getZ(), returnValue);
-		return mutableRayTraceResult == null ? null : mutableRayTraceResult.set(mutableRayTraceResult.x + pos.getX(), mutableRayTraceResult.y + pos.getY(), mutableRayTraceResult.z + pos.getZ(), mutableRayTraceResult.facing);
-	}
+		int incX = signum(dirX);
+		int incY = signum(dirY);
+		int incZ = signum(dirZ);
+		double dx = incX == 0 ? Double.MAX_VALUE : (double) incX / dirX;
+		double dy = incY == 0 ? Double.MAX_VALUE : (double) incY / dirY;
+		double dz = incZ == 0 ? Double.MAX_VALUE : (double) incZ / dirZ;
+		double percentX = dx * (incX > 0 ? 1.0D - frac(x1) : frac(x1));
+		double percentY = dy * (incY > 0 ? 1.0D - frac(y1) : frac(y1));
+		double percentZ = dz * (incZ > 0 ? 1.0D - frac(z1) : frac(z1));
+		EnumFacing facingX = incX > 0 ? EnumFacing.WEST : EnumFacing.EAST;
+		EnumFacing facingY = incY > 0 ? EnumFacing.DOWN : EnumFacing.UP;
+		EnumFacing facingZ = incZ > 0 ? EnumFacing.NORTH : EnumFacing.SOUTH;
+		int x = floor(x1);
+		int y = floor(y1);
+		int z = floor(z1);
+		EnumFacing facing;
 
-	/** Copied from {@link AxisAlignedBB#calculateIntercept(Vec3d, Vec3d)} */
-	@Nullable
-	private static MutableRayTraceResult calculateIntercept(AxisAlignedBB aabb, double x1, double y1, double z1, double x2, double y2, double z2, MutableRayTraceResult returnValue) {
-		MutableVec3d vec1 = collideWithXPlane(aabb, aabb.minX, x1, y1, z1, x2, y2, z2, MUTABLE_VEC1);
-		EnumFacing facing = EnumFacing.WEST;
-		MutableVec3d vec2;
+		boolean hasHitBlock = false;
+		boolean hasHitBlockPreviously = false;
+		double firstHitX = x1;
+		double firstHitY = y1;
+		double firstHitZ = z1;
+		EnumFacing firstHitFacing = EnumFacing.NORTH;
+		double lastHitX = x1;
+		double lastHitY = y1;
+		double lastHitZ = z1;
 
-		vec2 = collideWithXPlane(aabb, aabb.maxX, x1, y1, z1, x2, y2, z2, MUTABLE_VEC2);
-		if (vec2 != null && isClosest(x1, y1, z1, vec1, vec2)) {
-			vec1 = MUTABLE_VEC1.set(vec2);
-			facing = EnumFacing.EAST;
+		if (!ignoreStart && isOpaqueBlock(world, x, y, z)) {
+			hasHitBlock = true;
+			hasHitBlockPreviously = true;
+			firstHitFacing = EnumFacing.getFacingFromVector((float) dirX, (float) dirY, (float) dirZ).getOpposite();
 		}
 
-		vec2 = collideWithYPlane(aabb, aabb.minY, x1, y1, z1, x2, y2, z2, MUTABLE_VEC2);
-		if (vec2 != null && isClosest(x1, y1, z1, vec1, vec2)) {
-			vec1 = MUTABLE_VEC1.set(vec2);
-			facing = EnumFacing.DOWN;
+		while (percentX <= 1.0D || percentY <= 1.0D || percentZ <= 1.0D) {
+			if (percentX < percentY) {
+				if (percentX < percentZ) {
+					x += incX;
+					percentX += dx;
+					facing = facingX;
+				} else {
+					z += incZ;
+					percentZ += dz;
+					facing = facingZ;
+				}
+			} else if (percentY < percentZ) {
+				y += incY;
+				percentY += dy;
+				facing = facingY;
+			} else {
+				z += incZ;
+				percentZ += dz;
+				facing = facingZ;
+			}
+
+			boolean hitOpaqueBlock = isOpaqueBlock(world, x, y, z);
+			if (hasHitBlockPreviously || hitOpaqueBlock) {
+				double d;
+				if (facing.getAxis() == Axis.X) {
+					d = percentX - dx;
+				} else if (facing.getAxis() == Axis.Y) {
+					d = percentY - dy;
+				} else {
+					d = percentZ - dz;
+				}
+				double d1 = x1 + dirX * d;
+				double d2 = y1 + dirY * d;
+				double d3 = z1 + dirZ * d;
+
+				if (!hasHitBlock) {
+					if (hitOpaqueBlock) {
+						hasHitBlock = true;
+						hasHitBlockPreviously = true;
+						firstHitFacing = facing;
+						firstHitX = d1;
+						firstHitY = d2;
+						firstHitZ = d3;
+						lastHitX = d1;
+						lastHitY = d2;
+						lastHitZ = d3;
+					}
+				} else {
+					if (hasHitBlockPreviously) {
+						maxIgnore -= Math.sqrt(squareDist(lastHitX, lastHitY, lastHitZ, d1, d2, d3));
+						if (maxIgnore <= 0.0D) {
+							return returnValue.set(firstHitX, firstHitY, firstHitZ, firstHitFacing);
+						}
+					}
+					if (hitOpaqueBlock) {
+						lastHitX = x1 + dirX * d;
+						lastHitY = y1 + dirY * d;
+						lastHitZ = z1 + dirZ * d;
+						hasHitBlockPreviously = true;
+					} else {
+						hasHitBlockPreviously = false;
+					}
+				}
+			}
 		}
 
-		vec2 = collideWithYPlane(aabb, aabb.maxY, x1, y1, z1, x2, y2, z2, MUTABLE_VEC2);
-		if (vec2 != null && isClosest(x1, y1, z1, vec1, vec2)) {
-			vec1 = MUTABLE_VEC1.set(vec2);
-			facing = EnumFacing.UP;
-		}
-
-		vec2 = collideWithZPlane(aabb, aabb.minZ, x1, y1, z1, x2, y2, z2, MUTABLE_VEC2);
-		if (vec2 != null && isClosest(x1, y1, z1, vec1, vec2)) {
-			vec1 = MUTABLE_VEC1.set(vec2);
-			facing = EnumFacing.NORTH;
-		}
-
-		vec2 = collideWithZPlane(aabb, aabb.maxZ, x1, y1, z1, x2, y2, z2, MUTABLE_VEC2);
-		if (vec2 != null && isClosest(x1, y1, z1, vec1, vec2)) {
-			vec1 = MUTABLE_VEC1.set(vec2);
-			facing = EnumFacing.SOUTH;
-		}
-
-		return vec1 == null ? null : returnValue.set(vec1.x, vec1.y, vec1.z, facing);
+		return null;
 	}
 
-	/** Copied from {@link AxisAlignedBB#isClosest(Vec3d, Vec3d, Vec3d)} */
-	private static boolean isClosest(double x, double y, double z, @Nullable MutableVec3d vec1, MutableVec3d vec2) {
-		return vec1 == null || vec2.squareDist(x, y, z) < vec1.squareDist(x, y, z);
+	private static double lerp(double pct, double start, double end) {
+		return start + pct * (end - start);
 	}
 
-	/** Copied from {@link AxisAlignedBB#collideWithXPlane(double, Vec3d, Vec3d)} */
-	@Nullable
-	private static MutableVec3d collideWithXPlane(AxisAlignedBB aabb, double x, double x1, double y1, double z1, double x2, double y2, double z2, MutableVec3d returnVec) {
-		MutableVec3d vec = getIntermediateWithXValue(x, x1, y1, z1, x2, y2, z2, returnVec);
-		return vec != null && intersectsWithYZ(aabb, vec) ? vec : null;
+	private static int floor(double value) {
+		int i = (int) value;
+		return value < (double) i ? i - 1 : i;
 	}
 
-	/** Copied from {@link AxisAlignedBB#collideWithYPlane(double, Vec3d, Vec3d)} */
-	@Nullable
-	private static MutableVec3d collideWithYPlane(AxisAlignedBB aabb, double y, double x1, double y1, double z1, double x2, double y2, double z2, MutableVec3d returnVec) {
-		MutableVec3d vec = getIntermediateWithYValue(y, x1, y1, z1, x2, y2, z2, returnVec);
-		return vec != null && intersectsWithXZ(aabb, vec) ? vec : null;
-	}
-
-	/** Copied from {@link AxisAlignedBB#collideWithZPlane(double, Vec3d, Vec3d)} */
-	@Nullable
-	private static MutableVec3d collideWithZPlane(AxisAlignedBB aabb, double z, double x1, double y1, double z1, double x2, double y2, double z2, MutableVec3d returnVec) {
-		MutableVec3d vec = getIntermediateWithZValue(z, x1, y1, z1, x2, y2, z2, returnVec);
-		return vec != null && intersectsWithXY(aabb, vec) ? vec : null;
-	}
-
-	/** Copied from {@link Vec3d#getIntermediateWithXValue(Vec3d, double)} */
-	@Nullable
-	private static MutableVec3d getIntermediateWithXValue(double x, double x1, double y1, double z1, double x2, double y2, double z2, MutableVec3d returnVec) {
-		double d0 = x1 - x2;
-		double d1 = y1 - y2;
-		double d2 = z1 - z2;
-
-		if (d0 * d0 < 1.0000000116860974E-7D) {
-			return null;
+	private static int signum(double x) {
+		if (x == 0.0D) {
+			return 0;
 		} else {
-			double d3 = (x - x1) / d0;
-			return d3 >= 0.0D && d3 <= 1.0D ? returnVec.set(x1 + d0 * d3, y1 + d1 * d3, z1 + d2 * d3) : null;
+			return x > 0.0D ? 1 : -1;
 		}
 	}
 
-	/** Copied from {@link Vec3d#getIntermediateWithYValue(Vec3d, double)} */
-	@Nullable
-	private static MutableVec3d getIntermediateWithYValue(double y, double x1, double y1, double z1, double x2, double y2, double z2, MutableVec3d returnVec) {
-		double d0 = x1 - x2;
-		double d1 = y1 - y2;
-		double d2 = z1 - z2;
-
-		if (d1 * d1 < 1.0000000116860974E-7D) {
-			return null;
-		} else {
-			double d3 = (y - y1) / d1;
-			return d3 >= 0.0D && d3 <= 1.0D ? returnVec.set(x1 + d0 * d3, y1 + d1 * d3, z1 + d2 * d3) : null;
-		}
+	private static double frac(double number) {
+		return number - (double) lfloor(number);
 	}
 
-	/** Copied from {@link Vec3d#getIntermediateWithZValue(Vec3d, double)} */
-	@Nullable
-	private static MutableVec3d getIntermediateWithZValue(double z, double x1, double y1, double z1, double x2, double y2, double z2, MutableVec3d returnVec) {
-		double d0 = x1 - x2;
-		double d1 = y1 - y2;
-		double d2 = z1 - z2;
-
-		if (d2 * d2 < 1.0000000116860974E-7D) {
-			return null;
-		} else {
-			double d3 = (z - z1) / d2;
-			return d3 >= 0.0D && d3 <= 1.0D ? returnVec.set(x1 + d0 * d3, y1 + d1 * d3, z1 + d2 * d3) : null;
-		}
+	private static long lfloor(double value) {
+		long i = (long) value;
+		return value < (double) i ? i - 1L : i;
 	}
 
-	/** Copied from {@link AxisAlignedBB#intersectsWithYZ(Vec3d)} */
-	private static boolean intersectsWithYZ(AxisAlignedBB aabb, MutableVec3d vec) {
-		return vec.y >= aabb.minY && vec.y <= aabb.maxY && vec.z >= aabb.minZ && vec.z <= aabb.maxZ;
-	}
-
-	/** Copied from {@link AxisAlignedBB#intersectsWithXZ(Vec3d)} */
-	private static boolean intersectsWithXZ(AxisAlignedBB aabb, MutableVec3d vec) {
-		return vec.x >= aabb.minX && vec.x <= aabb.maxX && vec.z >= aabb.minZ && vec.z <= aabb.maxZ;
-	}
-
-	/** Copied from {@link AxisAlignedBB#intersectsWithXY(Vec3d)} */
-	private static boolean intersectsWithXY(AxisAlignedBB aabb, MutableVec3d vec) {
-		return vec.x >= aabb.minX && vec.x <= aabb.maxX && vec.y >= aabb.minY && vec.y <= aabb.maxY;
+	private static double squareDist(double x1, double y1, double z1, double x2, double y2, double z2) {
+		return (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1);
 	}
 
 	public static class MutableRayTraceResult {
 
-		public double x = 0.0D;
-		public double y = 0.0D;
-		public double z = 0.0D;
-		public EnumFacing facing = EnumFacing.NORTH;
+		public double x;
+		public double y;
+		public double z;
+		public EnumFacing facing;
 
 		public MutableRayTraceResult() {
-
+			this.x = 0.0D;
+			this.y = 0.0D;
+			this.z = 0.0D;
+			this.facing = EnumFacing.NORTH;
 		}
 
 		public MutableRayTraceResult(double x, double y, double z, EnumFacing facing) {
@@ -336,63 +240,8 @@ public final class RayTracingEngine {
 			return this;
 		}
 
-	}
-
-	public static class MutableVec3d {
-
-		public double x = 0.0D;
-		public double y = 0.0D;
-		public double z = 0.0D;
-
-		public MutableVec3d() {
-
-		}
-
-		public MutableVec3d(MutableVec3d vec) {
-			this(vec.x, vec.y, vec.z);
-		}
-
-		public MutableVec3d(double x, double y, double z) {
-			this.x = x;
-			this.y = y;
-			this.z = z;
-		}
-
-		public MutableVec3d set(MutableVec3d vec) {
-			return this.set(vec.x, vec.y, vec.z);
-		}
-
-		public MutableVec3d set(double x, double y, double z) {
-			this.x = x;
-			this.y = y;
-			this.z = z;
-			return this;
-		}
-
-		public MutableVec3d add(MutableVec3d vec) {
-			return this.add(vec.x, vec.y, vec.z);
-		}
-
-		public MutableVec3d add(double x, double y, double z) {
-			this.x += x;
-			this.y += y;
-			this.z += z;
-			return this;
-		}
-
-		public MutableVec3d subtract(MutableVec3d vec) {
-			return this.subtract(vec.x, vec.y, vec.z);
-		}
-
-		public MutableVec3d subtract(double x, double y, double z) {
-			this.x -= x;
-			this.y -= y;
-			this.z -= z;
-			return this;
-		}
-
-		public double squareDist(MutableVec3d vec) {
-			return this.squareDist(vec.x, vec.y, vec.z);
+		public double squareDist(MutableRayTraceResult other) {
+			return this.squareDist(other.x, other.y, other.z);
 		}
 
 		public double squareDist(double x, double y, double z) {

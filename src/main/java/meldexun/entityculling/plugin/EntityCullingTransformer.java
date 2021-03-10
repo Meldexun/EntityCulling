@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -20,7 +22,6 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
-import meldexun.entityculling.EntityCullingContainer;
 import meldexun.entityculling.plugin.transformer.ClassTransformer;
 import meldexun.entityculling.plugin.transformer.FieldTransformer;
 import meldexun.entityculling.plugin.transformer.MethodTransformer;
@@ -28,6 +29,7 @@ import net.minecraft.launchwrapper.IClassTransformer;
 
 public class EntityCullingTransformer implements IClassTransformer {
 
+	private static final Logger LOGGER = LogManager.getLogger();
 	private static final Map<String, List<ClassTransformer>> CLASS_TRANSFORMERS = new HashMap<>();
 	private static final Map<String, Map<String, List<FieldTransformer>>> FIELD_TRANSFORMERS = new HashMap<>();
 	private static final Map<String, Map<String, List<MethodTransformer>>> METHOD_TRANSFORMERS = new HashMap<>();
@@ -61,44 +63,204 @@ public class EntityCullingTransformer implements IClassTransformer {
 		IS_OPTIFINE_DETECTED = flag;
 
 		registerClassTransformer(new ClassTransformer("ve", "net.minecraft.entity.Entity", classNode -> {
-			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "isCulled", "Z", null, false));
+			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "isCulledFast", "Z", null, false));
+			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "isCulledSlow", "Z", null, false));
+			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "isCulledShadowPass", "Z", null, false));
+			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "query", "I", null, -1));
+			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "queryInitialized", "Z", null, false));
+			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "queryResultDirty", "Z", null, false));
 
 			classNode.interfaces.add("meldexun/entityculling/ICullable");
 
-			MethodNode methodNode1 = new MethodNode(Opcodes.ACC_PUBLIC, "isCulled", "()Z", null, null);
-			methodNode1.instructions.clear();
-			methodNode1.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-			methodNode1.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/entity/Entity", "isCulled", "Z"));
-			methodNode1.instructions.add(new InsnNode(Opcodes.IRETURN));
-			classNode.methods.add(methodNode1);
+			MethodNode methodIsCulledFast = new MethodNode(Opcodes.ACC_PUBLIC, "isCulledFast", "()Z", null, null);
+			methodIsCulledFast.instructions.clear();
+			methodIsCulledFast.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodIsCulledFast.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/entity/Entity", "isCulledFast", "Z"));
+			methodIsCulledFast.instructions.add(new InsnNode(Opcodes.IRETURN));
+			classNode.methods.add(methodIsCulledFast);
 
-			MethodNode methodNode2 = new MethodNode(Opcodes.ACC_PUBLIC, "setCulled", "(Z)V", null, null);
-			methodNode2.instructions.clear();
-			methodNode2.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-			methodNode2.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
-			methodNode2.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/entity/Entity", "isCulled", "Z"));
-			methodNode2.instructions.add(new InsnNode(Opcodes.RETURN));
-			classNode.methods.add(methodNode2);
+			MethodNode methodSetCulledFast = new MethodNode(Opcodes.ACC_PUBLIC, "setCulledFast", "(Z)V", null, null);
+			methodSetCulledFast.instructions.clear();
+			methodSetCulledFast.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodSetCulledFast.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
+			methodSetCulledFast.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/entity/Entity", "isCulledFast", "Z"));
+			methodSetCulledFast.instructions.add(new InsnNode(Opcodes.RETURN));
+			classNode.methods.add(methodSetCulledFast);
+
+			MethodNode methodIsCulledSlow = new MethodNode(Opcodes.ACC_PUBLIC, "isCulledSlow", "()Z", null, null);
+			methodIsCulledSlow.instructions.clear();
+			methodIsCulledSlow.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodIsCulledSlow.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/entity/Entity", "isCulledSlow", "Z"));
+			methodIsCulledSlow.instructions.add(new InsnNode(Opcodes.IRETURN));
+			classNode.methods.add(methodIsCulledSlow);
+
+			MethodNode methodSetCulledSlow = new MethodNode(Opcodes.ACC_PUBLIC, "setCulledSlow", "(Z)V", null, null);
+			methodSetCulledSlow.instructions.clear();
+			methodSetCulledSlow.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodSetCulledSlow.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
+			methodSetCulledSlow.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/entity/Entity", "isCulledSlow", "Z"));
+			methodSetCulledSlow.instructions.add(new InsnNode(Opcodes.RETURN));
+			classNode.methods.add(methodSetCulledSlow);
+
+			MethodNode methodIsCulledShadowPass = new MethodNode(Opcodes.ACC_PUBLIC, "isCulledShadowPass", "()Z", null, null);
+			methodIsCulledShadowPass.instructions.clear();
+			methodIsCulledShadowPass.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodIsCulledShadowPass.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/entity/Entity", "isCulledShadowPass", "Z"));
+			methodIsCulledShadowPass.instructions.add(new InsnNode(Opcodes.IRETURN));
+			classNode.methods.add(methodIsCulledShadowPass);
+
+			MethodNode methodSetCulledShadowPass = new MethodNode(Opcodes.ACC_PUBLIC, "setCulledShadowPass", "(Z)V", null, null);
+			methodSetCulledShadowPass.instructions.clear();
+			methodSetCulledShadowPass.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodSetCulledShadowPass.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
+			methodSetCulledShadowPass.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/entity/Entity", "isCulledShadowPass", "Z"));
+			methodSetCulledShadowPass.instructions.add(new InsnNode(Opcodes.RETURN));
+			classNode.methods.add(methodSetCulledShadowPass);
+
+			MethodNode methodGetQuery = new MethodNode(Opcodes.ACC_PUBLIC, "getQuery", "()I", null, null);
+			methodGetQuery.instructions.clear();
+			methodGetQuery.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodGetQuery.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/entity/Entity", "query", "I"));
+			methodGetQuery.instructions.add(new InsnNode(Opcodes.IRETURN));
+			classNode.methods.add(methodGetQuery);
+
+			MethodNode methodSetQuery = new MethodNode(Opcodes.ACC_PUBLIC, "setQuery", "(I)V", null, null);
+			methodSetQuery.instructions.clear();
+			methodSetQuery.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodSetQuery.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
+			methodSetQuery.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/entity/Entity", "query", "I"));
+			methodSetQuery.instructions.add(new InsnNode(Opcodes.RETURN));
+			classNode.methods.add(methodSetQuery);
+
+			MethodNode methodIsQueryInitialized = new MethodNode(Opcodes.ACC_PUBLIC, "isQueryInitialized", "()Z", null, null);
+			methodIsQueryInitialized.instructions.clear();
+			methodIsQueryInitialized.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodIsQueryInitialized.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/entity/Entity", "queryInitialized", "Z"));
+			methodIsQueryInitialized.instructions.add(new InsnNode(Opcodes.IRETURN));
+			classNode.methods.add(methodIsQueryInitialized);
+
+			MethodNode methodSetQueryInitialized = new MethodNode(Opcodes.ACC_PUBLIC, "setQueryInitialized", "(Z)V", null, null);
+			methodSetQueryInitialized.instructions.clear();
+			methodSetQueryInitialized.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodSetQueryInitialized.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
+			methodSetQueryInitialized.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/entity/Entity", "queryInitialized", "Z"));
+			methodSetQueryInitialized.instructions.add(new InsnNode(Opcodes.RETURN));
+			classNode.methods.add(methodSetQueryInitialized);
+
+			MethodNode methodIsQueryResultUpToDate = new MethodNode(Opcodes.ACC_PUBLIC, "isQueryResultDirty", "()Z", null, null);
+			methodIsQueryResultUpToDate.instructions.clear();
+			methodIsQueryResultUpToDate.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodIsQueryResultUpToDate.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/entity/Entity", "queryResultDirty", "Z"));
+			methodIsQueryResultUpToDate.instructions.add(new InsnNode(Opcodes.IRETURN));
+			classNode.methods.add(methodIsQueryResultUpToDate);
+
+			MethodNode methodSetQueryResultUpToDate = new MethodNode(Opcodes.ACC_PUBLIC, "setQueryResultDirty", "(Z)V", null, null);
+			methodSetQueryResultUpToDate.instructions.clear();
+			methodSetQueryResultUpToDate.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodSetQueryResultUpToDate.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
+			methodSetQueryResultUpToDate.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/entity/Entity", "queryResultDirty", "Z"));
+			methodSetQueryResultUpToDate.instructions.add(new InsnNode(Opcodes.RETURN));
+			classNode.methods.add(methodSetQueryResultUpToDate);
 		}));
 		registerClassTransformer(new ClassTransformer("avh", "net.minecraft.tileentity.TileEntity", classNode -> {
-			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "isCulled", "Z", null, false));
+			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "isCulledFast", "Z", null, false));
+			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "isCulledSlow", "Z", null, false));
+			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "isCulledShadowPass", "Z", null, false));
+			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "query", "I", null, -1));
+			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "queryInitialized", "Z", null, false));
+			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "queryResultDirty", "Z", null, false));
 
 			classNode.interfaces.add("meldexun/entityculling/ICullable");
 
-			MethodNode methodNode1 = new MethodNode(Opcodes.ACC_PUBLIC, "isCulled", "()Z", null, null);
-			methodNode1.instructions.clear();
-			methodNode1.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-			methodNode1.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/tileentity/TileEntity", "isCulled", "Z"));
-			methodNode1.instructions.add(new InsnNode(Opcodes.IRETURN));
-			classNode.methods.add(methodNode1);
+			MethodNode methodIsCulledFast = new MethodNode(Opcodes.ACC_PUBLIC, "isCulledFast", "()Z", null, null);
+			methodIsCulledFast.instructions.clear();
+			methodIsCulledFast.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodIsCulledFast.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/tileentity/TileEntity", "isCulledFast", "Z"));
+			methodIsCulledFast.instructions.add(new InsnNode(Opcodes.IRETURN));
+			classNode.methods.add(methodIsCulledFast);
 
-			MethodNode methodNode2 = new MethodNode(Opcodes.ACC_PUBLIC, "setCulled", "(Z)V", null, null);
-			methodNode2.instructions.clear();
-			methodNode2.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-			methodNode2.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
-			methodNode2.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/tileentity/TileEntity", "isCulled", "Z"));
-			methodNode2.instructions.add(new InsnNode(Opcodes.RETURN));
-			classNode.methods.add(methodNode2);
+			MethodNode methodSetCulledFast = new MethodNode(Opcodes.ACC_PUBLIC, "setCulledFast", "(Z)V", null, null);
+			methodSetCulledFast.instructions.clear();
+			methodSetCulledFast.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodSetCulledFast.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
+			methodSetCulledFast.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/tileentity/TileEntity", "isCulledFast", "Z"));
+			methodSetCulledFast.instructions.add(new InsnNode(Opcodes.RETURN));
+			classNode.methods.add(methodSetCulledFast);
+
+			MethodNode methodIsCulledSlow = new MethodNode(Opcodes.ACC_PUBLIC, "isCulledSlow", "()Z", null, null);
+			methodIsCulledSlow.instructions.clear();
+			methodIsCulledSlow.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodIsCulledSlow.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/tileentity/TileEntity", "isCulledSlow", "Z"));
+			methodIsCulledSlow.instructions.add(new InsnNode(Opcodes.IRETURN));
+			classNode.methods.add(methodIsCulledSlow);
+
+			MethodNode methodSetCulledSlow = new MethodNode(Opcodes.ACC_PUBLIC, "setCulledSlow", "(Z)V", null, null);
+			methodSetCulledSlow.instructions.clear();
+			methodSetCulledSlow.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodSetCulledSlow.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
+			methodSetCulledSlow.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/tileentity/TileEntity", "isCulledSlow", "Z"));
+			methodSetCulledSlow.instructions.add(new InsnNode(Opcodes.RETURN));
+			classNode.methods.add(methodSetCulledSlow);
+
+			MethodNode methodIsCulledShadowPass = new MethodNode(Opcodes.ACC_PUBLIC, "isCulledShadowPass", "()Z", null, null);
+			methodIsCulledShadowPass.instructions.clear();
+			methodIsCulledShadowPass.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodIsCulledShadowPass.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/tileentity/TileEntity", "isCulledShadowPass", "Z"));
+			methodIsCulledShadowPass.instructions.add(new InsnNode(Opcodes.IRETURN));
+			classNode.methods.add(methodIsCulledShadowPass);
+
+			MethodNode methodSetCulledShadowPass = new MethodNode(Opcodes.ACC_PUBLIC, "setCulledShadowPass", "(Z)V", null, null);
+			methodSetCulledShadowPass.instructions.clear();
+			methodSetCulledShadowPass.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodSetCulledShadowPass.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
+			methodSetCulledShadowPass.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/tileentity/TileEntity", "isCulledShadowPass", "Z"));
+			methodSetCulledShadowPass.instructions.add(new InsnNode(Opcodes.RETURN));
+			classNode.methods.add(methodSetCulledShadowPass);
+
+			MethodNode methodGetQuery = new MethodNode(Opcodes.ACC_PUBLIC, "getQuery", "()I", null, null);
+			methodGetQuery.instructions.clear();
+			methodGetQuery.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodGetQuery.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/tileentity/TileEntity", "query", "I"));
+			methodGetQuery.instructions.add(new InsnNode(Opcodes.IRETURN));
+			classNode.methods.add(methodGetQuery);
+
+			MethodNode methodSetQuery = new MethodNode(Opcodes.ACC_PUBLIC, "setQuery", "(I)V", null, null);
+			methodSetQuery.instructions.clear();
+			methodSetQuery.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodSetQuery.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
+			methodSetQuery.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/tileentity/TileEntity", "query", "I"));
+			methodSetQuery.instructions.add(new InsnNode(Opcodes.RETURN));
+			classNode.methods.add(methodSetQuery);
+
+			MethodNode methodIsQueryInitialized = new MethodNode(Opcodes.ACC_PUBLIC, "isQueryInitialized", "()Z", null, null);
+			methodIsQueryInitialized.instructions.clear();
+			methodIsQueryInitialized.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodIsQueryInitialized.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/tileentity/TileEntity", "queryInitialized", "Z"));
+			methodIsQueryInitialized.instructions.add(new InsnNode(Opcodes.IRETURN));
+			classNode.methods.add(methodIsQueryInitialized);
+
+			MethodNode methodSetQueryInitialized = new MethodNode(Opcodes.ACC_PUBLIC, "setQueryInitialized", "(Z)V", null, null);
+			methodSetQueryInitialized.instructions.clear();
+			methodSetQueryInitialized.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodSetQueryInitialized.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
+			methodSetQueryInitialized.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/tileentity/TileEntity", "queryInitialized", "Z"));
+			methodSetQueryInitialized.instructions.add(new InsnNode(Opcodes.RETURN));
+			classNode.methods.add(methodSetQueryInitialized);
+
+			MethodNode methodIsQueryResultUpToDate = new MethodNode(Opcodes.ACC_PUBLIC, "isQueryResultDirty", "()Z", null, null);
+			methodIsQueryResultUpToDate.instructions.clear();
+			methodIsQueryResultUpToDate.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodIsQueryResultUpToDate.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/tileentity/TileEntity", "queryResultDirty", "Z"));
+			methodIsQueryResultUpToDate.instructions.add(new InsnNode(Opcodes.IRETURN));
+			classNode.methods.add(methodIsQueryResultUpToDate);
+
+			MethodNode methodSetQueryResultUpToDate = new MethodNode(Opcodes.ACC_PUBLIC, "setQueryResultDirty", "(Z)V", null, null);
+			methodSetQueryResultUpToDate.instructions.clear();
+			methodSetQueryResultUpToDate.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodSetQueryResultUpToDate.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
+			methodSetQueryResultUpToDate.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/tileentity/TileEntity", "queryResultDirty", "Z"));
+			methodSetQueryResultUpToDate.instructions.add(new InsnNode(Opcodes.RETURN));
+			classNode.methods.add(methodSetQueryResultUpToDate);
 		}));
 		if (!IS_OPTIFINE_DETECTED) {
 			registerMethodTransformer(new MethodTransformer("buw", "net.minecraft.client.renderer.RenderGlobal", "a", "renderEntities", "(Lvg;Lbxy;F)V", "(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;F)V", method -> {
@@ -123,10 +285,20 @@ public class EntityCullingTransformer implements IClassTransformer {
 				AbstractInsnNode targetNode2 = method.instructions.get(1074);
 				AbstractInsnNode popNode2 = method.instructions.get(1269);
 
-				method.instructions.insertBefore(targetNode1, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook$Optifine", "renderEntities", "()Z", false));
+				method.instructions.insertBefore(targetNode1, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "renderEntities", "()Z", false));
 				method.instructions.insertBefore(targetNode1, new JumpInsnNode(Opcodes.IFNE, (LabelNode) popNode1));
-				method.instructions.insertBefore(targetNode2, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook$Optifine", "renderTileEntities", "()Z", false));
+				method.instructions.insertBefore(targetNode2, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "renderTileEntities", "()Z", false));
 				method.instructions.insertBefore(targetNode2, new JumpInsnNode(Opcodes.IFNE, (LabelNode) popNode2));
+			}));
+			registerMethodTransformer(new MethodTransformer("buw", "net.minecraft.client.renderer.RenderGlobal", "a", "setupTerrain", "(Lvg;DLbxy;IZ)V", "(Lnet/minecraft/entity/Entity;DLnet/minecraft/client/renderer/culling/ICamera;IZ)V", method -> {
+				// printMethodInstructions(method);
+
+				AbstractInsnNode targetNode1 = method.instructions.get(558);
+				AbstractInsnNode popNode1 = method.instructions.get(565);
+
+				method.instructions.insertBefore(targetNode1, new VarInsnNode(Opcodes.ALOAD, 28));
+				method.instructions.insertBefore(targetNode1, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "shouldRenderChunkShadow", "(Ljava/lang/Object;)Z", false));
+				method.instructions.insertBefore(targetNode1, new JumpInsnNode(Opcodes.IFEQ, (LabelNode) popNode1));
 			}));
 		}
 		registerMethodTransformer(new MethodTransformer("bze", "net.minecraft.client.renderer.entity.Render", "a", "shouldRender", "(Lvg;Lbxy;DDD)Z", "(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;DDD)Z", method -> {
@@ -134,6 +306,8 @@ public class EntityCullingTransformer implements IClassTransformer {
 
 			AbstractInsnNode targetNode = method.instructions.get(0);
 
+			method.instructions.insertBefore(targetNode, new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/EntityCullingConfig", "enabled", "Z"));
+			method.instructions.insertBefore(targetNode, new JumpInsnNode(Opcodes.IFEQ, (LabelNode) targetNode));
 			method.instructions.insertBefore(targetNode, new VarInsnNode(Opcodes.ALOAD, 0));
 			method.instructions.insertBefore(targetNode, new VarInsnNode(Opcodes.ALOAD, 1));
 			method.instructions.insertBefore(targetNode, new VarInsnNode(Opcodes.ALOAD, 2));
@@ -233,7 +407,7 @@ public class EntityCullingTransformer implements IClassTransformer {
 			}
 			i++;
 		}
-		EntityCullingContainer.LOGGER.info(sb);
+		LOGGER.info(sb);
 	}
 
 	public static String insnToString(AbstractInsnNode insn) {
