@@ -1,3 +1,7 @@
 {
-	"WorldRenderer Transformer": "entity_culling/WorldRendererTransformer.js"
+	"UpdateCameraAndRender Transformer": "entity_culling/UpdateCameraAndRenderTransformer.js",
+	"Entity Transformer": "entity_culling/EntityTransformer.js",
+	"TileEntity Transformer": "entity_culling/TileEntityTransformer.js",
+	"SetupTerrain Transformer": "entity_culling/SetupTerrainTransformer.js",
+	"RenderShadowMap Transformer": "entity_culling/RenderShadowMapTransformer.js"
 }

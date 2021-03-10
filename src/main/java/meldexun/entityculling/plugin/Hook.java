@@ -1,162 +1,202 @@
 package meldexun.entityculling.plugin;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Random;
 
-import javax.annotation.Nullable;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL43;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
+
+import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.EntityCullingConfig;
-import net.minecraft.block.BlockState;
+import meldexun.entityculling.ICullable;
+import meldexun.entityculling.reflection.ReflectionField;
+import meldexun.entityculling.reflection.ReflectionMethod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
+import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher.ChunkRender;
+import net.minecraft.client.renderer.culling.ClippingHelper;
 import net.minecraft.entity.Entity;
-import net.minecraft.fluid.FluidState;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.RayTraceContext;
-import net.minecraft.util.math.RayTraceContext.BlockMode;
-import net.minecraft.util.math.RayTraceContext.FluidMode;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class Hook {
 
-	private static final Set<ResourceLocation> ENTITY_BLACKLIST = new HashSet<>();
-	private static final Set<ResourceLocation> TILE_ENTITY_BLACKLIST = new HashSet<>();
+	private static final ReflectionField<Integer> FIELD_COUNT_ENTITIES_RENDERED = new ReflectionField<>(WorldRenderer.class, "field_72749_I", "countEntitiesRendered");
+	private static final ReflectionField<Integer> FIELD_DEBUG_FPS = new ReflectionField<>(Minecraft.class, "field_71470_ab", "debugFPS");
+	private static final ReflectionMethod<Boolean> METHOD_IS_BOX_IN_FRUSTUM = new ReflectionMethod<>(ClippingHelper.class, "func_228953_a_", "isBoxInFrustum", Double.TYPE, Double.TYPE, Double.TYPE, Double.TYPE, Double.TYPE, Double.TYPE);
+
+	private static final ReflectionField<ChunkRender> FIELD_RENDER_CHUNK = new ReflectionField<>("net.minecraft.client.renderer.WorldRenderer$LocalRenderInformationContainer", "field_178036_a", "renderChunk");
+
+	private static final Random RAND = new Random();
+
+	private static double x;
+	private static double y;
+	private static double z;
 
 	private Hook() {
 
 	}
 
-	public static void updateBlacklists() {
-		ENTITY_BLACKLIST.clear();
-		TILE_ENTITY_BLACKLIST.clear();
-
-		for (String s : EntityCullingConfig.CLIENT_CONFIG.skipHiddenEntityRenderingBlacklist.get()) {
-			ResourceLocation rs = new ResourceLocation(s);
-			ForgeRegistries.ENTITIES.containsKey(rs);
-			ENTITY_BLACKLIST.add(rs);
-		}
-
-		for (String s : EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRenderingBlacklist.get()) {
-			ResourceLocation rs = new ResourceLocation(s);
-			ForgeRegistries.TILE_ENTITIES.containsKey(rs);
-			TILE_ENTITY_BLACKLIST.add(rs);
-		}
-	}
-
+	@SuppressWarnings("resource")
 	public static boolean shouldRenderEntity(Entity entity) {
-		if (!EntityCullingConfig.CLIENT_CONFIG.enabled.get()) {
-			return true;
+		boolean flag = ((ICullable) entity).isVisible();
+		if (EntityCullingConfig.CLIENT_CONFIG.debug.get() && !flag) {
+			WorldRenderer worldRenderer = Minecraft.getInstance().worldRenderer;
+			FIELD_COUNT_ENTITIES_RENDERED.set(worldRenderer, FIELD_COUNT_ENTITIES_RENDERED.get(worldRenderer) - 1);
 		}
-
-		Minecraft mc = Minecraft.getInstance();
-		ActiveRenderInfo activeRenderInfo = mc.gameRenderer.getActiveRenderInfo();
-
-		return checkEntityVisibility(entity, activeRenderInfo.getProjectedView());
+		return flag;
 	}
 
 	public static boolean shouldRenderTileEntity(TileEntity tileEntity) {
+		return ((ICullable) tileEntity).isVisible();
+	}
+
+	public static void preRenderEntities(ActiveRenderInfo activeRenderInfoIn, MatrixStack matrixStackIn, Matrix4f projectionIn) {
+		Minecraft mc = Minecraft.getInstance();
+		Vector3d vec = activeRenderInfoIn.getProjectedView();
+		x = vec.x;
+		y = vec.y;
+		z = vec.z;
+		ClippingHelper frustum = new ClippingHelper(matrixStackIn.getLast().getMatrix(), projectionIn);
+		frustum.setCameraPosition(x, y, z);
+
+		if (!EntityCullingConfig.CLIENT_CONFIG.debug.get()) {
+			EntityCulling.CULLING_THREAD.camX = x;
+			EntityCulling.CULLING_THREAD.camY = y;
+			EntityCulling.CULLING_THREAD.camZ = z;
+		} else {
+			EntityCulling.CULLING_THREAD.camX = mc.renderViewEntity.getPosX();
+			EntityCulling.CULLING_THREAD.camY = mc.renderViewEntity.getPosYEye();
+			EntityCulling.CULLING_THREAD.camZ = mc.renderViewEntity.getPosZ();
+		}
+		EntityCulling.CULLING_THREAD.matrix = matrixStackIn.getLast().getMatrix().copy();
+		EntityCulling.CULLING_THREAD.projection = projectionIn.copy();
+
+		double updateChance = MathHelper.clamp(20.0D / (double) FIELD_DEBUG_FPS.get(null), 1.0e-7D, 0.5D);
+
+		GL11.glDepthMask(false);
+		GL11.glColorMask(false, false, false, false);
+		GL11.glDisable(GL11.GL_TEXTURE_2D);
+
+		for (Entity entity : mc.world.getAllEntities()) {
+			AxisAlignedBB aabb = entity.getRenderBoundingBox();
+
+			if (!((ICullable) entity).isCulledFast() || !METHOD_IS_BOX_IN_FRUSTUM.invoke(frustum, aabb.minX - 0.5D, aabb.minY - 0.5D, aabb.minZ - 0.5D, aabb.maxX + 0.5D, aabb.maxY + 0.5D, aabb.maxZ + 0.5D) || mc.player.getDistanceSq(entity) < 4.0D * 4.0D) {
+				((ICullable) entity).setCulledSlow(false);
+				((ICullable) entity).setQueryResultDirty(false);
+			} else {
+				int query = ((ICullable) entity).initQuery();
+
+				if (((ICullable) entity).isQueryResultDirty()) {
+					((ICullable) entity).setCulledSlow(GL15.glGetQueryObjecti(query, GL15.GL_QUERY_RESULT) == 0);
+				}
+
+				if (RAND.nextDouble() < updateChance) {
+					GL15.glBeginQuery(GL43.GL_ANY_SAMPLES_PASSED_CONSERVATIVE, query);
+
+					GL11.glPushMatrix();
+					GL11.glTranslated(aabb.minX - 0.5D - x, aabb.minY - 0.5D - y, aabb.minZ - 0.5D - z);
+					GL11.glScaled(aabb.maxX - aabb.minX + 1.0D, aabb.maxY - aabb.minY + 1.0D, aabb.maxZ - aabb.minZ + 1.0D);
+					GL11.glCallList(EntityCulling.cubeDisplayList);
+					GL11.glPopMatrix();
+
+					GL15.glEndQuery(GL43.GL_ANY_SAMPLES_PASSED_CONSERVATIVE);
+
+					((ICullable) entity).setQueryResultDirty(true);
+				} else {
+					((ICullable) entity).setQueryResultDirty(false);
+				}
+			}
+		}
+
+		for (TileEntity tileEntity : mc.world.loadedTileEntityList) {
+			AxisAlignedBB aabb = tileEntity.getRenderBoundingBox();
+
+			if (!((ICullable) tileEntity).isCulledFast() || !METHOD_IS_BOX_IN_FRUSTUM.invoke(frustum, aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ) || mc.player.getDistanceSq(tileEntity.getPos().getX() + 0.5D, tileEntity.getPos().getY() + 0.5D, tileEntity.getPos().getZ() + 0.5D) < 4.0D * 4.0D) {
+				((ICullable) tileEntity).setCulledSlow(false);
+				((ICullable) tileEntity).setQueryResultDirty(false);
+			} else {
+				int query = ((ICullable) tileEntity).initQuery();
+
+				if (((ICullable) tileEntity).isQueryResultDirty()) {
+					((ICullable) tileEntity).setCulledSlow(GL15.glGetQueryObjecti(query, GL15.GL_QUERY_RESULT) == 0);
+				}
+
+				if (RAND.nextDouble() < updateChance) {
+					GL15.glBeginQuery(GL43.GL_ANY_SAMPLES_PASSED_CONSERVATIVE, query);
+
+					GL11.glPushMatrix();
+					GL11.glTranslated(aabb.minX - x, aabb.minY - y, aabb.minZ - z);
+					GL11.glScaled(aabb.maxX - aabb.minX, aabb.maxY - aabb.minY, aabb.maxZ - aabb.minZ);
+					GL11.glCallList(EntityCulling.cubeDisplayList);
+					GL11.glPopMatrix();
+
+					GL15.glEndQuery(GL43.GL_ANY_SAMPLES_PASSED_CONSERVATIVE);
+
+					((ICullable) tileEntity).setQueryResultDirty(true);
+				} else {
+					((ICullable) tileEntity).setQueryResultDirty(false);
+				}
+			}
+		}
+
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
+		GL11.glColorMask(true, true, true, true);
+		GL11.glDepthMask(true);
+	}
+
+	public static boolean shouldRenderEntityShadow(Entity entity) {
+		if (((ICullable) entity).isCulledShadowPass()) {
+			return false;
+		}
+		if (!EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.entityShadowsDistanceLimited.get()) {
+			return true;
+		}
+		double d = EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.entityShadowsMaxDistance.get();
+		return entity.getDistanceSq(x, y, z) < d * d;
+	}
+
+	public static boolean shouldRenderTileEntityShadow(TileEntity tileEntity) {
+		if (((ICullable) tileEntity).isCulledShadowPass()) {
+			return false;
+		}
+		if (!EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.tileEntityShadowsDistanceLimited.get()) {
+			return true;
+		}
+		double d = EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.tileEntityShadowsMaxDistance.get();
+		return squareDist(tileEntity.getPos().getX() + 0.5D, tileEntity.getPos().getY() + 0.5D, tileEntity.getPos().getZ() + 0.5D, x, y, z) < d * d;
+	}
+
+	private static double squareDist(double x1, double y1, double z1, double x2, double y2, double z2) {
+		return (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1);
+	}
+
+	public static boolean shouldRenderChunkShadow(Object containerLocalRenderInformation) {
 		if (!EntityCullingConfig.CLIENT_CONFIG.enabled.get()) {
 			return true;
 		}
-
-		Minecraft mc = Minecraft.getInstance();
-		ActiveRenderInfo activeRenderInfo = mc.gameRenderer.getActiveRenderInfo();
-
-		return checkTileEntityVisibility(tileEntity, activeRenderInfo.getProjectedView());
-	}
-
-	private static boolean checkEntityVisibility(Entity entity, Vector3d camVec) {
-		if (!EntityCullingConfig.CLIENT_CONFIG.skipHiddenEntityRendering.get()) {
+		if (EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.terrainShadowsDisabled.get()) {
+			return false;
+		}
+		if (!EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.terrainShadowsDistanceLimited.get()) {
 			return true;
 		}
-		if (!entity.isNonBoss()) {
-			return true;
+		ChunkRender renderChunk = FIELD_RENDER_CHUNK.get(containerLocalRenderInformation);
+		BlockPos pos = renderChunk.getPosition();
+		if (Math.abs(pos.getX() + 8.0D - x) > EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.terrainShadowsMaxHorizontalDistance.get()) {
+			return false;
 		}
-		if (entity.getWidth() >= EntityCullingConfig.CLIENT_CONFIG.skipHiddenEntityRenderingSize.get() || entity.getHeight() >= EntityCullingConfig.CLIENT_CONFIG.skipHiddenEntityRenderingSize.get()) {
-			return true;
+		if (Math.abs(pos.getY() + 8.0D - y) > EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.terrainShadowsMaxVerticalDistance.get()) {
+			return false;
 		}
-		if (!EntityCullingConfig.CLIENT_CONFIG.skipHiddenEntityRenderingBlacklist.get().isEmpty() && EntityCullingConfig.CLIENT_CONFIG.skipHiddenEntityRenderingBlacklist.get().stream().anyMatch(entity.getType().getRegistryName().toString()::equals)) {
-			return true;
-		}
-		double maxDiffSquared = EntityCullingConfig.CLIENT_CONFIG.skipHiddenEntityRenderingDiff.get() * EntityCullingConfig.CLIENT_CONFIG.skipHiddenEntityRenderingDiff.get();
-		Minecraft mc = Minecraft.getInstance();
-		Vector3d end = entity.getEyePosition(mc.getRenderPartialTicks());
-		if (camVec.squareDistanceTo(end) <= maxDiffSquared) {
-			return true;
-		}
-		RayTraceResult result1 = rayTraceBlocks(mc.world, new RayTraceContext(camVec, end, BlockMode.COLLIDER, FluidMode.NONE, mc.renderViewEntity), null);
-		if (result1 == null || result1.getHitVec().squareDistanceTo(end) <= maxDiffSquared) {
-			return true;
-		}
-		RayTraceResult result2 = rayTraceBlocks(mc.world, new RayTraceContext(end, camVec, BlockMode.COLLIDER, FluidMode.NONE, mc.renderViewEntity), null);
-		if (result2 == null) {
-			return true;
-		}
-		return result1.getHitVec().squareDistanceTo(result2.getHitVec()) <= maxDiffSquared;
-	}
-
-	private static boolean checkTileEntityVisibility(TileEntity tileEntity, Vector3d camVec) {
-		if (!EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRendering.get()) {
-			return true;
-		}
-		AxisAlignedBB aabb = tileEntity.getRenderBoundingBox();
-		if (aabb.maxX - aabb.minX > EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRenderingSize.get() || aabb.maxY - aabb.minY > EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRenderingSize.get() || aabb.maxZ - aabb.minZ > EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRenderingSize.get()) {
-			return true;
-		}
-		if (!EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRenderingBlacklist.get().isEmpty() && EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRenderingBlacklist.get().stream().anyMatch(tileEntity.getType().getRegistryName().toString()::equals)) {
-			return true;
-		}
-		double maxDiffSquared = EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRenderingDiff.get() * EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRenderingDiff.get();
-		Minecraft mc = Minecraft.getInstance();
-		BlockPos pos = tileEntity.getPos();
-		Vector3d end = new Vector3d(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
-		if (camVec.squareDistanceTo(end) <= maxDiffSquared) {
-			return true;
-		}
-		RayTraceResult result1 = rayTraceBlocks(mc.world, new RayTraceContext(camVec, end, BlockMode.COLLIDER, FluidMode.NONE, mc.renderViewEntity), pos);
-		if (result1 == null || result1.getHitVec().squareDistanceTo(end) <= maxDiffSquared) {
-			return true;
-		}
-		RayTraceResult result2 = rayTraceBlocks(mc.world, new RayTraceContext(end, camVec, BlockMode.COLLIDER, FluidMode.NONE, mc.renderViewEntity), pos);
-		if (result2 == null) {
-			return true;
-		}
-		return result1.getHitVec().squareDistanceTo(result2.getHitVec()) <= maxDiffSquared;
-	}
-
-	private static BlockRayTraceResult rayTraceBlocks(World world, RayTraceContext context, @Nullable BlockPos toIgnore) {
-		return IBlockReader.doRayTrace(context, (c, p) -> {
-			if (toIgnore != null && p.equals(toIgnore)) {
-				return null;
-			}
-			BlockState blockstate = world.getBlockState(p);
-			if (!blockstate.isOpaqueCube(world, p)) {
-				return null;
-			}
-			FluidState fluidstate = world.getFluidState(p);
-			Vector3d vector3d = c.getStartVec();
-			Vector3d vector3d1 = c.getEndVec();
-			VoxelShape voxelshape = c.getBlockShape(blockstate, world, p);
-			BlockRayTraceResult blockraytraceresult = world.rayTraceBlocks(vector3d, vector3d1, p, voxelshape, blockstate);
-			VoxelShape voxelshape1 = c.getFluidShape(fluidstate, world, p);
-			BlockRayTraceResult blockraytraceresult1 = voxelshape1.rayTrace(vector3d, vector3d1, p);
-			double d0 = blockraytraceresult == null ? Double.MAX_VALUE : c.getStartVec().squareDistanceTo(blockraytraceresult.getHitVec());
-			double d1 = blockraytraceresult1 == null ? Double.MAX_VALUE : c.getStartVec().squareDistanceTo(blockraytraceresult1.getHitVec());
-			return d0 <= d1 ? blockraytraceresult : blockraytraceresult1;
-		}, (c) -> {
-			Vector3d vector3d = c.getStartVec().subtract(c.getEndVec());
-			return BlockRayTraceResult.createMiss(c.getEndVec(), Direction.getFacingFromVector(vector3d.x, vector3d.y, vector3d.z), new BlockPos(c.getEndVec()));
-		});
+		return Math.abs(pos.getZ() + 8.0D - z) <= EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.terrainShadowsMaxHorizontalDistance.get();
 	}
 
 }
