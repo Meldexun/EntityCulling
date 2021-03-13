@@ -8,7 +8,7 @@ import org.lwjgl.opengl.GL43;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 
-import meldexun.entityculling.EntityCulling;
+import meldexun.entityculling.EntityCullingClient;
 import meldexun.entityculling.EntityCullingConfig;
 import meldexun.entityculling.ICullable;
 import meldexun.entityculling.reflection.ReflectionField;
@@ -68,16 +68,16 @@ public class Hook {
 		frustum.setCameraPosition(x, y, z);
 
 		if (!EntityCullingConfig.CLIENT_CONFIG.debug.get()) {
-			EntityCulling.CULLING_THREAD.camX = x;
-			EntityCulling.CULLING_THREAD.camY = y;
-			EntityCulling.CULLING_THREAD.camZ = z;
+			EntityCullingClient.CULLING_THREAD.camX = x;
+			EntityCullingClient.CULLING_THREAD.camY = y;
+			EntityCullingClient.CULLING_THREAD.camZ = z;
 		} else {
-			EntityCulling.CULLING_THREAD.camX = mc.renderViewEntity.getPosX();
-			EntityCulling.CULLING_THREAD.camY = mc.renderViewEntity.getPosYEye();
-			EntityCulling.CULLING_THREAD.camZ = mc.renderViewEntity.getPosZ();
+			EntityCullingClient.CULLING_THREAD.camX = mc.renderViewEntity.getPosX();
+			EntityCullingClient.CULLING_THREAD.camY = mc.renderViewEntity.getPosYEye();
+			EntityCullingClient.CULLING_THREAD.camZ = mc.renderViewEntity.getPosZ();
 		}
-		EntityCulling.CULLING_THREAD.matrix = matrixStackIn.getLast().getMatrix().copy();
-		EntityCulling.CULLING_THREAD.projection = projectionIn.copy();
+		EntityCullingClient.CULLING_THREAD.matrix = matrixStackIn.getLast().getMatrix().copy();
+		EntityCullingClient.CULLING_THREAD.projection = projectionIn.copy();
 
 		double updateChance = MathHelper.clamp(20.0D / (double) FIELD_DEBUG_FPS.get(null), 1.0e-7D, 0.5D);
 
@@ -104,7 +104,7 @@ public class Hook {
 					GL11.glPushMatrix();
 					GL11.glTranslated(aabb.minX - 0.5D - x, aabb.minY - 0.5D - y, aabb.minZ - 0.5D - z);
 					GL11.glScaled(aabb.maxX - aabb.minX + 1.0D, aabb.maxY - aabb.minY + 1.0D, aabb.maxZ - aabb.minZ + 1.0D);
-					GL11.glCallList(EntityCulling.cubeDisplayList);
+					GL11.glCallList(EntityCullingClient.cubeDisplayList);
 					GL11.glPopMatrix();
 
 					GL15.glEndQuery(GL43.GL_ANY_SAMPLES_PASSED_CONSERVATIVE);
@@ -135,7 +135,7 @@ public class Hook {
 					GL11.glPushMatrix();
 					GL11.glTranslated(aabb.minX - x, aabb.minY - y, aabb.minZ - z);
 					GL11.glScaled(aabb.maxX - aabb.minX, aabb.maxY - aabb.minY, aabb.maxZ - aabb.minZ);
-					GL11.glCallList(EntityCulling.cubeDisplayList);
+					GL11.glCallList(EntityCullingClient.cubeDisplayList);
 					GL11.glPopMatrix();
 
 					GL15.glEndQuery(GL43.GL_ANY_SAMPLES_PASSED_CONSERVATIVE);
