@@ -254,7 +254,7 @@ public class CullingThread extends Thread {
 		}
 
 		if (!EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.entityShadowsCullingLessAggressiveMode.get()) {
-			return ((ICullable) entity).isCulledFast();
+			return !((ICullable) entity).isCulledFast();
 		}
 
 		if (!entity.isNonBoss()) {
@@ -290,7 +290,7 @@ public class CullingThread extends Thread {
 		}
 
 		if (!EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.tileEntityShadowsCullingLessAggressiveMode.get()) {
-			return ((ICullable) tileEntity).isCulledFast();
+			return !((ICullable) tileEntity).isCulledFast();
 		}
 
 		AxisAlignedBB aabb = tileEntity.getRenderBoundingBox();
