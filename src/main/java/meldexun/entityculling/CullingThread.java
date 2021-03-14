@@ -25,7 +25,7 @@ public class CullingThread extends Thread {
 
 	private static final ReflectionMethod<Boolean> METHOD_IS_BOX_IN_FRUSTUM = new ReflectionMethod<>(ClippingHelper.class, "func_228953_a_", "cubeInFrustum", Double.TYPE, Double.TYPE, Double.TYPE, Double.TYPE, Double.TYPE, Double.TYPE);
 	private final MutableRayTraceResult mutableRayTraceResult = new MutableRayTraceResult();
-	private final RayTracingCache cache = new RayTracingCache(16);
+	private final RayTracingCache cache = new RayTracingCache(EntityCullingConfig.CLIENT_CONFIG.cacheSize.get());
 	private double sleepOverhead = 0.0D;
 	/** debug */
 	public long[] time = new long[10];

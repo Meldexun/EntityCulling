@@ -20,6 +20,8 @@ public class EntityCullingConfig {
 
 	public static class ClientConfig {
 
+		public final ForgeConfigSpec.IntValue cacheSize;
+
 		public final ForgeConfigSpec.BooleanValue debug;
 
 		public final ForgeConfigSpec.BooleanValue enabled;
@@ -35,6 +37,8 @@ public class EntityCullingConfig {
 		public final OptifineShaderOptions optifineShaderOptions;
 
 		public ClientConfig(ForgeConfigSpec.Builder builder) {
+			this.cacheSize = builder.comment("Requires restart. Ram usage (in MB) = (x * 16 * 2) ^ 3 / 4").defineInRange("cacheSize", 16, 1, 32);
+
 			this.debug = builder.comment("").define("debug", false);
 
 			this.enabled = builder.comment("Disable all changes from this mod.").define("enabled", true);
