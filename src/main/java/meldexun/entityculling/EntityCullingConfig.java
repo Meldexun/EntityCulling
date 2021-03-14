@@ -7,7 +7,7 @@ public class EntityCullingConfig {
 
 	@Config.RequiresMcRestart
 	@Config.Comment("Requires restart. Ram usage (in MB) = (x * 16 * 2) ^ 3 / 4")
-	public static int cacheSize = 16;
+	public static int cacheSize = 12;
 
 	@Config.Comment("Disable all changes from this mod.")
 	public static boolean enabled = true;
