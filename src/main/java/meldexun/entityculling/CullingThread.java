@@ -31,7 +31,7 @@ public class CullingThread extends Thread {
 	private static final ReflectionField<ClippingHelperImpl> FIELD_INSTANCE = new ReflectionField<>(ClippingHelperImpl.class, "field_78563_e", "instance");
 	private final MutableRayTraceResult mutableRayTraceResult = new MutableRayTraceResult();
 	// 0=not cached, 1=blocked, 2=visible
-	private final RayTracingCache cache = new RayTracingCache(16);
+	private final RayTracingCache cache = new RayTracingCache(EntityCullingConfig.cacheSize);
 	private double sleepOverhead = 0.0D;
 	/** debug */
 	public long[] time = new long[10];
