@@ -23,7 +23,7 @@ public class CullingThread extends Thread {
 	private static final Set<ResourceLocation> ENTITY_BLACKLIST = new HashSet<>();
 	private static final Set<ResourceLocation> TILE_ENTITY_BLACKLIST = new HashSet<>();
 
-	private static final ReflectionMethod<Boolean> METHOD_IS_BOX_IN_FRUSTUM = new ReflectionMethod<>(ClippingHelper.class, "func_228953_a_", "isBoxInFrustum", Double.TYPE, Double.TYPE, Double.TYPE, Double.TYPE, Double.TYPE, Double.TYPE);
+	private static final ReflectionMethod<Boolean> METHOD_IS_BOX_IN_FRUSTUM = new ReflectionMethod<>(ClippingHelper.class, "func_228953_a_", "cubeInFrustum", Double.TYPE, Double.TYPE, Double.TYPE, Double.TYPE, Double.TYPE, Double.TYPE);
 	private final MutableRayTraceResult mutableRayTraceResult = new MutableRayTraceResult();
 	private final RayTracingCache cache = new RayTracingCache(16);
 	private double sleepOverhead = 0.0D;
@@ -73,14 +73,14 @@ public class CullingThread extends Thread {
 				RayTracingEngine.resetCache();
 				this.cache.clearCache();
 
-				if (mc.world != null && mc.getRenderViewEntity() != null) {
+				if (mc.level != null && mc.getCameraEntity() != null) {
 					this.frustum = new ClippingHelper(this.matrix, this.projection);
-					this.frustum.setCameraPosition(this.camX, this.camY, this.camZ);
+					this.frustum.prepare(this.camX, this.camY, this.camZ);
 					this.camBlockX = MathHelper.floor(this.camX);
 					this.camBlockY = MathHelper.floor(this.camY);
 					this.camBlockZ = MathHelper.floor(this.camZ);
 
-					Iterator<Entity> entityIterator = mc.world.getAllEntities().iterator();
+					Iterator<Entity> entityIterator = mc.level.entitiesForRendering().iterator();
 					while (entityIterator.hasNext()) {
 						try {
 							Entity entity = entityIterator.next();
@@ -91,7 +91,7 @@ public class CullingThread extends Thread {
 						}
 					}
 
-					Iterator<TileEntity> tileEntityIterator = mc.world.loadedTileEntityList.iterator();
+					Iterator<TileEntity> tileEntityIterator = mc.level.blockEntityList.iterator();
 					while (tileEntityIterator.hasNext()) {
 						try {
 							TileEntity tileEntity = tileEntityIterator.next();
@@ -149,11 +149,12 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		if (!entity.isNonBoss()) {
+		// check if entity is boss (isNonBoss in forge mappings)
+		if (!entity.canChangeDimensions()) {
 			return true;
 		}
 
-		if (entity.getWidth() > EntityCullingConfig.CLIENT_CONFIG.skipHiddenEntityRenderingSize.get() || entity.getHeight() > EntityCullingConfig.CLIENT_CONFIG.skipHiddenEntityRenderingSize.get()) {
+		if (entity.getBbWidth() > EntityCullingConfig.CLIENT_CONFIG.skipHiddenEntityRenderingSize.get() || entity.getBbHeight() > EntityCullingConfig.CLIENT_CONFIG.skipHiddenEntityRenderingSize.get()) {
 			return true;
 		}
 
@@ -163,15 +164,15 @@ public class CullingThread extends Thread {
 
 		double minX, minY, minZ, maxX, maxY, maxZ;
 		{
-			AxisAlignedBB aabb = entity.getRenderBoundingBox();
+			AxisAlignedBB aabb = entity.getBoundingBoxForCulling();
 
 			if (aabb.hasNaN()) {
-				minX = entity.getPosX() - 2.0D;
-				minY = entity.getPosY() - 2.0D;
-				minZ = entity.getPosZ() - 2.0D;
-				maxX = entity.getPosX() + 2.0D;
-				maxY = entity.getPosY() + 2.0D;
-				maxZ = entity.getPosZ() + 2.0D;
+				minX = entity.getX() - 2.0D;
+				minY = entity.getY() - 2.0D;
+				minZ = entity.getZ() - 2.0D;
+				maxX = entity.getX() + 2.0D;
+				maxY = entity.getY() + 2.0D;
+				maxZ = entity.getZ() + 2.0D;
 			} else {
 				minX = aabb.minX - 0.5D;
 				minY = aabb.minY - 0.5D;
@@ -188,11 +189,11 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		if (this.checkVisibility(entity.world, this.camX, this.camY, this.camZ, (minX + maxX) * 0.5D, (minY + maxY) * 0.5D, (minZ + maxZ) * 0.5D, 1.0D)) {
+		if (this.checkVisibility(entity.level, this.camX, this.camY, this.camZ, (minX + maxX) * 0.5D, (minY + maxY) * 0.5D, (minZ + maxZ) * 0.5D, 1.0D)) {
 			return true;
 		}
 
-		return this.checkBoundingBoxVisibility(entity.world, minX, minY, minZ, maxX, maxY, maxZ);
+		return this.checkBoundingBoxVisibility(entity.level, minX, minY, minZ, maxX, maxY, maxZ);
 	}
 
 	private boolean checkTileEntityVisibility(TileEntity tileEntity) {
@@ -229,11 +230,11 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		if (this.checkVisibility(tileEntity.getWorld(), this.camX, this.camY, this.camZ, (minX + maxX) * 0.5D, (minY + maxY) * 0.5D, (minZ + maxZ) * 0.5D, 1.0D)) {
+		if (this.checkVisibility(tileEntity.getLevel(), this.camX, this.camY, this.camZ, (minX + maxX) * 0.5D, (minY + maxY) * 0.5D, (minZ + maxZ) * 0.5D, 1.0D)) {
 			return true;
 		}
 
-		return this.checkBoundingBoxVisibility(tileEntity.getWorld(), minX, minY, minZ, maxX, maxY, maxZ);
+		return this.checkBoundingBoxVisibility(tileEntity.getLevel(), minX, minY, minZ, maxX, maxY, maxZ);
 	}
 
 	private boolean checkEntityShadowVisibility(Entity entity) {
@@ -257,11 +258,12 @@ public class CullingThread extends Thread {
 			return !((ICullable) entity).isCulledFast();
 		}
 
-		if (!entity.isNonBoss()) {
+		// check if entity is boss (isNonBoss in forge mappings)
+		if (!entity.canChangeDimensions()) {
 			return true;
 		}
 
-		if (entity.getWidth() >= EntityCullingConfig.CLIENT_CONFIG.skipHiddenEntityRenderingSize.get() || entity.getHeight() >= EntityCullingConfig.CLIENT_CONFIG.skipHiddenEntityRenderingSize.get()) {
+		if (entity.getBbWidth() >= EntityCullingConfig.CLIENT_CONFIG.skipHiddenEntityRenderingSize.get() || entity.getBbHeight() >= EntityCullingConfig.CLIENT_CONFIG.skipHiddenEntityRenderingSize.get()) {
 			return true;
 		}
 
@@ -269,7 +271,7 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		return this.checkVisibility(entity.world, this.camX, this.camY, this.camZ, entity.getPosX(), entity.getPosY() + entity.getHeight() * 0.5D, entity.getPosZ(), EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.entityShadowsCullingLessAggressiveModeDiff.get());
+		return this.checkVisibility(entity.level, this.camX, this.camY, this.camZ, entity.getX(), entity.getY() + entity.getBbHeight() * 0.5D, entity.getZ(), EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.entityShadowsCullingLessAggressiveModeDiff.get());
 	}
 
 	private boolean checkTileEntityShadowVisibility(TileEntity tileEntity) {
@@ -302,8 +304,8 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		BlockPos pos = tileEntity.getPos();
-		return this.checkVisibility(tileEntity.getWorld(), this.camX, this.camY, this.camZ, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.tileEntityShadowsCullingLessAggressiveModeDiff.get());
+		BlockPos pos = tileEntity.getBlockPos();
+		return this.checkVisibility(tileEntity.getLevel(), this.camX, this.camY, this.camZ, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.tileEntityShadowsCullingLessAggressiveModeDiff.get());
 	}
 
 	private boolean checkBoundingBoxVisibility(World world, double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {

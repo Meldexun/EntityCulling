@@ -23,7 +23,7 @@ public final class RayTracingEngine {
 	}
 
 	private static boolean isOpaqueBlock(World world, int x, int y, int z) {
-		if (World.isOutsideBuildHeight(MUTABLE_POS.setPos(x, y, z))) {
+		if (World.isOutsideBuildHeight(MUTABLE_POS.set(x, y, z))) {
 			return false;
 		}
 		if (!isChunkCached || x >> 4 != cachedChunkX || y >> 4 != cachedChunkY || z >> 4 != cachedChunkZ) {
@@ -37,7 +37,7 @@ public final class RayTracingEngine {
 			return false;
 		}
 		BlockState state = cachedChunk.getBlockState(x & 15, y & 15, z & 15);
-		return state.isOpaqueCube(world, MUTABLE_POS);
+		return state.isSolidRender(world, MUTABLE_POS);
 	}
 
 	public static void resetCache() {
@@ -66,7 +66,7 @@ public final class RayTracingEngine {
 		double dirZ = z2 - z1;
 
 		if (maxIgnore <= 0.0D) {
-			return returnValue.set(x1, y1, z1, Direction.getFacingFromVector((float) dirX, (float) dirY, (float) dirZ).getOpposite());
+			return returnValue.set(x1, y1, z1, Direction.getNearest(dirX, dirY, dirZ).getOpposite());
 		}
 
 		if (dirX * dirX + dirY * dirY + dirZ * dirZ < maxIgnore * maxIgnore) {
@@ -103,7 +103,7 @@ public final class RayTracingEngine {
 		if (!ignoreStart && isOpaqueBlock(world, x, y, z)) {
 			hasHitBlock = true;
 			hasHitBlockPreviously = true;
-			firstHitFacing = Direction.getFacingFromVector((float) dirX, (float) dirY, (float) dirZ).getOpposite();
+			firstHitFacing = Direction.getNearest(dirX, dirY, dirZ).getOpposite();
 		}
 
 		while (percentX <= 1.0D || percentY <= 1.0D || percentZ <= 1.0D) {

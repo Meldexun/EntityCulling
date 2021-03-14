@@ -47,7 +47,7 @@ public interface ICullable {
 			GL15.glBeginQuery(GL43.GL_ANY_SAMPLES_PASSED_CONSERVATIVE, this.getQuery());
 			GL15.glEndQuery(GL43.GL_ANY_SAMPLES_PASSED_CONSERVATIVE);
 			if (this instanceof TileEntity) {
-				BlockPos pos = ((TileEntity) this).getPos();
+				BlockPos pos = ((TileEntity) this).getBlockPos();
 				TileEntity te = TILE_ENTITY_MAP.get(pos);
 				if (te != null) {
 					((ICullable) te).deleteQuery();
@@ -73,7 +73,7 @@ public interface ICullable {
 		Iterator<Map.Entry<BlockPos, TileEntity>> iterator = TILE_ENTITY_MAP.entrySet().iterator();
 		while (iterator.hasNext()) {
 			Map.Entry<BlockPos, TileEntity> entry = iterator.next();
-			if (world.getTileEntity(entry.getKey()) != entry.getValue()) {
+			if (world.getBlockEntity(entry.getKey()) != entry.getValue()) {
 
 				((ICullable) entry.getValue()).deleteQuery();
 			}

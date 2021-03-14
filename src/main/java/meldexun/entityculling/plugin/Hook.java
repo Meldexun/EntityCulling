@@ -31,11 +31,11 @@ import net.minecraft.util.math.vector.Vector3d;
 
 public class Hook {
 
-	private static final ReflectionField<Integer> FIELD_COUNT_ENTITIES_RENDERED = new ReflectionField<>(WorldRenderer.class, "field_72749_I", "countEntitiesRendered");
-	private static final ReflectionField<Integer> FIELD_DEBUG_FPS = new ReflectionField<>(Minecraft.class, "field_71470_ab", "debugFPS");
-	private static final ReflectionMethod<Boolean> METHOD_IS_BOX_IN_FRUSTUM = new ReflectionMethod<>(ClippingHelper.class, "func_228953_a_", "isBoxInFrustum", Double.TYPE, Double.TYPE, Double.TYPE, Double.TYPE, Double.TYPE, Double.TYPE);
+	private static final ReflectionField<Integer> FIELD_COUNT_ENTITIES_RENDERED = new ReflectionField<>(WorldRenderer.class, "field_72749_I", "renderedEntities");
+	private static final ReflectionField<Integer> FIELD_DEBUG_FPS = new ReflectionField<>(Minecraft.class, "field_71470_ab", "fps");
+	private static final ReflectionMethod<Boolean> METHOD_IS_BOX_IN_FRUSTUM = new ReflectionMethod<>(ClippingHelper.class, "func_228953_a_", "cubeInFrustum", Double.TYPE, Double.TYPE, Double.TYPE, Double.TYPE, Double.TYPE, Double.TYPE);
 
-	private static final ReflectionField<ChunkRender> FIELD_RENDER_CHUNK = new ReflectionField<>("net.minecraft.client.renderer.WorldRenderer$LocalRenderInformationContainer", "field_178036_a", "renderChunk");
+	private static final ReflectionField<ChunkRender> FIELD_RENDER_CHUNK = new ReflectionField<>("net.minecraft.client.renderer.WorldRenderer$LocalRenderInformationContainer", "field_178036_a", "chunk");
 
 	private static final Random RAND = new Random();
 
@@ -51,7 +51,7 @@ public class Hook {
 	public static boolean shouldRenderEntity(Entity entity) {
 		boolean flag = ((ICullable) entity).isVisible();
 		if (EntityCullingConfig.CLIENT_CONFIG.debug.get() && !flag) {
-			WorldRenderer worldRenderer = Minecraft.getInstance().worldRenderer;
+			WorldRenderer worldRenderer = Minecraft.getInstance().levelRenderer;
 			FIELD_COUNT_ENTITIES_RENDERED.set(worldRenderer, FIELD_COUNT_ENTITIES_RENDERED.get(worldRenderer) - 1);
 		}
 		return flag;
@@ -63,23 +63,23 @@ public class Hook {
 
 	public static void preRenderEntities(ActiveRenderInfo activeRenderInfoIn, MatrixStack matrixStackIn, Matrix4f projectionIn) {
 		Minecraft mc = Minecraft.getInstance();
-		Vector3d vec = activeRenderInfoIn.getProjectedView();
+		Vector3d vec = activeRenderInfoIn.getPosition();
 		x = vec.x;
 		y = vec.y;
 		z = vec.z;
-		ClippingHelper frustum = new ClippingHelper(matrixStackIn.getLast().getMatrix(), projectionIn);
-		frustum.setCameraPosition(x, y, z);
+		ClippingHelper frustum = new ClippingHelper(matrixStackIn.last().pose(), projectionIn);
+		frustum.prepare(x, y, z);
 
 		if (!EntityCullingConfig.CLIENT_CONFIG.debug.get()) {
 			EntityCullingClient.CULLING_THREAD.camX = x;
 			EntityCullingClient.CULLING_THREAD.camY = y;
 			EntityCullingClient.CULLING_THREAD.camZ = z;
 		} else {
-			EntityCullingClient.CULLING_THREAD.camX = mc.renderViewEntity.getPosX();
-			EntityCullingClient.CULLING_THREAD.camY = mc.renderViewEntity.getPosYEye();
-			EntityCullingClient.CULLING_THREAD.camZ = mc.renderViewEntity.getPosZ();
+			EntityCullingClient.CULLING_THREAD.camX = mc.getCameraEntity().getX();
+			EntityCullingClient.CULLING_THREAD.camY = mc.getCameraEntity().getEyeY();
+			EntityCullingClient.CULLING_THREAD.camZ = mc.getCameraEntity().getZ();
 		}
-		EntityCullingClient.CULLING_THREAD.matrix = matrixStackIn.getLast().getMatrix().copy();
+		EntityCullingClient.CULLING_THREAD.matrix = matrixStackIn.last().pose().copy();
 		EntityCullingClient.CULLING_THREAD.projection = projectionIn.copy();
 
 		double updateChance = MathHelper.clamp(20.0D / (double) FIELD_DEBUG_FPS.get(null), 1.0e-7D, 0.5D);
@@ -89,13 +89,13 @@ public class Hook {
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
 		GL11.glPushMatrix();
 		FloatBuffer floatBuffer = ByteBuffer.allocateDirect(64).order(ByteOrder.nativeOrder()).asFloatBuffer();
-		matrixStackIn.getLast().getMatrix().write(floatBuffer);
+		matrixStackIn.last().pose().store(floatBuffer);
 		GL11.glMultMatrixf(floatBuffer);
 
-		for (Entity entity : mc.world.getAllEntities()) {
-			AxisAlignedBB aabb = entity.getRenderBoundingBox();
+		for (Entity entity : mc.level.entitiesForRendering()) {
+			AxisAlignedBB aabb = entity.getBoundingBoxForCulling();
 
-			if (!((ICullable) entity).isCulledFast() || !METHOD_IS_BOX_IN_FRUSTUM.invoke(frustum, aabb.minX - 0.5D, aabb.minY - 0.5D, aabb.minZ - 0.5D, aabb.maxX + 0.5D, aabb.maxY + 0.5D, aabb.maxZ + 0.5D) || mc.player.getDistanceSq(entity) < 4.0D * 4.0D) {
+			if (!((ICullable) entity).isCulledFast() || !METHOD_IS_BOX_IN_FRUSTUM.invoke(frustum, aabb.minX - 0.5D, aabb.minY - 0.5D, aabb.minZ - 0.5D, aabb.maxX + 0.5D, aabb.maxY + 0.5D, aabb.maxZ + 0.5D) || mc.player.distanceToSqr(entity) < 4.0D * 4.0D) {
 				((ICullable) entity).setCulledSlow(false);
 				((ICullable) entity).setQueryResultDirty(false);
 			} else {
@@ -123,10 +123,10 @@ public class Hook {
 			}
 		}
 
-		for (TileEntity tileEntity : mc.world.loadedTileEntityList) {
+		for (TileEntity tileEntity : mc.level.blockEntityList) {
 			AxisAlignedBB aabb = tileEntity.getRenderBoundingBox();
 
-			if (!((ICullable) tileEntity).isCulledFast() || !METHOD_IS_BOX_IN_FRUSTUM.invoke(frustum, aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ) || mc.player.getDistanceSq(tileEntity.getPos().getX() + 0.5D, tileEntity.getPos().getY() + 0.5D, tileEntity.getPos().getZ() + 0.5D) < 4.0D * 4.0D) {
+			if (!((ICullable) tileEntity).isCulledFast() || !METHOD_IS_BOX_IN_FRUSTUM.invoke(frustum, aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ) || mc.player.distanceToSqr(tileEntity.getBlockPos().getX() + 0.5D, tileEntity.getBlockPos().getY() + 0.5D, tileEntity.getBlockPos().getZ() + 0.5D) < 4.0D * 4.0D) {
 				((ICullable) tileEntity).setCulledSlow(false);
 				((ICullable) tileEntity).setQueryResultDirty(false);
 			} else {
@@ -168,7 +168,7 @@ public class Hook {
 			return true;
 		}
 		double d = EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.entityShadowsMaxDistance.get();
-		return entity.getDistanceSq(x, y, z) < d * d;
+		return entity.distanceToSqr(x, y, z) < d * d;
 	}
 
 	public static boolean shouldRenderTileEntityShadow(TileEntity tileEntity) {
@@ -179,7 +179,7 @@ public class Hook {
 			return true;
 		}
 		double d = EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.tileEntityShadowsMaxDistance.get();
-		return squareDist(tileEntity.getPos().getX() + 0.5D, tileEntity.getPos().getY() + 0.5D, tileEntity.getPos().getZ() + 0.5D, x, y, z) < d * d;
+		return squareDist(tileEntity.getBlockPos().getX() + 0.5D, tileEntity.getBlockPos().getY() + 0.5D, tileEntity.getBlockPos().getZ() + 0.5D, x, y, z) < d * d;
 	}
 
 	private static double squareDist(double x1, double y1, double z1, double x2, double y2, double z2) {
@@ -197,7 +197,7 @@ public class Hook {
 			return true;
 		}
 		ChunkRender renderChunk = FIELD_RENDER_CHUNK.get(containerLocalRenderInformation);
-		BlockPos pos = renderChunk.getPosition();
+		BlockPos pos = renderChunk.getOrigin();
 		if (Math.abs(pos.getX() + 8.0D - x) > EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.terrainShadowsMaxHorizontalDistance.get()) {
 			return false;
 		}

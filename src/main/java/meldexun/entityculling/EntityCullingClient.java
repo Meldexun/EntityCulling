@@ -62,29 +62,29 @@ public class EntityCullingClient {
 	@SubscribeEvent
 	public void onWorldTickEvent(TickEvent.ClientTickEvent event) {
 		if (event.phase == Phase.END) {
-			if (EntityCullingConfig.CLIENT_CONFIG.debug.get() && Minecraft.getInstance().world != null && Minecraft.getInstance().world.getGameTime() % 40 == 0) {
+			if (EntityCullingConfig.CLIENT_CONFIG.debug.get() && Minecraft.getInstance().level != null && Minecraft.getInstance().level.getGameTime() % 40 == 0) {
 				LOGGER.info("{}", Arrays.stream(CULLING_THREAD.time).sum() / 1_000 / 10);
 			}
-			if (Minecraft.getInstance().world != null && Minecraft.getInstance().world.getGameTime() % 4 == 0) {
-				ICullable.deleteInvalidTileEntityQueries(Minecraft.getInstance().world);
+			if (Minecraft.getInstance().level != null && Minecraft.getInstance().level.getGameTime() % 4 == 0) {
+				ICullable.deleteInvalidTileEntityQueries(Minecraft.getInstance().level);
 			}
 		}
 	}
 
 	@SubscribeEvent
 	public void onEntityLeaveWorldEvent(EntityLeaveWorldEvent event) {
-		if (event.getWorld().isRemote()) {
+		if (event.getWorld().isClientSide()) {
 			((ICullable) event.getEntity()).deleteQuery();
 		}
 	}
 
 	@SubscribeEvent
 	public void onWorldUnloadEvent(WorldEvent.Unload event) {
-		if (event.getWorld().isRemote()) {
-			for (Entity e : ((ClientWorld) event.getWorld()).getAllEntities()) {
+		if (event.getWorld().isClientSide()) {
+			for (Entity e : ((ClientWorld) event.getWorld()).entitiesForRendering()) {
 				((ICullable) e).deleteQuery();
 			}
-			for (TileEntity te : ((ClientWorld) event.getWorld()).loadedTileEntityList) {
+			for (TileEntity te : ((ClientWorld) event.getWorld()).blockEntityList) {
 				((ICullable) te).deleteQuery();
 			}
 			ICullable.deleteTileEntityQueries();
@@ -93,13 +93,13 @@ public class EntityCullingClient {
 
 	@SubscribeEvent
 	public void onChunkUnloadEvent(ChunkEvent.Unload event) {
-		if (event.getWorld().isRemote()) {
-			for (ClassInheritanceMultiMap<Entity> entityMap : ((Chunk) event.getChunk()).getEntityLists()) {
+		if (event.getWorld().isClientSide()) {
+			for (ClassInheritanceMultiMap<Entity> entityMap : ((Chunk) event.getChunk()).getEntitySections()) {
 				for (Entity e : entityMap) {
 					((ICullable) e).deleteQuery();
 				}
 			}
-			for (TileEntity te : ((Chunk) event.getChunk()).getTileEntityMap().values()) {
+			for (TileEntity te : ((Chunk) event.getChunk()).getBlockEntities().values()) {
 				((ICullable) te).deleteQuery();
 			}
 		}
