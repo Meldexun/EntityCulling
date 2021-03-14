@@ -1,5 +1,8 @@
 package meldexun.entityculling.plugin;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.util.Random;
 
 import org.lwjgl.opengl.GL11;
@@ -84,6 +87,10 @@ public class Hook {
 		GL11.glDepthMask(false);
 		GL11.glColorMask(false, false, false, false);
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
+		GL11.glPushMatrix();
+		FloatBuffer floatBuffer = ByteBuffer.allocateDirect(64).order(ByteOrder.nativeOrder()).asFloatBuffer();
+		matrixStackIn.getLast().getMatrix().write(floatBuffer);
+		GL11.glMultMatrixf(floatBuffer);
 
 		for (Entity entity : mc.world.getAllEntities()) {
 			AxisAlignedBB aabb = entity.getRenderBoundingBox();
@@ -147,6 +154,7 @@ public class Hook {
 			}
 		}
 
+		GL11.glPopMatrix();
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
 		GL11.glColorMask(true, true, true, true);
 		GL11.glDepthMask(true);
