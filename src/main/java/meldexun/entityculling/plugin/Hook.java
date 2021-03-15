@@ -84,6 +84,7 @@ public class Hook {
 
 		double updateChance = MathHelper.clamp(20.0D / (double) FIELD_DEBUG_FPS.get(null), 1.0e-7D, 0.5D);
 
+		GL11.glEnable(GL11.GL_DEPTH_TEST);
 		GL11.glDepthMask(false);
 		GL11.glColorMask(false, false, false, false);
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
@@ -158,6 +159,7 @@ public class Hook {
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
 		GL11.glColorMask(true, true, true, true);
 		GL11.glDepthMask(true);
+		GL11.glDisable(GL11.GL_DEPTH_TEST);
 	}
 
 	public static boolean shouldRenderEntityShadow(Entity entity) {
