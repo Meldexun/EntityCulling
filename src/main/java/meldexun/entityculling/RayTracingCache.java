@@ -17,7 +17,7 @@ public class RayTracingCache {
 		this.radiusBlocks = this.radiusChunks << 4;
 		this.chunks = new RayTracingCacheChunk[this.sizeChunks * this.sizeChunks * this.sizeChunks];
 
-		for (int i = 0; i < this.sizeChunks; i++) {
+		for (int i = 0; i < this.chunks.length; i++) {
 			this.chunks[i] = new RayTracingCacheChunk();
 		}
 	}
