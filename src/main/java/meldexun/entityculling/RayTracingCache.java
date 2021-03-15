@@ -6,23 +6,19 @@ import javax.annotation.Nullable;
 
 public class RayTracingCache {
 
-	private final int radiusBlocks;
-	private final int radiusChunks;
-	private final int sizeChunks;
-	private final RayTracingCacheChunk[][][] chunks;
+	public final int radiusBlocks;
+	public final int radiusChunks;
+	public final int sizeChunks;
+	private final RayTracingCacheChunk[] chunks;
 
 	public RayTracingCache(int radiusChunks) {
 		this.radiusChunks = radiusChunks;
 		this.sizeChunks = this.radiusChunks * 2;
 		this.radiusBlocks = this.radiusChunks << 4;
-		this.chunks = new RayTracingCacheChunk[this.sizeChunks][this.sizeChunks][this.sizeChunks];
+		this.chunks = new RayTracingCacheChunk[this.sizeChunks * this.sizeChunks * this.sizeChunks];
 
-		for (int x = 0; x < this.sizeChunks; x++) {
-			for (int y = 0; y < this.sizeChunks; y++) {
-				for (int z = 0; z < this.sizeChunks; z++) {
-					this.chunks[x][y][z] = new RayTracingCacheChunk();
-				}
-			}
+		for (int i = 0; i < this.sizeChunks; i++) {
+			this.chunks[i] = new RayTracingCacheChunk();
 		}
 	}
 
@@ -50,25 +46,16 @@ public class RayTracingCache {
 
 	@Nullable
 	public RayTracingCacheChunk getChunk(int chunkX, int chunkY, int chunkZ) {
-		if (chunkX < 0 || chunkX > this.sizeChunks) {
+		int index = (chunkZ * this.sizeChunks * this.sizeChunks) | (chunkY * this.sizeChunks) | chunkX;
+		if (index < 0 || index >= this.chunks.length) {
 			return null;
 		}
-		if (chunkY < 0 || chunkY > this.sizeChunks) {
-			return null;
-		}
-		if (chunkZ < 0 || chunkZ > this.sizeChunks) {
-			return null;
-		}
-		return this.chunks[chunkX][chunkY][chunkZ];
+		return this.chunks[index];
 	}
 
 	public void clearCache() {
-		for (int x = 0; x < this.sizeChunks; x++) {
-			for (int y = 0; y < this.sizeChunks; y++) {
-				for (int z = 0; z < this.sizeChunks; z++) {
-					this.chunks[x][y][z].clearChunk();
-				}
-			}
+		for (int i = 0; i < this.chunks.length; i++) {
+			this.chunks[i].clearChunk();
 		}
 	}
 

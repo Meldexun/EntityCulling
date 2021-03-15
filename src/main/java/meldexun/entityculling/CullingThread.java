@@ -397,15 +397,21 @@ public class CullingThread extends Thread {
 	}
 
 	private boolean checkVisibilityCached(World world, int endX, int endY, int endZ) {
-		int cachedValue = this.cache.getCachedValue(endX - this.camBlockX, endY - this.camBlockY, endZ - this.camBlockZ);
-		if (cachedValue > 0) {
-			return cachedValue >> 1 == 1;
+		int cacheX = endX - this.camBlockX + this.cache.radiusBlocks;
+		int cacheY = endY - this.camBlockY + this.cache.radiusBlocks;
+		int cacheZ = endZ - this.camBlockZ + this.cache.radiusBlocks;
+		RayTracingCache.RayTracingCacheChunk chunk = this.cache.getChunk(cacheX >> 4, cacheY >> 4, cacheZ >> 4);
+		if (chunk != null) {
+			int cachedValue = chunk.getCachedValue(cacheX & 15, cacheY & 15, cacheZ & 15);
+			if (cachedValue > 0) {
+				return cachedValue >> 1 == 1;
+			}
 		}
 
 		boolean flag = this.checkVisibility(world, this.camX, this.camY, this.camZ, endX, endY, endZ, 1.0D);
 
-		if (cachedValue == 0) {
-			this.cache.setCachedValue(endX - this.camBlockX, endY - this.camBlockY, endZ - this.camBlockZ, flag ? 2 : 1);
+		if (chunk != null) {
+			chunk.setCachedValue(cacheX & 15, cacheY & 15, cacheZ & 15, flag ? 2 : 1);
 		}
 
 		return flag;
