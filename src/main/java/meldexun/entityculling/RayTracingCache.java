@@ -86,7 +86,7 @@ public class RayTracingCache {
 		 */
 		public int getCachedValue(int x, int y, int z) {
 			int index = (z << 4) | y;
-			int offset = (x & 3) << 1;
+			int offset = (x & 15) << 1;
 			return (this.cache[index] >> offset) & 3;
 		}
 
@@ -98,7 +98,7 @@ public class RayTracingCache {
 		 */
 		public void setCachedValue(int x, int y, int z, int value) {
 			int index = (z << 4) | y;
-			int offset = (x & 3) << 1;
+			int offset = (x & 15) << 1;
 			this.cache[index] = (this.cache[index] & ~(3 << offset)) | (value & 3) << offset;
 			this.dirty = true;
 		}
