@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL43;
 
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -44,8 +43,8 @@ public interface ICullable {
 	default int initQuery() {
 		if (!this.isQueryInitialized()) {
 			this.setQuery(GL15.glGenQueries());
-			GL15.glBeginQuery(GL43.GL_ANY_SAMPLES_PASSED_CONSERVATIVE, this.getQuery());
-			GL15.glEndQuery(GL43.GL_ANY_SAMPLES_PASSED_CONSERVATIVE);
+			GLHelper.beginQuery(this.getQuery());
+			GLHelper.endQuery();
 			if (this instanceof TileEntity) {
 				BlockPos pos = ((TileEntity) this).getPos();
 				TileEntity te = TILE_ENTITY_MAP.get(pos);
