@@ -37,7 +37,7 @@ public class EntityCullingContainer extends DummyModContainer {
 		super(new ModMetadata());
 		ModMetadata meta = this.getMetadata();
 		meta.name = "Entity Culling";
-		meta.version = "4.0.4";
+		meta.version = "4.0.5";
 		meta.modId = MOD_ID;
 		meta.authorList = Arrays.asList("Meldexun");
 		meta.url = "https://github.com/Meldexun/EntityCulling";
