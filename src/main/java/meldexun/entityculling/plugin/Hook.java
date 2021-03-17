@@ -7,12 +7,12 @@ import java.util.Random;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL43;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 
 import meldexun.entityculling.EntityCullingClient;
 import meldexun.entityculling.EntityCullingConfig;
+import meldexun.entityculling.GLHelper;
 import meldexun.entityculling.ICullable;
 import meldexun.entityculling.reflection.ReflectionField;
 import meldexun.entityculling.reflection.ReflectionMethod;
@@ -107,7 +107,7 @@ public class Hook {
 				}
 
 				if (RAND.nextDouble() < updateChance) {
-					GL15.glBeginQuery(GL43.GL_ANY_SAMPLES_PASSED_CONSERVATIVE, query);
+					GLHelper.beginQuery(query);
 
 					GL11.glPushMatrix();
 					GL11.glTranslated(aabb.minX - 0.5D - x, aabb.minY - 0.5D - y, aabb.minZ - 0.5D - z);
@@ -115,7 +115,7 @@ public class Hook {
 					GL11.glCallList(EntityCullingClient.cubeDisplayList);
 					GL11.glPopMatrix();
 
-					GL15.glEndQuery(GL43.GL_ANY_SAMPLES_PASSED_CONSERVATIVE);
+					GLHelper.endQuery();
 
 					((ICullable) entity).setQueryResultDirty(true);
 				} else {
@@ -138,7 +138,7 @@ public class Hook {
 				}
 
 				if (RAND.nextDouble() < updateChance) {
-					GL15.glBeginQuery(GL43.GL_ANY_SAMPLES_PASSED_CONSERVATIVE, query);
+					GLHelper.beginQuery(query);
 
 					GL11.glPushMatrix();
 					GL11.glTranslated(aabb.minX - x, aabb.minY - y, aabb.minZ - z);
@@ -146,7 +146,7 @@ public class Hook {
 					GL11.glCallList(EntityCullingClient.cubeDisplayList);
 					GL11.glPopMatrix();
 
-					GL15.glEndQuery(GL43.GL_ANY_SAMPLES_PASSED_CONSERVATIVE);
+					GLHelper.endQuery();
 
 					((ICullable) tileEntity).setQueryResultDirty(true);
 				} else {

@@ -37,6 +37,7 @@ public class EntityCulling {
 	private void setup(FMLClientSetupEvent event) {
 		CullingThread.updateBlacklists();
 
+		GLHelper.init();
 		EntityCullingClient.init();
 		event.enqueueWork(EntityCullingClient::generateCubeDisplayList);
 		MinecraftForge.EVENT_BUS.register(new EntityCullingClient());
