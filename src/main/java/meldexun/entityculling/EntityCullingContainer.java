@@ -13,7 +13,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ClassInheritanceMultiMap;
-import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
@@ -55,9 +54,10 @@ public class EntityCullingContainer extends DummyModContainer {
 		ConfigManager.sync(MOD_ID, Config.Type.INSTANCE);
 		CullingThread.updateBlacklists();
 		GLHelper.init();
-		MinecraftForge.EVENT_BUS.register(this);
+		generateCubeDisplayList();
 
 		CULLING_THREAD.start();
+		MinecraftForge.EVENT_BUS.register(this);
 	}
 
 	@SubscribeEvent
@@ -82,8 +82,7 @@ public class EntityCullingContainer extends DummyModContainer {
 
 	public static int cubeDisplayList;
 
-	@SubscribeEvent
-	public void onModelRegistryEvent(ModelRegistryEvent event) {
+	public static void generateCubeDisplayList() {
 		cubeDisplayList = GL11.glGenLists(1);
 		GL11.glNewList(cubeDisplayList, GL11.GL_COMPILE);
 		GL11.glBegin(GL11.GL_TRIANGLE_FAN);
