@@ -54,6 +54,7 @@ public class EntityCullingContainer extends DummyModContainer {
 	public void onFMLConstructionEvent(FMLConstructionEvent event) {
 		ConfigManager.sync(MOD_ID, Config.Type.INSTANCE);
 		CullingThread.updateBlacklists();
+		GLHelper.init();
 		MinecraftForge.EVENT_BUS.register(this);
 
 		CULLING_THREAD.start();

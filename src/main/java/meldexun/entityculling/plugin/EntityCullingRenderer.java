@@ -6,10 +6,10 @@ import java.util.Random;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL43;
 
 import meldexun.entityculling.EntityCullingConfig;
 import meldexun.entityculling.EntityCullingContainer;
+import meldexun.entityculling.GLHelper;
 import meldexun.entityculling.ICullable;
 import meldexun.entityculling.reflection.ReflectionField;
 import net.minecraft.client.Minecraft;
@@ -285,7 +285,7 @@ public class EntityCullingRenderer {
 				}
 
 				if (RAND.nextDouble() < updateChance) {
-					GL15.glBeginQuery(GL43.GL_ANY_SAMPLES_PASSED_CONSERVATIVE, query);
+					GLHelper.beginQuery(query);
 
 					GL11.glPushMatrix();
 					GL11.glTranslated(aabb.minX - 0.5D - this.x, aabb.minY - 0.5D - this.y, aabb.minZ - 0.5D - this.z);
@@ -293,7 +293,7 @@ public class EntityCullingRenderer {
 					GL11.glCallList(EntityCullingContainer.cubeDisplayList);
 					GL11.glPopMatrix();
 
-					GL15.glEndQuery(GL43.GL_ANY_SAMPLES_PASSED_CONSERVATIVE);
+					GLHelper.endQuery();
 
 					((ICullable) entity).setQueryResultDirty(true);
 				} else {
@@ -316,7 +316,7 @@ public class EntityCullingRenderer {
 				}
 
 				if (RAND.nextDouble() < updateChance) {
-					GL15.glBeginQuery(GL43.GL_ANY_SAMPLES_PASSED_CONSERVATIVE, query);
+					GLHelper.beginQuery(query);
 
 					GL11.glPushMatrix();
 					GL11.glTranslated(aabb.minX - this.x, aabb.minY - this.y, aabb.minZ - this.z);
@@ -324,7 +324,7 @@ public class EntityCullingRenderer {
 					GL11.glCallList(EntityCullingContainer.cubeDisplayList);
 					GL11.glPopMatrix();
 
-					GL15.glEndQuery(GL43.GL_ANY_SAMPLES_PASSED_CONSERVATIVE);
+					GLHelper.endQuery();
 
 					((ICullable) tileEntity).setQueryResultDirty(true);
 				} else {
