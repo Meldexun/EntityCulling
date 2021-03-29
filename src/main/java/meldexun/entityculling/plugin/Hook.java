@@ -216,14 +216,16 @@ public class Hook {
 		GL11.glPopMatrix();
 
 		if (texture2dEnabled) {
-			glEnable(GL_TEXTURE_2D);
+			GL11.glEnable(GL11.GL_TEXTURE_2D);
+		} else {
+			GL11.glDisable(GL11.GL_TEXTURE_2D);
 		}
 		if (depthTestEnabled) {
-			glDisable(GL_DEPTH_TEST);
+			GL11.glEnable(GL11.GL_DEPTH_TEST);
+		} else {
+			GL11.glDisable(GL11.GL_DEPTH_TEST);
 		}
-		if (depthMaskEnabled) {
-			glDepthMask(true);
-		}
+		glDepthMask(depthMaskEnabled);
 		glColorMask(COLOR_MASK_BUFFER.get(0) == 1, COLOR_MASK_BUFFER.get(1) == 1, COLOR_MASK_BUFFER.get(2) == 1, COLOR_MASK_BUFFER.get(3) == 1);
 	}
 
