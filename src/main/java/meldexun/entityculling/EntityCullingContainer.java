@@ -83,7 +83,7 @@ public class EntityCullingContainer extends DummyModContainer {
 				int i5 = Hook.getRenderer().tileEntitiesOcclusionCulled;
 				LOGGER.info("Culling Thread: {}µs, Entities Rendered: {}, Entities Culled: {}, TileEntities Rendered: {}, TileEntities Culled: {}", i1, i2, i3, i4, i5);
 			}
-			if (Minecraft.getMinecraft().world != null && Minecraft.getMinecraft().world.getTotalWorldTime() % 4 == 0) {
+			if (Minecraft.getMinecraft().world != null && Minecraft.getMinecraft().world.getTotalWorldTime() % 20 == 0) {
 				ICullable.deleteInvalidTileEntityQueries(Minecraft.getMinecraft().world);
 			}
 		}
