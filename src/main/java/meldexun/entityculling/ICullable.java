@@ -37,7 +37,7 @@ public interface ICullable {
 	void setQueryResultDirty(boolean queryResultUpToDate);
 
 	default boolean isVisible() {
-		return !this.isCulledFast() && !this.isCulledSlow();
+		return !this.isCulledFast() || !this.isCulledSlow();
 	}
 
 	default int initQuery() {
