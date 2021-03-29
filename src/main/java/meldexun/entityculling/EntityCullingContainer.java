@@ -1,14 +1,18 @@
 package meldexun.entityculling;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.util.Arrays;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL15;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
+import meldexun.entityculling.plugin.Hook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
@@ -72,7 +76,12 @@ public class EntityCullingContainer extends DummyModContainer {
 	public void onWorldTickEvent(TickEvent.ClientTickEvent event) {
 		if (event.phase == Phase.END) {
 			if (EntityCullingConfig.debug && Minecraft.getMinecraft().world != null && Minecraft.getMinecraft().world.getTotalWorldTime() % 40 == 0) {
-				LOGGER.info("{}", Arrays.stream(CULLING_THREAD.time).sum() / 1_000 / 10);
+				int i1 = (int) Arrays.stream(CULLING_THREAD.time).sum() / 1_000 / 10;
+				int i2 = Hook.getRenderer().entitiesRendered;
+				int i3 = Hook.getRenderer().entitiesOcclusionCulled;
+				int i4 = Hook.getRenderer().tileEntitiesRendered;
+				int i5 = Hook.getRenderer().tileEntitiesOcclusionCulled;
+				LOGGER.info("Culling Thread: {}µs, Entities Rendered: {}, Entities Culled: {}, TileEntities Rendered: {}, TileEntities Culled: {}", i1, i2, i3, i4, i5);
 			}
 			if (Minecraft.getMinecraft().world != null && Minecraft.getMinecraft().world.getTotalWorldTime() % 4 == 0) {
 				ICullable.deleteInvalidTileEntityQueries(Minecraft.getMinecraft().world);
@@ -80,34 +89,43 @@ public class EntityCullingContainer extends DummyModContainer {
 		}
 	}
 
-	public static int cubeDisplayList;
+	public static int vertexBuffer;
+	public static int indexBuffer;
 
 	public static void generateCubeDisplayList() {
-		cubeDisplayList = GL11.glGenLists(1);
-		GL11.glNewList(cubeDisplayList, GL11.GL_COMPILE);
-		GL11.glBegin(GL11.GL_TRIANGLE_FAN);
-		GL11.glVertex3f(0, 0, 0);
-		GL11.glVertex3f(1, 0, 0);
-		GL11.glVertex3f(1, 0, 1);
-		GL11.glVertex3f(0, 0, 1);
+		FloatBuffer vertexByteBuffer = ByteBuffer.allocateDirect(8 * 3 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+		vertexByteBuffer.put(new float[] {
+				0, 0, 0,
+				0, 0, 1,
+				0, 1, 0,
+				0, 1, 1,
+				1, 0, 0,
+				1, 0, 1,
+				1, 1, 0,
+				1, 1, 1
+		});
+		vertexByteBuffer.rewind();
+		ByteBuffer indexByteBuffer = ByteBuffer.allocateDirect(14).order(ByteOrder.nativeOrder());
+		indexByteBuffer.put(new byte[] {
+				0, 4,
+				1, 5,
+				7, 4,
+				6, 0,
+				2, 1,
+				3, 7,
+				2, 6
+		});
+		indexByteBuffer.rewind();
 
-		GL11.glVertex3f(0, 1, 1);
-		GL11.glVertex3f(0, 1, 0);
-		GL11.glVertex3f(1, 1, 0);
-		GL11.glVertex3f(1, 0, 0);
-		GL11.glEnd();
-		GL11.glBegin(GL11.GL_TRIANGLE_FAN);
-		GL11.glVertex3f(1, 1, 1);
-		GL11.glVertex3f(1, 1, 0);
-		GL11.glVertex3f(0, 1, 0);
-		GL11.glVertex3f(0, 1, 1);
+		vertexBuffer = GL15.glGenBuffers();
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexBuffer);
+		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertexByteBuffer, GL15.GL_STATIC_DRAW);
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 
-		GL11.glVertex3f(0, 0, 1);
-		GL11.glVertex3f(1, 0, 1);
-		GL11.glVertex3f(1, 0, 0);
-		GL11.glVertex3f(1, 1, 0);
-		GL11.glEnd();
-		GL11.glEndList();
+		indexBuffer = GL15.glGenBuffers();
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indexByteBuffer, GL15.GL_STATIC_DRAW);
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
 	@SubscribeEvent

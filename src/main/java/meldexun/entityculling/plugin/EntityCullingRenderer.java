@@ -1,16 +1,20 @@
 package meldexun.entityculling.plugin;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL20;
 
 import meldexun.entityculling.EntityCullingConfig;
 import meldexun.entityculling.EntityCullingContainer;
 import meldexun.entityculling.GLHelper;
 import meldexun.entityculling.ICullable;
+import meldexun.entityculling.ITileEntityBBCache;
 import meldexun.entityculling.reflection.ReflectionField;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -37,6 +41,7 @@ public class EntityCullingRenderer {
 	protected static final ReflectionField<Framebuffer> FIELD_ENTITY_OUTLINE_FRAMEBUFFER = new ReflectionField<>(RenderGlobal.class, "field_175015_z", "entityOutlineFramebuffer");
 	protected static final ReflectionField<ShaderGroup> FIELD_ENTITY_OUTLINE_SHADER = new ReflectionField<>(RenderGlobal.class, "field_174991_A", "entityOutlineShader");
 
+	private static final ByteBuffer COLOR_MASK_BUFFER = ByteBuffer.allocateDirect(16).order(ByteOrder.nativeOrder());
 	protected static final Random RAND = new Random();
 
 	protected boolean renderingPrepared;
@@ -57,6 +62,11 @@ public class EntityCullingRenderer {
 
 	protected boolean entityOutlinesRendered = false;
 
+	public int entitiesRendered;
+	public int entitiesOcclusionCulled;
+	public int tileEntitiesRendered;
+	public int tileEntitiesOcclusionCulled;
+
 	protected void preRenderEntities() {
 		this.renderingPrepared = true;
 		this.mc = Minecraft.getMinecraft();
@@ -74,6 +84,11 @@ public class EntityCullingRenderer {
 		this.entityListNormalPass1 = new ArrayList<>(16);
 		this.entityListMultipassPass1 = new ArrayList<>(8);
 		this.tileEntityListPass1 = new ArrayList<>(16);
+
+		this.entitiesRendered = 0;
+		this.entitiesOcclusionCulled = 0;
+		this.tileEntitiesRendered = 0;
+		this.tileEntitiesOcclusionCulled = 0;
 	}
 
 	protected void postRenderEntities() {
@@ -119,8 +134,7 @@ public class EntityCullingRenderer {
 			List<Entity> outlineEntityList = new ArrayList<>();
 			BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
 			for (Entity entity : this.mc.world.loadedEntityList) {
-				boolean renderOutlines = entity.isGlowing() || (spectatorAndOutlinesEnabled && entity instanceof EntityPlayer);
-				if (!((ICullable) entity).isVisible() && !renderOutlines) {
+				if (!entity.shouldRenderInPass(0) && !entity.shouldRenderInPass(1)) {
 					continue;
 				}
 				Render<Entity> render = renderManager.getEntityRenderObject(entity);
@@ -137,6 +151,7 @@ public class EntityCullingRenderer {
 					continue;
 				}
 
+				boolean renderOutlines = entity.isGlowing() || (spectatorAndOutlinesEnabled && entity instanceof EntityPlayer);
 				boolean entityWasRendered = false;
 
 				if (entity.shouldRenderInPass(0)) {
@@ -164,6 +179,9 @@ public class EntityCullingRenderer {
 
 				if (entityWasRendered) {
 					entitiesRendered++;
+					this.entitiesRendered++;
+				} else {
+					this.entitiesOcclusionCulled++;
 				}
 			}
 
@@ -231,17 +249,26 @@ public class EntityCullingRenderer {
 
 		if (pass == 0) {
 			for (TileEntity tileEntity : this.mc.world.loadedTileEntityList) {
-				if (!((ICullable) tileEntity).isVisible()) {
+				if (!tileEntity.shouldRenderInPass(0) && !tileEntity.shouldRenderInPass(1)) {
+					continue;
+				}
+				if (TileEntityRendererDispatcher.instance.getRenderer(tileEntity) == null) {
 					continue;
 				}
 				if (tileEntity.getDistanceSq(this.x, this.y, this.z) > tileEntity.getMaxRenderDistanceSquared()) {
 					continue;
 				}
-				if (!this.frustum.isBoundingBoxInFrustum(tileEntity.getRenderBoundingBox())) {
+				if (!this.frustum.isBoundingBoxInFrustum(((ITileEntityBBCache) tileEntity).getCachedAABB())) {
 					continue;
 				}
 				if (!this.mc.world.isBlockLoaded(tileEntity.getPos(), false)) {
 					continue;
+				}
+				if (!((ICullable) tileEntity).isVisible()) {
+					this.tileEntitiesOcclusionCulled++;
+					continue;
+				} else {
+					this.tileEntitiesRendered++;
 				}
 				if (tileEntity.shouldRenderInPass(0)) {
 					TileEntityRendererDispatcher.instance.render(tileEntity, this.partialTicks, -1);
@@ -264,11 +291,28 @@ public class EntityCullingRenderer {
 	}
 
 	protected void updateEntityCullingState() {
-		double updateChance = MathHelper.clamp(20.0D / (double) Minecraft.getDebugFPS(), 1.0e-7D, 0.5D);
+		if (!EntityCullingConfig.betaFeatures) {
+			return;
+		}
 
-		GL11.glDepthMask(false);
+		double updateChance = MathHelper.clamp(10.0D / (double) Minecraft.getDebugFPS(), 1.0e-7D, 0.5D);
+
+		GL11.glGetBoolean(GL11.GL_COLOR_WRITEMASK, COLOR_MASK_BUFFER);
+		boolean depthMaskEnabled = GL11.glGetBoolean(GL11.GL_DEPTH_WRITEMASK);
+		boolean depthTestEnabled = GL11.glGetBoolean(GL11.GL_DEPTH_TEST);
+		boolean texture2dEnabled = GL11.glGetBoolean(GL11.GL_TEXTURE_2D);
 		GL11.glColorMask(false, false, false, false);
+		GL11.glDepthMask(false);
+		GL11.glEnable(GL11.GL_DEPTH_TEST);
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
+
+		GL11.glPushMatrix();
+		GL11.glTranslated(-this.x, -this.y, -this.z);
+
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, EntityCullingContainer.vertexBuffer);
+		GL20.glEnableVertexAttribArray(0);
+		GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, 0, 0);
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, EntityCullingContainer.indexBuffer);
 
 		for (Entity entity : this.mc.world.loadedEntityList) {
 			AxisAlignedBB aabb = entity.getRenderBoundingBox();
@@ -284,15 +328,15 @@ public class EntityCullingRenderer {
 				}
 
 				if (RAND.nextDouble() < updateChance) {
-					GLHelper.beginQuery(query);
-
 					GL11.glPushMatrix();
-					GL11.glTranslated(aabb.minX - 0.5D - this.x, aabb.minY - 0.5D - this.y, aabb.minZ - 0.5D - this.z);
+					GL11.glTranslated(aabb.minX - 0.5D, aabb.minY - 0.5D, aabb.minZ - 0.5D);
 					GL11.glScaled(aabb.maxX - aabb.minX + 1.0D, aabb.maxY - aabb.minY + 1.0D, aabb.maxZ - aabb.minZ + 1.0D);
-					GL11.glCallList(EntityCullingContainer.cubeDisplayList);
-					GL11.glPopMatrix();
 
+					GLHelper.beginQuery(query);
+					GL11.glDrawElements(GL11.GL_TRIANGLE_STRIP, 14, GL11.GL_UNSIGNED_BYTE, 0);
 					GLHelper.endQuery();
+
+					GL11.glPopMatrix();
 
 					((ICullable) entity).setQueryResultDirty(true);
 				} else {
@@ -302,7 +346,7 @@ public class EntityCullingRenderer {
 		}
 
 		for (TileEntity tileEntity : this.mc.world.loadedTileEntityList) {
-			AxisAlignedBB aabb = tileEntity.getRenderBoundingBox();
+			AxisAlignedBB aabb = ((ITileEntityBBCache) tileEntity).getCachedAABB();
 
 			if (!((ICullable) tileEntity).isCulledFast() || !this.frustum.isBoxInFrustum(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ) || this.mc.player.getDistanceSqToCenter(tileEntity.getPos()) < 4.0D * 4.0D) {
 				((ICullable) tileEntity).setCulledSlow(false);
@@ -315,15 +359,15 @@ public class EntityCullingRenderer {
 				}
 
 				if (RAND.nextDouble() < updateChance) {
-					GLHelper.beginQuery(query);
-
 					GL11.glPushMatrix();
-					GL11.glTranslated(aabb.minX - this.x, aabb.minY - this.y, aabb.minZ - this.z);
+					GL11.glTranslated(aabb.minX, aabb.minY, aabb.minZ);
 					GL11.glScaled(aabb.maxX - aabb.minX, aabb.maxY - aabb.minY, aabb.maxZ - aabb.minZ);
-					GL11.glCallList(EntityCullingContainer.cubeDisplayList);
-					GL11.glPopMatrix();
 
+					GLHelper.beginQuery(query);
+					GL11.glDrawElements(GL11.GL_TRIANGLE_STRIP, 14, GL11.GL_UNSIGNED_BYTE, 0);
 					GLHelper.endQuery();
+
+					GL11.glPopMatrix();
 
 					((ICullable) tileEntity).setQueryResultDirty(true);
 				} else {
@@ -332,9 +376,26 @@ public class EntityCullingRenderer {
 			}
 		}
 
-		GL11.glEnable(GL11.GL_TEXTURE_2D);
-		GL11.glColorMask(true, true, true, true);
-		GL11.glDepthMask(true);
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+		GL20.glDisableVertexAttribArray(0);
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+
+		GL11.glPopMatrix();
+
+		if (texture2dEnabled) {
+			GL11.glEnable(GL11.GL_TEXTURE_2D);
+		} else {
+			GL11.glDisable(GL11.GL_TEXTURE_2D);
+		}
+		if (depthTestEnabled) {
+			GL11.glEnable(GL11.GL_DEPTH_TEST);
+		} else {
+			GL11.glDisable(GL11.GL_DEPTH_TEST);
+		}
+		if (depthMaskEnabled) {
+			GL11.glDepthMask(true);
+		}
+		GL11.glColorMask(COLOR_MASK_BUFFER.get(0) == 1, COLOR_MASK_BUFFER.get(1) == 1, COLOR_MASK_BUFFER.get(2) == 1, COLOR_MASK_BUFFER.get(3) == 1);
 	}
 
 }

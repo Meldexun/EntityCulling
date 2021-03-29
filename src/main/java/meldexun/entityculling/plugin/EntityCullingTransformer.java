@@ -261,6 +261,57 @@ public class EntityCullingTransformer implements IClassTransformer {
 			methodSetQueryResultUpToDate.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/tileentity/TileEntity", "queryResultDirty", "Z"));
 			methodSetQueryResultUpToDate.instructions.add(new InsnNode(Opcodes.RETURN));
 			classNode.methods.add(methodSetQueryResultUpToDate);
+
+			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "prevAABB", "Lnet/minecraft/util/math/AxisAlignedBB;", null, null));
+			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "prevPos", "Lnet/minecraft/util/math/BlockPos;", null, null));
+			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "prevState", "Lnet/minecraft/block/Block;", null, null));
+
+			classNode.interfaces.add("meldexun/entityculling/ITileEntityBBCache");
+
+			MethodNode methodGetPrevAABB = new MethodNode(Opcodes.ACC_PUBLIC, "getPrevAABB", "()Lnet/minecraft/util/math/AxisAlignedBB;", null, null);
+			methodGetPrevAABB.instructions.clear();
+			methodGetPrevAABB.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodGetPrevAABB.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/tileentity/TileEntity", "prevAABB", "Lnet/minecraft/util/math/AxisAlignedBB;"));
+			methodGetPrevAABB.instructions.add(new InsnNode(Opcodes.ARETURN));
+			classNode.methods.add(methodGetPrevAABB);
+
+			MethodNode methodSetPrevAABB = new MethodNode(Opcodes.ACC_PUBLIC, "setPrevAABB", "(Lnet/minecraft/util/math/AxisAlignedBB;)V", null, null);
+			methodSetPrevAABB.instructions.clear();
+			methodSetPrevAABB.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodSetPrevAABB.instructions.add(new VarInsnNode(Opcodes.ALOAD, 1));
+			methodSetPrevAABB.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/tileentity/TileEntity", "prevAABB", "Lnet/minecraft/util/math/AxisAlignedBB;"));
+			methodSetPrevAABB.instructions.add(new InsnNode(Opcodes.RETURN));
+			classNode.methods.add(methodSetPrevAABB);
+
+			MethodNode methodGetPrevPos = new MethodNode(Opcodes.ACC_PUBLIC, "getPrevPos", "()Lnet/minecraft/util/math/BlockPos;", null, null);
+			methodGetPrevPos.instructions.clear();
+			methodGetPrevPos.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodGetPrevPos.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/tileentity/TileEntity", "prevPos", "Lnet/minecraft/util/math/BlockPos;"));
+			methodGetPrevPos.instructions.add(new InsnNode(Opcodes.ARETURN));
+			classNode.methods.add(methodGetPrevPos);
+
+			MethodNode methodSetPrevPos = new MethodNode(Opcodes.ACC_PUBLIC, "setPrevPos", "(Lnet/minecraft/util/math/BlockPos;)V", null, null);
+			methodSetPrevPos.instructions.clear();
+			methodSetPrevPos.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodSetPrevPos.instructions.add(new VarInsnNode(Opcodes.ALOAD, 1));
+			methodSetPrevPos.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/tileentity/TileEntity", "prevPos", "Lnet/minecraft/util/math/BlockPos;"));
+			methodSetPrevPos.instructions.add(new InsnNode(Opcodes.RETURN));
+			classNode.methods.add(methodSetPrevPos);
+
+			MethodNode methodGetPrevState = new MethodNode(Opcodes.ACC_PUBLIC, "getPrevState", "()Lnet/minecraft/block/Block;", null, null);
+			methodGetPrevState.instructions.clear();
+			methodGetPrevState.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodGetPrevState.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/tileentity/TileEntity", "prevState", "Lnet/minecraft/block/Block;"));
+			methodGetPrevState.instructions.add(new InsnNode(Opcodes.ARETURN));
+			classNode.methods.add(methodGetPrevState);
+
+			MethodNode methodSetPrevState = new MethodNode(Opcodes.ACC_PUBLIC, "setPrevState", "(Lnet/minecraft/block/Block;)V", null, null);
+			methodSetPrevState.instructions.clear();
+			methodSetPrevState.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			methodSetPrevState.instructions.add(new VarInsnNode(Opcodes.ALOAD, 1));
+			methodSetPrevState.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/tileentity/TileEntity", "prevState", "Lnet/minecraft/block/Block;"));
+			methodSetPrevState.instructions.add(new InsnNode(Opcodes.RETURN));
+			classNode.methods.add(methodSetPrevState);
 		}));
 		if (!IS_OPTIFINE_DETECTED) {
 			registerMethodTransformer(new MethodTransformer("buw", "net.minecraft.client.renderer.RenderGlobal", "a", "renderEntities", "(Lvg;Lbxy;F)V", "(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;F)V", method -> {

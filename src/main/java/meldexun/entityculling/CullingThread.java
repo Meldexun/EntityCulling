@@ -149,6 +149,9 @@ public class CullingThread extends Thread {
 
 	private void updateEntityCullingState(Entity entity) {
 		((ICullable) entity).setCulledFast(!this.checkEntityVisibility(entity));
+		if (!EntityCullingConfig.betaFeatures) {
+			((ICullable) entity).setCulledSlow(true);
+		}
 		if (EntityCullingTransformer.IS_OPTIFINE_DETECTED) {
 			((ICullable) entity).setCulledShadowPass(!this.checkEntityShadowVisibility(entity));
 		}
@@ -156,6 +159,9 @@ public class CullingThread extends Thread {
 
 	private void updateTileEntityCullingState(TileEntity tileEntity) {
 		((ICullable) tileEntity).setCulledFast(!this.checkTileEntityVisibility(tileEntity));
+		if (!EntityCullingConfig.betaFeatures) {
+			((ICullable) tileEntity).setCulledSlow(true);
+		}
 		if (EntityCullingTransformer.IS_OPTIFINE_DETECTED) {
 			((ICullable) tileEntity).setCulledShadowPass(!this.checkTileEntityShadowVisibility(tileEntity));
 		}
@@ -225,7 +231,7 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		AxisAlignedBB aabb = tileEntity.getRenderBoundingBox();
+		AxisAlignedBB aabb = ((ITileEntityBBCache) tileEntity).getCachedAABB();
 		if (aabb.maxX - aabb.minX > EntityCullingConfig.skipHiddenTileEntityRenderingSize || aabb.maxY - aabb.minY > EntityCullingConfig.skipHiddenTileEntityRenderingSize || aabb.maxZ - aabb.minZ > EntityCullingConfig.skipHiddenTileEntityRenderingSize) {
 			return true;
 		}
@@ -314,7 +320,7 @@ public class CullingThread extends Thread {
 			return !((ICullable) tileEntity).isCulledFast();
 		}
 
-		AxisAlignedBB aabb = tileEntity.getRenderBoundingBox();
+		AxisAlignedBB aabb = ((ITileEntityBBCache) tileEntity).getCachedAABB();
 		if (aabb.maxX - aabb.minX > EntityCullingConfig.skipHiddenTileEntityRenderingSize || aabb.maxY - aabb.minY > EntityCullingConfig.skipHiddenTileEntityRenderingSize || aabb.maxZ - aabb.minZ > EntityCullingConfig.skipHiddenTileEntityRenderingSize) {
 			return true;
 		}

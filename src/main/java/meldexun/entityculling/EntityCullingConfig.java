@@ -5,9 +5,13 @@ import net.minecraftforge.common.config.Config;
 @Config(modid = EntityCullingContainer.MOD_ID)
 public class EntityCullingConfig {
 
+	public static boolean betaFeatures = false;
+
 	@Config.RequiresMcRestart
 	@Config.Comment("Requires restart. Ram usage (in MB) = (x * 16 * 2) ^ 3 / 4")
 	public static int cacheSize = 12;
+
+	public static boolean debug = false;
 
 	@Config.Comment("Disable all changes from this mod.")
 	public static boolean enabled = true;
@@ -27,8 +31,6 @@ public class EntityCullingConfig {
 	public static double skipHiddenTileEntityRenderingSize = 3.0D;
 	@Config.Comment("Tile entities which will always be rendered. (Format: 'modid:tile_entity_name')")
 	public static String[] skipHiddenTileEntityRenderingBlacklist = new String[0];
-
-	public static boolean debug = false;
 
 	public static OptifineShaderOptions optifineShaderOptions = new OptifineShaderOptions();
 

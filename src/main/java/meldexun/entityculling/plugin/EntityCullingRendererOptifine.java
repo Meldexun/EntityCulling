@@ -99,8 +99,7 @@ public class EntityCullingRendererOptifine extends EntityCullingRenderer {
 				ClassInheritanceMultiMap<Entity> entityMap = !Loader.isModLoaded("cubicchunks") ? chunk.getEntityLists()[chunkPos.getY() >> 4] : CubicChunks.getEntityList(this.mc.world, renderChunk.getPosition());
 
 				for (Entity entity : entityMap) {
-					boolean renderOutlines = entity.isGlowing() || (spectatorAndOutlinesEnabled && entity instanceof EntityPlayer);
-					if (!((ICullable) entity).isVisible() && !isShadowPass && !renderOutlines) {
+					if (!entity.shouldRenderInPass(0) && !entity.shouldRenderInPass(1)) {
 						continue;
 					}
 					Render<Entity> render = renderManager.getEntityRenderObject(entity);
@@ -122,6 +121,7 @@ public class EntityCullingRendererOptifine extends EntityCullingRenderer {
 						}
 					}
 
+					boolean renderOutlines = entity.isGlowing() || (spectatorAndOutlinesEnabled && entity instanceof EntityPlayer);
 					boolean entityWasRendered = false;
 
 					if (entity.shouldRenderInPass(0)) {
@@ -155,8 +155,13 @@ public class EntityCullingRendererOptifine extends EntityCullingRenderer {
 						}
 					}
 
-					if (entityWasRendered) {
-						entitiesRendered++;
+					if (!isShadowPass) {
+						if (entityWasRendered) {
+							entitiesRendered++;
+							this.entitiesRendered++;
+						} else {
+							this.entitiesOcclusionCulled++;
+						}
 					}
 				}
 			}
@@ -292,7 +297,10 @@ public class EntityCullingRendererOptifine extends EntityCullingRenderer {
 				}
 
 				for (TileEntity tileEntity : renderChunk.compiledChunk.getTileEntities()) {
-					if (!((ICullable) tileEntity).isVisible() && !isShadowPass) {
+					if (!tileEntity.shouldRenderInPass(0) && !tileEntity.shouldRenderInPass(1)) {
+						continue;
+					}
+					if (TileEntityRendererDispatcher.instance.getRenderer(tileEntity) == null) {
 						continue;
 					}
 					if (tileEntity.getDistanceSq(this.x, this.y, this.z) > tileEntity.getMaxRenderDistanceSquared()) {
@@ -307,6 +315,13 @@ public class EntityCullingRendererOptifine extends EntityCullingRenderer {
 						}
 						if (EntityCullingConfig.optifineShaderOptions.tileEntityShadowsDistanceLimited && tileEntity.getDistanceSq(this.x, this.y, this.z) > EntityCullingConfig.optifineShaderOptions.tileEntityShadowsMaxDistance * EntityCullingConfig.optifineShaderOptions.tileEntityShadowsMaxDistance) {
 							continue;
+						}
+					} else {
+						if (!((ICullable) tileEntity).isVisible()) {
+							this.tileEntitiesOcclusionCulled++;
+							continue;
+						} else {
+							this.tileEntitiesRendered++;
 						}
 					}
 
@@ -326,7 +341,10 @@ public class EntityCullingRendererOptifine extends EntityCullingRenderer {
 			if (!setTileEntities.isEmpty()) {
 				synchronized (setTileEntities) {
 					for (TileEntity tileEntity : setTileEntities) {
-						if (!((ICullable) tileEntity).isVisible() && !isShadowPass) {
+						if (!tileEntity.shouldRenderInPass(0) && !tileEntity.shouldRenderInPass(1)) {
+							continue;
+						}
+						if (TileEntityRendererDispatcher.instance.getRenderer(tileEntity) == null) {
 							continue;
 						}
 						if (tileEntity.getDistanceSq(this.x, this.y, this.z) > tileEntity.getMaxRenderDistanceSquared()) {
@@ -335,6 +353,22 @@ public class EntityCullingRendererOptifine extends EntityCullingRenderer {
 						if (!this.frustum.isBoundingBoxInFrustum(tileEntity.getRenderBoundingBox())) {
 							continue;
 						}
+						if (isShadowPass) {
+							if (((ICullable) tileEntity).isCulledShadowPass()) {
+								continue;
+							}
+							if (EntityCullingConfig.optifineShaderOptions.tileEntityShadowsDistanceLimited && tileEntity.getDistanceSq(this.x, this.y, this.z) > EntityCullingConfig.optifineShaderOptions.tileEntityShadowsMaxDistance * EntityCullingConfig.optifineShaderOptions.tileEntityShadowsMaxDistance) {
+								continue;
+							}
+						} else {
+							if (!((ICullable) tileEntity).isVisible()) {
+								this.tileEntitiesOcclusionCulled++;
+								continue;
+							} else {
+								this.tileEntitiesRendered++;
+							}
+						}
+
 						if (tileEntity.shouldRenderInPass(0)) {
 							if (shadersEnabled) {
 								METHOD_NEXT_BLOCK_ENTITY.invoke(null, tileEntity);
