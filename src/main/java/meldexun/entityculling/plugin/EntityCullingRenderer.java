@@ -266,7 +266,6 @@ public class EntityCullingRenderer {
 	protected void updateEntityCullingState() {
 		double updateChance = MathHelper.clamp(20.0D / (double) Minecraft.getDebugFPS(), 1.0e-7D, 0.5D);
 
-		updateChance = 1;
 		GL11.glDepthMask(false);
 		GL11.glColorMask(false, false, false, false);
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
