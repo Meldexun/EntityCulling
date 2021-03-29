@@ -42,7 +42,7 @@ public interface ICullable {
 
 	default int initQuery() {
 		if (!this.isQueryInitialized()) {
-			this.setQuery(GL15.glGenQueries());
+			this.setQuery(GLHelper.createQuery());
 			GLHelper.beginQuery(this.getQuery());
 			GLHelper.endQuery();
 			if (this instanceof TileEntity) {
