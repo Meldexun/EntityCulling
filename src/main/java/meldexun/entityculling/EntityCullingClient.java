@@ -84,7 +84,7 @@ public class EntityCullingClient {
 				int i5 = Hook.tileEntitiesOcclusionCulled;
 				LOGGER.info("Culling Thread: {}µs, Entities Rendered: {}, Entities Culled: {}, TileEntities Rendered: {}, TileEntities Culled: {}", i1, i2, i3, i4, i5);
 			}
-			if (Minecraft.getInstance().level != null && Minecraft.getInstance().level.getGameTime() % 4 == 0) {
+			if (Minecraft.getInstance().level != null && Minecraft.getInstance().level.getGameTime() % 20 == 0) {
 				ICullable.deleteInvalidTileEntityQueries(Minecraft.getInstance().level);
 			}
 		}
