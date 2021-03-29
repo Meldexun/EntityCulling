@@ -392,9 +392,7 @@ public class EntityCullingRenderer {
 		} else {
 			GL11.glDisable(GL11.GL_DEPTH_TEST);
 		}
-		if (depthMaskEnabled) {
-			GL11.glDepthMask(true);
-		}
+		GL11.glDepthMask(depthMaskEnabled);
 		GL11.glColorMask(COLOR_MASK_BUFFER.get(0) == 1, COLOR_MASK_BUFFER.get(1) == 1, COLOR_MASK_BUFFER.get(2) == 1, COLOR_MASK_BUFFER.get(3) == 1);
 	}
 
