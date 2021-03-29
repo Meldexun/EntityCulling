@@ -35,6 +35,10 @@ function initializeCoreMod() {
 				
 				var targetNode4 = methodNode.instructions.get(471);
 				
+				var targetNode5 = methodNode.instructions.get(817);
+				
+				var targetNode6 = methodNode.instructions.get(957);
+				
 				if (targetNode1.getOpcode() == 25 &&
 					popNode1 instanceof LabelNode &&
 					targetNode2.getOpcode() == 25 &&
@@ -59,6 +63,16 @@ function initializeCoreMod() {
 					methodNode.instructions.insertBefore(targetNode4, new VarInsnNode(Opcodes.ALOAD, 1));
 					methodNode.instructions.insertBefore(targetNode4, new VarInsnNode(Opcodes.ALOAD, 9));
 					methodNode.instructions.insertBefore(targetNode4, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "preRenderEntities", "(Lnet/minecraft/client/renderer/ActiveRenderInfo;Lcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/util/math/vector/Matrix4f;)V", false));
+					
+					var popNode5 = new LabelNode();
+					methodNode.instructions.insertBefore(targetNode5, new MethodInsnNode(Opcodes.INVOKEINTERFACE, "meldexun/entityculling/ITileEntityBBCache", "getCachedAABB", "()Lnet/minecraft/util/math/AxisAlignedBB;", true));
+					methodNode.instructions.insertBefore(targetNode5, new JumpInsnNode(Opcodes.GOTO, popNode5));
+					methodNode.instructions.insert(targetNode5, popNode5);
+					
+					var popNode6 = new LabelNode();
+					methodNode.instructions.insertBefore(targetNode6, new MethodInsnNode(Opcodes.INVOKEINTERFACE, "meldexun/entityculling/ITileEntityBBCache", "getCachedAABB", "()Lnet/minecraft/util/math/AxisAlignedBB;", true));
+					methodNode.instructions.insertBefore(targetNode6, new JumpInsnNode(Opcodes.GOTO, popNode6));
+					methodNode.instructions.insert(targetNode6, popNode6);
 				} else {
 					// Optifine
 					targetNode1 = methodNode.instructions.get(1042);
@@ -71,6 +85,12 @@ function initializeCoreMod() {
 					popNode3 = methodNode.instructions.get(1349);
 					
 					targetNode4 = methodNode.instructions.get(647);
+					
+					targetNode5 = methodNode.instructions.get(1192);
+					var popNode5 = methodNode.instructions.get(1198);
+					
+					targetNode6 = methodNode.instructions.get(1365);
+					var popNode6 = methodNode.instructions.get(1371);
 					
 					methodNode.instructions.insertBefore(targetNode1, new VarInsnNode(Opcodes.ALOAD, 44));
 					methodNode.instructions.insertBefore(targetNode1, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "shouldRenderEntity", "(Lnet/minecraft/entity/Entity;)Z", false));
@@ -88,6 +108,12 @@ function initializeCoreMod() {
 					methodNode.instructions.insertBefore(targetNode4, new VarInsnNode(Opcodes.ALOAD, 1));
 					methodNode.instructions.insertBefore(targetNode4, new VarInsnNode(Opcodes.ALOAD, 9));
 					methodNode.instructions.insertBefore(targetNode4, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "preRenderEntities", "(Lnet/minecraft/client/renderer/ActiveRenderInfo;Lcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/util/math/vector/Matrix4f;)V", false));
+					
+					methodNode.instructions.insertBefore(targetNode5, new MethodInsnNode(Opcodes.INVOKEINTERFACE, "meldexun/entityculling/ITileEntityBBCache", "getCachedAABB", "()Lnet/minecraft/util/math/AxisAlignedBB;", true));
+					methodNode.instructions.insertBefore(targetNode5, new JumpInsnNode(Opcodes.GOTO, popNode5));
+					
+					methodNode.instructions.insertBefore(targetNode6, new MethodInsnNode(Opcodes.INVOKEINTERFACE, "meldexun/entityculling/ITileEntityBBCache", "getCachedAABB", "()Lnet/minecraft/util/math/AxisAlignedBB;", true));
+					methodNode.instructions.insertBefore(targetNode6, new JumpInsnNode(Opcodes.GOTO, popNode6));
 				}
 				
 				return methodNode;

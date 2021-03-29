@@ -128,6 +128,9 @@ public class CullingThread extends Thread {
 
 	private void updateEntityCullingState(Entity entity) {
 		((ICullable) entity).setCulledFast(!this.checkEntityVisibility(entity));
+		if (!EntityCullingConfig.CLIENT_CONFIG.betaFeatures.get()) {
+			((ICullable) entity).setCulledSlow(true);
+		}
 		if (EntityCulling.IS_OPTIFINE_DETECTED) {
 			((ICullable) entity).setCulledShadowPass(!this.checkEntityShadowVisibility(entity));
 		}
@@ -135,6 +138,9 @@ public class CullingThread extends Thread {
 
 	private void updateTileEntityCullingState(TileEntity tileEntity) {
 		((ICullable) tileEntity).setCulledFast(!this.checkTileEntityVisibility(tileEntity));
+		if (!EntityCullingConfig.CLIENT_CONFIG.betaFeatures.get()) {
+			((ICullable) tileEntity).setCulledSlow(true);
+		}
 		if (EntityCulling.IS_OPTIFINE_DETECTED) {
 			((ICullable) tileEntity).setCulledShadowPass(!this.checkTileEntityShadowVisibility(tileEntity));
 		}
@@ -205,7 +211,7 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		AxisAlignedBB aabb = tileEntity.getRenderBoundingBox();
+		AxisAlignedBB aabb = ((ITileEntityBBCache) tileEntity).getCachedAABB();
 		if (aabb.maxX - aabb.minX > EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRenderingSize.get() || aabb.maxY - aabb.minY > EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRenderingSize.get() || aabb.maxZ - aabb.minZ > EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRenderingSize.get()) {
 			return true;
 		}
@@ -295,7 +301,7 @@ public class CullingThread extends Thread {
 			return !((ICullable) tileEntity).isCulledFast();
 		}
 
-		AxisAlignedBB aabb = tileEntity.getRenderBoundingBox();
+		AxisAlignedBB aabb = ((ITileEntityBBCache) tileEntity).getCachedAABB();
 		if (aabb.maxX - aabb.minX > EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRenderingSize.get() || aabb.maxY - aabb.minY > EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRenderingSize.get() || aabb.maxZ - aabb.minZ > EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRenderingSize.get()) {
 			return true;
 		}

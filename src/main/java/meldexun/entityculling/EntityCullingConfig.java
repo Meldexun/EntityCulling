@@ -20,6 +20,8 @@ public class EntityCullingConfig {
 
 	public static class ClientConfig {
 
+		public final ForgeConfigSpec.BooleanValue betaFeatures;
+
 		public final ForgeConfigSpec.IntValue cacheSize;
 
 		public final ForgeConfigSpec.BooleanValue debug;
@@ -37,6 +39,8 @@ public class EntityCullingConfig {
 		public final OptifineShaderOptions optifineShaderOptions;
 
 		public ClientConfig(ForgeConfigSpec.Builder builder) {
+			this.betaFeatures = builder.comment("").define("betaFeatures", false);
+
 			this.cacheSize = builder.comment("Requires restart. Ram usage (in MB) = (x * 16 * 2) ^ 3 / 4").defineInRange("cacheSize", 12, 1, 32);
 
 			this.debug = builder.comment("").define("debug", false);
@@ -76,7 +80,7 @@ public class EntityCullingConfig {
 			public final ForgeConfigSpec.DoubleValue tileEntityShadowsMaxDistance;
 
 			public OptifineShaderOptions(ForgeConfigSpec.Builder builder) {
-				builder.push("optifineShaderOptions");
+				builder.comment("").push("optifineShaderOptions");
 
 				this.entityShadowsCulling = builder.comment("").define("entityShadowsCulling", true);
 				this.entityShadowsCullingLessAggressiveMode = builder.comment("").define("entityShadowsCullingLessAggressiveMode", false);
