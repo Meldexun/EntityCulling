@@ -5,6 +5,7 @@ import net.minecraftforge.common.config.Config;
 @Config(modid = EntityCullingContainer.MOD_ID)
 public class EntityCullingConfig {
 
+	@Config.Ignore
 	public static boolean betaFeatures = false;
 
 	@Config.RequiresMcRestart
