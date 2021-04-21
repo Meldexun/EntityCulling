@@ -20,7 +20,7 @@ public class EntityCullingConfig {
 
 	public static class ClientConfig {
 
-		public final ForgeConfigSpec.BooleanValue betaFeatures;
+		//public final ForgeConfigSpec.BooleanValue betaFeatures;
 
 		public final ForgeConfigSpec.IntValue cacheSize;
 
@@ -39,7 +39,7 @@ public class EntityCullingConfig {
 		public final OptifineShaderOptions optifineShaderOptions;
 
 		public ClientConfig(ForgeConfigSpec.Builder builder) {
-			this.betaFeatures = builder.comment("").define("betaFeatures", false);
+			//this.betaFeatures = builder.comment("").define("betaFeatures", false);
 
 			this.cacheSize = builder.comment("Requires restart. Ram usage (in MB) = (x * 16 * 2) ^ 3 / 4").defineInRange("cacheSize", 12, 1, 32);
 

@@ -128,7 +128,8 @@ public class CullingThread extends Thread {
 
 	private void updateEntityCullingState(Entity entity) {
 		((ICullable) entity).setCulledFast(!this.checkEntityVisibility(entity));
-		if (!EntityCullingConfig.CLIENT_CONFIG.betaFeatures.get()) {
+		//if (!EntityCullingConfig.CLIENT_CONFIG.betaFeatures.get()) {
+		if (true) {
 			((ICullable) entity).setCulledSlow(true);
 		}
 		if (EntityCulling.IS_OPTIFINE_DETECTED) {
@@ -138,7 +139,8 @@ public class CullingThread extends Thread {
 
 	private void updateTileEntityCullingState(TileEntity tileEntity) {
 		((ICullable) tileEntity).setCulledFast(!this.checkTileEntityVisibility(tileEntity));
-		if (!EntityCullingConfig.CLIENT_CONFIG.betaFeatures.get()) {
+		//if (!EntityCullingConfig.CLIENT_CONFIG.betaFeatures.get()) {
+		if (true) {
 			((ICullable) tileEntity).setCulledSlow(true);
 		}
 		if (EntityCulling.IS_OPTIFINE_DETECTED) {

@@ -121,7 +121,8 @@ public class Hook {
 		EntityCullingClient.CULLING_THREAD.matrix = matrixStackIn.last().pose().copy();
 		EntityCullingClient.CULLING_THREAD.projection = projectionIn.copy();
 
-		if (!EntityCullingConfig.CLIENT_CONFIG.betaFeatures.get()) {
+		//if (!EntityCullingConfig.CLIENT_CONFIG.betaFeatures.get()) {
+		if (true) {
 			return;
 		}
 
