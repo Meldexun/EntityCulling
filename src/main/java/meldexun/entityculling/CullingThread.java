@@ -191,6 +191,10 @@ public class CullingThread extends Thread {
 			}
 		}
 
+		if (!entity.shouldRender(this.camX, this.camY, this.camZ)) {
+			return true;
+		}
+
 		if (!Boolean.TRUE.equals(METHOD_IS_BOX_IN_FRUSTUM.invoke(this.frustum, minX, minY, minZ, maxX, maxY, maxZ))) {
 			// Assume that entities outside of the fov don't get rendered and thus there is no need to ray trace if they are visible.
 			// But return true because there might be special entities which are always rendered.
@@ -230,6 +234,11 @@ public class CullingThread extends Thread {
 			maxX = aabb.maxX;
 			maxY = aabb.maxY;
 			maxZ = aabb.maxZ;
+		}
+
+		BlockPos pos = tileEntity.getBlockPos();
+		if (pos.distSqr(this.camX, this.camY, this.camZ, true) >= tileEntity.getViewDistance() * tileEntity.getViewDistance()) {
+			return true;
 		}
 
 		if (!Boolean.TRUE.equals(METHOD_IS_BOX_IN_FRUSTUM.invoke(this.frustum, minX, minY, minZ, maxX, maxY, maxZ))) {
