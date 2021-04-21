@@ -42,6 +42,9 @@ public class CullingThread extends Thread {
 	private int camBlockX;
 	private int camBlockY;
 	private int camBlockZ;
+	private double x;
+	private double y;
+	private double z;
 
 	public CullingThread() {
 		super();
@@ -82,9 +85,9 @@ public class CullingThread extends Thread {
 				if (mc.world != null && mc.getRenderViewEntity() != null) {
 					Entity renderViewEntity = mc.getRenderViewEntity();
 					float partialTicks = mc.getRenderPartialTicks();
-					double x = renderViewEntity.lastTickPosX + (renderViewEntity.posX - renderViewEntity.lastTickPosX) * partialTicks;
-					double y = renderViewEntity.lastTickPosY + (renderViewEntity.posY - renderViewEntity.lastTickPosY) * partialTicks;
-					double z = renderViewEntity.lastTickPosZ + (renderViewEntity.posZ - renderViewEntity.lastTickPosZ) * partialTicks;
+					this.x = renderViewEntity.lastTickPosX + (renderViewEntity.posX - renderViewEntity.lastTickPosX) * partialTicks;
+					this.y = renderViewEntity.lastTickPosY + (renderViewEntity.posY - renderViewEntity.lastTickPosY) * partialTicks;
+					this.z = renderViewEntity.lastTickPosZ + (renderViewEntity.posZ - renderViewEntity.lastTickPosZ) * partialTicks;
 					this.frustum = new Frustum(FIELD_INSTANCE.get(null));
 					this.frustum.setPosition(x, y, z);
 					if (EntityCullingConfig.debug) {
@@ -209,6 +212,10 @@ public class CullingThread extends Thread {
 			}
 		}
 
+		if (!entity.isInRangeToRender3d(x, y, z)) {
+			return true;
+		}
+
 		if (!this.frustum.isBoxInFrustum(minX, minY, minZ, maxX, maxY, maxZ)) {
 			// Assume that entities outside of the fov don't get rendered and thus there is no need to ray trace if they are visible.
 			// But return true because there might be special entities which are always rendered.
@@ -248,6 +255,10 @@ public class CullingThread extends Thread {
 			maxX = aabb.maxX;
 			maxY = aabb.maxY;
 			maxZ = aabb.maxZ;
+		}
+
+		if (tileEntity.getDistanceSq(x, y, z) >= tileEntity.getMaxRenderDistanceSquared()) {
+			return true;
 		}
 
 		if (!this.frustum.isBoxInFrustum(minX, minY, minZ, maxX, maxY, maxZ)) {
