@@ -5,6 +5,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
@@ -20,6 +21,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.RenderUtil;
+import net.minecraft.client.renderer.chunk.RenderChunk;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -40,7 +43,8 @@ public class EntityCullingRenderer {
 	protected static final ReflectionField<Integer> FIELD_COUNT_ENTITIES_RENDERED = new ReflectionField<>(RenderGlobal.class, "field_72749_I", "countEntitiesRendered");
 	protected static final ReflectionField<Framebuffer> FIELD_ENTITY_OUTLINE_FRAMEBUFFER = new ReflectionField<>(RenderGlobal.class, "field_175015_z", "entityOutlineFramebuffer");
 	protected static final ReflectionField<ShaderGroup> FIELD_ENTITY_OUTLINE_SHADER = new ReflectionField<>(RenderGlobal.class, "field_174991_A", "entityOutlineShader");
-
+	protected static final ReflectionField<Set<TileEntity>> FIELD_SET_TILE_ENTITIES = new ReflectionField<>(RenderGlobal.class, "field_181024_n", "setTileEntities");
+	
 	private static final ByteBuffer COLOR_MASK_BUFFER = ByteBuffer.allocateDirect(16).order(ByteOrder.nativeOrder());
 	protected static final Random RAND = new Random();
 
@@ -248,33 +252,76 @@ public class EntityCullingRenderer {
 		int pass = MinecraftForgeClient.getRenderPass();
 
 		if (pass == 0) {
-			for (TileEntity tileEntity : this.mc.world.loadedTileEntityList) {
-				if (!tileEntity.shouldRenderInPass(0) && !tileEntity.shouldRenderInPass(1)) {
+			for (RenderChunk renderChunk : RenderUtil.getRenderChunks()) {
+				List<TileEntity> tileEntities = renderChunk.compiledChunk.getTileEntities();
+				if (tileEntities.isEmpty()) {
 					continue;
 				}
-				if (TileEntityRendererDispatcher.instance.getRenderer(tileEntity) == null) {
+				if (!this.mc.world.isBlockLoaded(renderChunk.getPosition(), false)) {
 					continue;
 				}
-				if (tileEntity.getDistanceSq(this.x, this.y, this.z) > tileEntity.getMaxRenderDistanceSquared()) {
-					continue;
+				for (TileEntity tileEntity : tileEntities) {
+					if (!tileEntity.shouldRenderInPass(0) && !tileEntity.shouldRenderInPass(1)) {
+						continue;
+					}
+					if (TileEntityRendererDispatcher.instance.getRenderer(tileEntity) == null) {
+						continue;
+					}
+					if (tileEntity.getDistanceSq(this.x, this.y, this.z) > tileEntity.getMaxRenderDistanceSquared()) {
+						continue;
+					}
+					if (!this.frustum.isBoundingBoxInFrustum(((ITileEntityBBCache) tileEntity).getCachedAABB())) {
+						continue;
+					}
+					if (!this.mc.world.isBlockLoaded(tileEntity.getPos(), false)) {
+						continue;
+					}
+					if (!((ICullable) tileEntity).isVisible()) {
+						this.tileEntitiesOcclusionCulled++;
+						continue;
+					} else {
+						this.tileEntitiesRendered++;
+					}
+					if (tileEntity.shouldRenderInPass(0)) {
+						TileEntityRendererDispatcher.instance.render(tileEntity, this.partialTicks, -1);
+					}
+					if (tileEntity.shouldRenderInPass(1)) {
+						this.tileEntityListPass1.add(tileEntity);
+					}
 				}
-				if (!this.frustum.isBoundingBoxInFrustum(((ITileEntityBBCache) tileEntity).getCachedAABB())) {
-					continue;
-				}
-				if (!this.mc.world.isBlockLoaded(tileEntity.getPos(), false)) {
-					continue;
-				}
-				if (!((ICullable) tileEntity).isVisible()) {
-					this.tileEntitiesOcclusionCulled++;
-					continue;
-				} else {
-					this.tileEntitiesRendered++;
-				}
-				if (tileEntity.shouldRenderInPass(0)) {
-					TileEntityRendererDispatcher.instance.render(tileEntity, this.partialTicks, -1);
-				}
-				if (tileEntity.shouldRenderInPass(1)) {
-					this.tileEntityListPass1.add(tileEntity);
+			}
+			Set<TileEntity> setTileEntities = FIELD_SET_TILE_ENTITIES.get(mc.renderGlobal);
+			if (!setTileEntities.isEmpty()) {
+				synchronized (setTileEntities) {
+					for (TileEntity tileEntity : setTileEntities) {
+						if (!tileEntity.shouldRenderInPass(0) && !tileEntity.shouldRenderInPass(1)) {
+							continue;
+						}
+						if (TileEntityRendererDispatcher.instance.getRenderer(tileEntity) == null) {
+							continue;
+						}
+						if (tileEntity.getDistanceSq(this.x, this.y, this.z) > tileEntity.getMaxRenderDistanceSquared()) {
+							continue;
+						}
+						if (!this.frustum.isBoundingBoxInFrustum(((ITileEntityBBCache) tileEntity).getCachedAABB())) {
+							continue;
+						}
+						if (!this.mc.world.isBlockLoaded(tileEntity.getPos(), false)) {
+							continue;
+						}
+						if (!((ICullable) tileEntity).isVisible()) {
+							this.tileEntitiesOcclusionCulled++;
+							continue;
+						} else {
+							this.tileEntitiesRendered++;
+						}
+						if (tileEntity.shouldRenderInPass(0)) {
+							TileEntityRendererDispatcher.instance.render(tileEntity, this.partialTicks, -1);
+						}
+						if (tileEntity.shouldRenderInPass(1)) {
+							this.tileEntityListPass1.add(tileEntity);
+						}
+					}
 				}
 			}
 		} else if (pass == 1) {
