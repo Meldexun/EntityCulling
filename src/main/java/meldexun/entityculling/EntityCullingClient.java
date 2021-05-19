@@ -1,6 +1,11 @@
 package meldexun.entityculling;
 
-import static org.lwjgl.opengl.GL21C.*;
+import static org.lwjgl.opengl.GL15C.GL_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL15C.GL_ELEMENT_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL15C.GL_STATIC_DRAW;
+import static org.lwjgl.opengl.GL15C.glBindBuffer;
+import static org.lwjgl.opengl.GL15C.glBufferData;
+import static org.lwjgl.opengl.GL15C.glGenBuffers;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -10,13 +15,19 @@ import java.util.Arrays;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import meldexun.entityculling.gui.ShaderOptionsScreen;
 import meldexun.entityculling.plugin.Hook;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screen.OptionsScreen;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ClassInheritanceMultiMap;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
@@ -122,6 +133,21 @@ public class EntityCullingClient {
 				((ICullable) te).deleteQuery();
 			}
 		}
+	}
+
+	@SubscribeEvent
+	public void onInitGuiEvent(GuiScreenEvent.InitGuiEvent.Post event) {
+		if (!EntityCulling.IS_OPTIFINE_DETECTED) {
+			return;
+		}
+		Screen screen = event.getGui();
+		if (!(screen instanceof OptionsScreen)) {
+			return;
+		}
+		Minecraft mc = Minecraft.getInstance();
+		event.addWidget(new Button(screen.width / 2 - 155, screen.height / 6 + 120 - 6 + 24, 150, 20, new TranslationTextComponent("options.shadows.button"), button -> {
+			mc.setScreen(new ShaderOptionsScreen(mc.screen));
+		}));
 	}
 
 }

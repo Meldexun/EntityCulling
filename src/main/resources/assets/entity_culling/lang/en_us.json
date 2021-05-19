@@ -1,0 +1,23 @@
+{
+  "options.shadows.button": "Shadow Options",
+  "options.shadows.title": "Shadow Options For Optifine Shaders (Options added by Entity Culling)",
+
+  "entityShadowsEnabled": "Entity Shadows: %s",
+  "entityShadowsDistanceLimited": "Entity Shadow Render Distance Limited: %s",
+  "entityShadowsMaxDistance": "Entity Shadow Render Distance: %s chunks",
+  "entityShadowsCulling": "Entity Shadow Culling: %s",
+  "entityShadowsCullingLessAggressiveMode": "Entity Shadow Culling Alternative Mode: %s",
+  "entityShadowsCullingLessAggressiveModeDiff": "Entity Shadow Culling Alternative Mode Max Diff: %s blocks",
+  
+  "tileEntityShadowsEnabled": "Tile Entity Shadows: %s",
+  "tileEntityShadowsDistanceLimited": "Tile Entity Shadow Render Distance Limited: %s",
+  "tileEntityShadowsMaxDistance": "Tile Entity Shadow Render Distance: %s chunks",
+  "tileEntityShadowsCulling": "Tile Entity Shadow Culling: %s",
+  "tileEntityShadowsCullingLessAggressiveMode": "Tile Entity Shadow Culling Alternative Mode: %s",
+  "tileEntityShadowsCullingLessAggressiveModeDiff": "Tile Entity Shadow Culling Alternative Mode Max Diff: %s blocks",
+  
+  "terrainShadowsEnabled": "Terrain Shadows: %s",
+  "terrainShadowsDistanceLimited": "Terrain Shadow Render Distance Limited: %s",
+  "terrainShadowsMaxHorizontalDistance": "Terrain Shadow Render Distance Horizontal: %s chunks",
+  "terrainShadowsMaxVerticalDistance": "Terrain Shadow Render Distance Vertical: %s chunks"
+}
