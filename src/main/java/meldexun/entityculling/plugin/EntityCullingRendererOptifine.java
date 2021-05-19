@@ -66,7 +66,7 @@ public class EntityCullingRendererOptifine extends EntityCullingRenderer {
 		boolean isShadowPass = Boolean.TRUE.equals(FIELD_IS_SHADOW_PASS.get(null));
 		boolean shadersEnabled = Boolean.TRUE.equals(METHOD_IS_SHADERS.invoke(null));
 
-		if (isShadowPass && EntityCullingConfig.optifineShaderOptions.entityShadowsDisabled) {
+		if (isShadowPass && !EntityCullingConfig.optifineShaderOptions.entityShadowsEnabled) {
 			if (!this.renderingPrepared) {
 				this.preRenderEntities();
 			}
@@ -116,7 +116,7 @@ public class EntityCullingRendererOptifine extends EntityCullingRenderer {
 						if (((ICullable) entity).isCulledShadowPass()) {
 							continue;
 						}
-						if (EntityCullingConfig.optifineShaderOptions.entityShadowsDistanceLimited && entity.getDistanceSq(this.x, this.y, this.z) > EntityCullingConfig.optifineShaderOptions.entityShadowsMaxDistance * EntityCullingConfig.optifineShaderOptions.entityShadowsMaxDistance) {
+						if (EntityCullingConfig.optifineShaderOptions.entityShadowsDistanceLimited && entity.getDistanceSq(this.x, this.y, this.z) > EntityCullingConfig.optifineShaderOptions.entityShadowsMaxDistance * 16.0D * EntityCullingConfig.optifineShaderOptions.entityShadowsMaxDistance * 16.0D) {
 							continue;
 						}
 					}
@@ -279,7 +279,7 @@ public class EntityCullingRendererOptifine extends EntityCullingRenderer {
 		boolean isShadowPass = Boolean.TRUE.equals(FIELD_IS_SHADOW_PASS.get(null));
 		boolean shadersEnabled = Boolean.TRUE.equals(METHOD_IS_SHADERS.invoke(null));
 
-		if (isShadowPass && EntityCullingConfig.optifineShaderOptions.tileEntityShadowsDisabled) {
+		if (isShadowPass && !EntityCullingConfig.optifineShaderOptions.tileEntityShadowsEnabled) {
 			if (pass == 1) {
 				this.postRenderEntities();
 			}
@@ -313,7 +313,7 @@ public class EntityCullingRendererOptifine extends EntityCullingRenderer {
 						if (((ICullable) tileEntity).isCulledShadowPass()) {
 							continue;
 						}
-						if (EntityCullingConfig.optifineShaderOptions.tileEntityShadowsDistanceLimited && tileEntity.getDistanceSq(this.x, this.y, this.z) > EntityCullingConfig.optifineShaderOptions.tileEntityShadowsMaxDistance * EntityCullingConfig.optifineShaderOptions.tileEntityShadowsMaxDistance) {
+						if (EntityCullingConfig.optifineShaderOptions.tileEntityShadowsDistanceLimited && tileEntity.getDistanceSq(this.x, this.y, this.z) > EntityCullingConfig.optifineShaderOptions.tileEntityShadowsMaxDistance * 16.0D * EntityCullingConfig.optifineShaderOptions.tileEntityShadowsMaxDistance * 16.0D) {
 							continue;
 						}
 					} else {
@@ -357,7 +357,7 @@ public class EntityCullingRendererOptifine extends EntityCullingRenderer {
 							if (((ICullable) tileEntity).isCulledShadowPass()) {
 								continue;
 							}
-							if (EntityCullingConfig.optifineShaderOptions.tileEntityShadowsDistanceLimited && tileEntity.getDistanceSq(this.x, this.y, this.z) > EntityCullingConfig.optifineShaderOptions.tileEntityShadowsMaxDistance * EntityCullingConfig.optifineShaderOptions.tileEntityShadowsMaxDistance) {
+							if (EntityCullingConfig.optifineShaderOptions.tileEntityShadowsDistanceLimited && tileEntity.getDistanceSq(this.x, this.y, this.z) > EntityCullingConfig.optifineShaderOptions.tileEntityShadowsMaxDistance * 16.0D * EntityCullingConfig.optifineShaderOptions.tileEntityShadowsMaxDistance * 16.0D) {
 								continue;
 							}
 						} else {

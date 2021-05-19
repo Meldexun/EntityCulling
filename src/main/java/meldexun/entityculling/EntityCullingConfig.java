@@ -42,23 +42,29 @@ public class EntityCullingConfig {
 	public static class OptifineShaderOptions {
 
 		public boolean entityShadowsCulling = true;
-		public boolean entityShadowsCullingLessAggressiveMode = false;
+		public boolean entityShadowsCullingLessAggressiveMode = true;
+		@Config.RangeDouble(min = 0.0D, max = 64.0D)
 		public double entityShadowsCullingLessAggressiveModeDiff = 4.0D;
-		public boolean entityShadowsDisabled = false;
-		public boolean entityShadowsDistanceLimited = false;
-		public double entityShadowsMaxDistance = 64.0D;
+		public boolean entityShadowsEnabled = true;
+		public boolean entityShadowsDistanceLimited = true;
+		@Config.RangeDouble(min = 0.0D, max = 64.0D)
+		public double entityShadowsMaxDistance = 4.0D;
 
-		public boolean terrainShadowsDisabled = false;
-		public boolean terrainShadowsDistanceLimited = false;
-		public double terrainShadowsMaxHorizontalDistance = 128.0D;
-		public double terrainShadowsMaxVerticalDistance = 64.0D;
+		public boolean terrainShadowsEnabled = true;
+		public boolean terrainShadowsDistanceLimited = true;
+		@Config.RangeDouble(min = 0.0D, max = 64.0D)
+		public double terrainShadowsMaxHorizontalDistance = 8.0D;
+		@Config.RangeDouble(min = 0.0D, max = 64.0D)
+		public double terrainShadowsMaxVerticalDistance = 4.0D;
 
 		public boolean tileEntityShadowsCulling = true;
-		public boolean tileEntityShadowsCullingLessAggressiveMode = false;
+		public boolean tileEntityShadowsCullingLessAggressiveMode = true;
+		@Config.RangeDouble(min = 0.0D, max = 64.0D)
 		public double tileEntityShadowsCullingLessAggressiveModeDiff = 4.0D;
-		public boolean tileEntityShadowsDisabled = false;
-		public boolean tileEntityShadowsDistanceLimited = false;
-		public double tileEntityShadowsMaxDistance = 64.0D;
+		public boolean tileEntityShadowsEnabled = true;
+		public boolean tileEntityShadowsDistanceLimited = true;
+		@Config.RangeDouble(min = 0.0D, max = 64.0D)
+		public double tileEntityShadowsMaxDistance = 4.0D;
 
 	}
 

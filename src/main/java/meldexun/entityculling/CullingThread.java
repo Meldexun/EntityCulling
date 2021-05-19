@@ -279,7 +279,7 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		if (EntityCullingConfig.optifineShaderOptions.entityShadowsDisabled) {
+		if (!EntityCullingConfig.optifineShaderOptions.entityShadowsEnabled) {
 			return false;
 		}
 
@@ -315,7 +315,7 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		if (EntityCullingConfig.optifineShaderOptions.tileEntityShadowsDisabled) {
+		if (!EntityCullingConfig.optifineShaderOptions.tileEntityShadowsEnabled) {
 			return false;
 		}
 

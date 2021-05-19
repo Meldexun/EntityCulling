@@ -102,7 +102,7 @@ public final class Hook {
 		if (!EntityCullingConfig.enabled) {
 			return true;
 		}
-		if (EntityCullingConfig.optifineShaderOptions.terrainShadowsDisabled) {
+		if (!EntityCullingConfig.optifineShaderOptions.terrainShadowsEnabled) {
 			return false;
 		}
 		if (!EntityCullingConfig.optifineShaderOptions.terrainShadowsDistanceLimited) {
@@ -114,15 +114,15 @@ public final class Hook {
 		Entity entity = mc.getRenderViewEntity();
 		float partialTicks = mc.getRenderPartialTicks();
 		double x = entity.lastTickPosX + (entity.posX - entity.lastTickPosX) * partialTicks;
-		if (Math.abs(pos.getX() + 8.0D - x) > EntityCullingConfig.optifineShaderOptions.terrainShadowsMaxHorizontalDistance) {
+		if (Math.abs(pos.getX() + 8.0D - x) > EntityCullingConfig.optifineShaderOptions.terrainShadowsMaxHorizontalDistance * 16.0D) {
 			return false;
 		}
 		double y = entity.lastTickPosY + (entity.posY - entity.lastTickPosY) * partialTicks + entity.getEyeHeight();
-		if (Math.abs(pos.getY() + 8.0D - y) > EntityCullingConfig.optifineShaderOptions.terrainShadowsMaxVerticalDistance) {
+		if (Math.abs(pos.getY() + 8.0D - y) > EntityCullingConfig.optifineShaderOptions.terrainShadowsMaxVerticalDistance * 16.0D) {
 			return false;
 		}
 		double z = entity.lastTickPosZ + (entity.posZ - entity.lastTickPosZ) * partialTicks;
-		return Math.abs(pos.getZ() + 8.0D - z) <= EntityCullingConfig.optifineShaderOptions.terrainShadowsMaxHorizontalDistance;
+		return Math.abs(pos.getZ() + 8.0D - z) <= EntityCullingConfig.optifineShaderOptions.terrainShadowsMaxHorizontalDistance * 16.0D;
 	}
 
 }
