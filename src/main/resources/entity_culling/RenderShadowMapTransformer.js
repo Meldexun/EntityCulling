@@ -14,6 +14,8 @@ function initializeCoreMod() {
 				"methodDesc": "(Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/ActiveRenderInfo;IFJ)V"
 			},
 			"transformer": function(methodNode) {
+				//ASMAPI.log("INFO", "Transforming method: renderShadowMap net.optifine.shaders.ShadersRender");
+				
 				/*
 				var l = methodNode.instructions;
 				for (var i = 0; i < l.size(); i++) {

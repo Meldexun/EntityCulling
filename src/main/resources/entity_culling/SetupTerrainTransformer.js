@@ -14,6 +14,8 @@ function initializeCoreMod() {
 				"methodDesc": "(Lnet/minecraft/client/renderer/ActiveRenderInfo;Lnet/minecraft/client/renderer/culling/ClippingHelper;ZIZ)V"
 			},
 			"transformer": function(methodNode) {
+				//ASMAPI.log("INFO", "Transforming method: setupTerrain net.minecraft.client.renderer.WorldRenderer");
+				
 				/*
 				var l = methodNode.instructions;
 				for (var i = 0; i < l.size(); i++) {

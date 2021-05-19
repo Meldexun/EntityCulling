@@ -14,6 +14,8 @@ function initializeCoreMod() {
 				"methodDesc": "(Lcom/mojang/blaze3d/matrix/MatrixStack;FJZLnet/minecraft/client/renderer/ActiveRenderInfo;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/util/math/vector/Matrix4f;)V"
 			},
 			"transformer": function(methodNode) {
+				//ASMAPI.log("INFO", "Transforming method: updateCameraAndRender net.minecraft.client.renderer.WorldRenderer");
+				
 				/*
 				var l = methodNode.instructions;
 				for (var i = 0; i < l.size(); i++) {
