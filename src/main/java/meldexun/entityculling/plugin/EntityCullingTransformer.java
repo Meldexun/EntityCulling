@@ -390,6 +390,20 @@ public class EntityCullingTransformer implements IClassTransformer {
 			method.instructions.insertBefore(targetNode1, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "getLimitFramerate", "()I", false));
 			method.instructions.insertBefore(targetNode1, new JumpInsnNode(Opcodes.GOTO, (LabelNode) popNode1));
 		}));
+		registerMethodTransformer(new MethodTransformer("bxz", "net.minecraft.client.renderer.culling.ClippingHelper", "b", "isBoxInFrustum", "(DDDDDD)Z", "(DDDDDD)Z", method -> {
+			AbstractInsnNode targetNode = method.instructions.get(0);
+
+			method.instructions.insertBefore(targetNode, new VarInsnNode(Opcodes.ALOAD, 0));
+			method.instructions.insertBefore(targetNode, new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/client/renderer/culling/ClippingHelper", "frustum", "[[F"));
+			method.instructions.insertBefore(targetNode, new VarInsnNode(Opcodes.DLOAD, 1));
+			method.instructions.insertBefore(targetNode, new VarInsnNode(Opcodes.DLOAD, 3));
+			method.instructions.insertBefore(targetNode, new VarInsnNode(Opcodes.DLOAD, 5));
+			method.instructions.insertBefore(targetNode, new VarInsnNode(Opcodes.DLOAD, 7));
+			method.instructions.insertBefore(targetNode, new VarInsnNode(Opcodes.DLOAD, 9));
+			method.instructions.insertBefore(targetNode, new VarInsnNode(Opcodes.DLOAD, 11));
+			method.instructions.insertBefore(targetNode, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "isBoxInFrustum", "([[FDDDDDD)Z", false));
+			method.instructions.insertBefore(targetNode, new InsnNode(Opcodes.IRETURN));
+		}));
 	}
 
 	@Override
