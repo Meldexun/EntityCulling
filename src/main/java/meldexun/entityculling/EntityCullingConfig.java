@@ -63,11 +63,11 @@ public class EntityCullingConfig {
 			public final ForgeConfigSpec.BooleanValue entityShadowsCulling;
 			public final ForgeConfigSpec.BooleanValue entityShadowsCullingLessAggressiveMode;
 			public final ForgeConfigSpec.DoubleValue entityShadowsCullingLessAggressiveModeDiff;
-			public final ForgeConfigSpec.BooleanValue entityShadowsDisabled;
+			public final ForgeConfigSpec.BooleanValue entityShadowsEnabled;
 			public final ForgeConfigSpec.BooleanValue entityShadowsDistanceLimited;
 			public final ForgeConfigSpec.DoubleValue entityShadowsMaxDistance;
 
-			public final ForgeConfigSpec.BooleanValue terrainShadowsDisabled;
+			public final ForgeConfigSpec.BooleanValue terrainShadowsEnabled;
 			public final ForgeConfigSpec.BooleanValue terrainShadowsDistanceLimited;
 			public final ForgeConfigSpec.DoubleValue terrainShadowsMaxHorizontalDistance;
 			public final ForgeConfigSpec.DoubleValue terrainShadowsMaxVerticalDistance;
@@ -75,7 +75,7 @@ public class EntityCullingConfig {
 			public final ForgeConfigSpec.BooleanValue tileEntityShadowsCulling;
 			public final ForgeConfigSpec.BooleanValue tileEntityShadowsCullingLessAggressiveMode;
 			public final ForgeConfigSpec.DoubleValue tileEntityShadowsCullingLessAggressiveModeDiff;
-			public final ForgeConfigSpec.BooleanValue tileEntityShadowsDisabled;
+			public final ForgeConfigSpec.BooleanValue tileEntityShadowsEnabled;
 			public final ForgeConfigSpec.BooleanValue tileEntityShadowsDistanceLimited;
 			public final ForgeConfigSpec.DoubleValue tileEntityShadowsMaxDistance;
 
@@ -83,23 +83,23 @@ public class EntityCullingConfig {
 				builder.comment("").push("optifineShaderOptions");
 
 				this.entityShadowsCulling = builder.comment("").define("entityShadowsCulling", true);
-				this.entityShadowsCullingLessAggressiveMode = builder.comment("").define("entityShadowsCullingLessAggressiveMode", false);
-				this.entityShadowsCullingLessAggressiveModeDiff = builder.comment("").defineInRange("entityShadowsCullingLessAggressiveModeDiff", 4.0D, 0.0D, 128.0D);
-				this.entityShadowsDisabled = builder.comment("").define("entityShadowsDisabled", false);
-				this.entityShadowsDistanceLimited = builder.comment("").define("entityShadowsDistanceLimited", false);
-				this.entityShadowsMaxDistance = builder.comment("").defineInRange("entityShadowsMaxDistance", 64.0D, 0.0D, 1024.0D);
+				this.entityShadowsCullingLessAggressiveMode = builder.comment("").define("entityShadowsCullingLessAggressiveMode", true);
+				this.entityShadowsCullingLessAggressiveModeDiff = builder.comment("").defineInRange("entityShadowsCullingLessAggressiveModeDiff", 4.0D, 0.0D, 64.0D);
+				this.entityShadowsEnabled = builder.comment("").define("entityShadowsEnabled", true);
+				this.entityShadowsDistanceLimited = builder.comment("").define("entityShadowsDistanceLimited", true);
+				this.entityShadowsMaxDistance = builder.comment("").defineInRange("entityShadowsMaxDistance", 4.0D, 0.0D, 64.0D);
 
-				this.terrainShadowsDisabled = builder.comment("").define("terrainShadowsDisabled", false);
-				this.terrainShadowsDistanceLimited = builder.comment("").define("terrainShadowsDistanceLimited", false);
-				this.terrainShadowsMaxHorizontalDistance = builder.comment("").defineInRange("terrainShadowsMaxHorizontalDistance", 128.0D, 0.0D, 1024.0D);
-				this.terrainShadowsMaxVerticalDistance = builder.comment("").defineInRange("terrainShadowsMaxVerticalDistance", 64.0D, 0.0D, 1024.0D);
+				this.terrainShadowsEnabled = builder.comment("").define("terrainShadowsEnabled", true);
+				this.terrainShadowsDistanceLimited = builder.comment("").define("terrainShadowsDistanceLimited", true);
+				this.terrainShadowsMaxHorizontalDistance = builder.comment("").defineInRange("terrainShadowsMaxHorizontalDistance", 8.0D, 0.0D, 64.0D);
+				this.terrainShadowsMaxVerticalDistance = builder.comment("").defineInRange("terrainShadowsMaxVerticalDistance", 4.0D, 0.0D, 64.0D);
 
 				this.tileEntityShadowsCulling = builder.comment("").define("tileEntityShadowsCulling", true);
-				this.tileEntityShadowsCullingLessAggressiveMode = builder.comment("").define("tileEntityShadowsCullingLessAggressiveMode", false);
-				this.tileEntityShadowsCullingLessAggressiveModeDiff = builder.comment("").defineInRange("tileEntityShadowsCullingLessAggressiveModeDiff", 4.0D, 0.0D, 128.0D);
-				this.tileEntityShadowsDisabled = builder.comment("").define("tileEntityShadowsDisabled", false);
-				this.tileEntityShadowsDistanceLimited = builder.comment("").define("tileEntityShadowsDistanceLimited", false);
-				this.tileEntityShadowsMaxDistance = builder.comment("").defineInRange("tileEntityShadowsMaxDistance", 64.0D, 0.0D, 1024.0D);
+				this.tileEntityShadowsCullingLessAggressiveMode = builder.comment("").define("tileEntityShadowsCullingLessAggressiveMode", true);
+				this.tileEntityShadowsCullingLessAggressiveModeDiff = builder.comment("").defineInRange("tileEntityShadowsCullingLessAggressiveModeDiff", 4.0D, 0.0D, 64.0D);
+				this.tileEntityShadowsEnabled = builder.comment("").define("tileEntityShadowsEnabled", true);
+				this.tileEntityShadowsDistanceLimited = builder.comment("").define("tileEntityShadowsDistanceLimited", true);
+				this.tileEntityShadowsMaxDistance = builder.comment("").defineInRange("tileEntityShadowsMaxDistance", 4.0D, 0.0D, 64.0D);
 
 				builder.pop();
 			}

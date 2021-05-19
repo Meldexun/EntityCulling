@@ -259,7 +259,7 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		if (EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.entityShadowsDisabled.get()) {
+		if (!EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.entityShadowsEnabled.get()) {
 			return false;
 		}
 
@@ -296,7 +296,7 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		if (EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.tileEntityShadowsDisabled.get()) {
+		if (!EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.tileEntityShadowsEnabled.get()) {
 			return false;
 		}
 

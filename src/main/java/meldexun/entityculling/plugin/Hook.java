@@ -243,7 +243,7 @@ public class Hook {
 		if (!EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.entityShadowsDistanceLimited.get()) {
 			return true;
 		}
-		double d = EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.entityShadowsMaxDistance.get();
+		double d = EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.entityShadowsMaxDistance.get() * 16.0D;
 		return entity.distanceToSqr(x, y, z) < d * d;
 	}
 
@@ -254,7 +254,7 @@ public class Hook {
 		if (!EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.tileEntityShadowsDistanceLimited.get()) {
 			return true;
 		}
-		double d = EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.tileEntityShadowsMaxDistance.get();
+		double d = EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.tileEntityShadowsMaxDistance.get() * 16.0D;
 		return squareDist(tileEntity.getBlockPos().getX() + 0.5D, tileEntity.getBlockPos().getY() + 0.5D, tileEntity.getBlockPos().getZ() + 0.5D, x, y, z) < d * d;
 	}
 
@@ -266,7 +266,7 @@ public class Hook {
 		if (!EntityCullingConfig.CLIENT_CONFIG.enabled.get()) {
 			return true;
 		}
-		if (EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.terrainShadowsDisabled.get()) {
+		if (!EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.terrainShadowsEnabled.get()) {
 			return false;
 		}
 		if (!EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.terrainShadowsDistanceLimited.get()) {
@@ -274,13 +274,13 @@ public class Hook {
 		}
 		ChunkRender renderChunk = FIELD_RENDER_CHUNK.get(containerLocalRenderInformation);
 		BlockPos pos = renderChunk.getOrigin();
-		if (Math.abs(pos.getX() + 8.0D - x) > EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.terrainShadowsMaxHorizontalDistance.get()) {
+		if (Math.abs(pos.getX() + 8.0D - x) > EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.terrainShadowsMaxHorizontalDistance.get() * 16.0D) {
 			return false;
 		}
-		if (Math.abs(pos.getY() + 8.0D - y) > EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.terrainShadowsMaxVerticalDistance.get()) {
+		if (Math.abs(pos.getY() + 8.0D - y) > EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.terrainShadowsMaxVerticalDistance.get() * 16.0D) {
 			return false;
 		}
-		return Math.abs(pos.getZ() + 8.0D - z) <= EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.terrainShadowsMaxHorizontalDistance.get();
+		return Math.abs(pos.getZ() + 8.0D - z) <= EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.terrainShadowsMaxHorizontalDistance.get() * 16.0D;
 	}
 
 }
