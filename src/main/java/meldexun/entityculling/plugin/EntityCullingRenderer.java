@@ -16,6 +16,7 @@ import meldexun.entityculling.EntityCullingContainer;
 import meldexun.entityculling.GLHelper;
 import meldexun.entityculling.ICullable;
 import meldexun.entityculling.ITileEntityBBCache;
+import meldexun.entityculling.integration.CubicChunks;
 import meldexun.entityculling.reflection.ReflectionField;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -33,10 +34,13 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ClassInheritanceMultiMap;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.client.MinecraftForgeClient;
+import net.minecraftforge.fml.common.Loader;
 
 public class EntityCullingRenderer {
 
@@ -44,7 +48,7 @@ public class EntityCullingRenderer {
 	protected static final ReflectionField<Framebuffer> FIELD_ENTITY_OUTLINE_FRAMEBUFFER = new ReflectionField<>(RenderGlobal.class, "field_175015_z", "entityOutlineFramebuffer");
 	protected static final ReflectionField<ShaderGroup> FIELD_ENTITY_OUTLINE_SHADER = new ReflectionField<>(RenderGlobal.class, "field_174991_A", "entityOutlineShader");
 	protected static final ReflectionField<Set<TileEntity>> FIELD_SET_TILE_ENTITIES = new ReflectionField<>(RenderGlobal.class, "field_181024_n", "setTileEntities");
-	
+
 	private static final ByteBuffer COLOR_MASK_BUFFER = ByteBuffer.allocateDirect(16).order(ByteOrder.nativeOrder());
 	protected static final Random RAND = new Random();
 
@@ -136,56 +140,58 @@ public class EntityCullingRenderer {
 
 			List<Entity> multipassEntityList = new ArrayList<>();
 			List<Entity> outlineEntityList = new ArrayList<>();
-			BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
-			for (Entity entity : this.mc.world.loadedEntityList) {
-				if (!entity.shouldRenderInPass(0) && !entity.shouldRenderInPass(1)) {
-					continue;
-				}
-				Render<Entity> render = renderManager.getEntityRenderObject(entity);
-				if (render == null) {
-					continue;
-				}
-				if (!render.shouldRender(entity, this.frustum, this.x, this.y, this.z) && !entity.isRidingOrBeingRiddenBy(this.mc.player)) {
-					continue;
-				}
-				if (entity == this.renderViewEntity && firstPersonAndNotSleeping) {
-					continue;
-				}
-				if (!this.mc.world.isBlockLoaded(mutablePos.setPos(entity), false)) {
-					continue;
-				}
+			for (RenderChunk renderChunk : RenderUtil.getRenderChunks()) {
+				BlockPos chunkPos = renderChunk.getPosition();
+				Chunk chunk = this.mc.world.getChunk(chunkPos);
+				ClassInheritanceMultiMap<Entity> entityMap = !Loader.isModLoaded("cubicchunks") ? chunk.getEntityLists()[chunkPos.getY() >> 4] : CubicChunks.getEntityList(this.mc.world, renderChunk.getPosition());
 
-				boolean renderOutlines = entity.isGlowing() || (spectatorAndOutlinesEnabled && entity instanceof EntityPlayer);
-				boolean entityWasRendered = false;
+				for (Entity entity : entityMap) {
+					if (!entity.shouldRenderInPass(0) && !entity.shouldRenderInPass(1)) {
+						continue;
+					}
+					Render<Entity> render = renderManager.getEntityRenderObject(entity);
+					if (render == null) {
+						continue;
+					}
+					if (!render.shouldRender(entity, this.frustum, this.x, this.y, this.z) && !entity.isRidingOrBeingRiddenBy(this.mc.player)) {
+						continue;
+					}
+					if (entity == this.renderViewEntity && firstPersonAndNotSleeping) {
+						continue;
+					}
 
-				if (entity.shouldRenderInPass(0)) {
-					if (((ICullable) entity).isVisible()) {
-						renderManager.renderEntityStatic(entity, this.partialTicks, false);
-						if (render.isMultipass()) {
-							multipassEntityList.add(entity);
+					boolean renderOutlines = entity.isGlowing() || (spectatorAndOutlinesEnabled && entity instanceof EntityPlayer);
+					boolean entityWasRendered = false;
+
+					if (entity.shouldRenderInPass(0)) {
+						if (((ICullable) entity).isVisible()) {
+							renderManager.renderEntityStatic(entity, this.partialTicks, false);
+							if (render.isMultipass()) {
+								multipassEntityList.add(entity);
+							}
+							entityWasRendered = true;
 						}
-						entityWasRendered = true;
-					}
-					if (renderOutlines) {
-						outlineEntityList.add(entity);
-						entityWasRendered = true;
-					}
-				}
-				if (entity.shouldRenderInPass(1)) {
-					if (((ICullable) entity).isVisible()) {
-						this.entityListNormalPass1.add(entity);
-						if (render.isMultipass()) {
-							this.entityListMultipassPass1.add(entity);
+						if (renderOutlines) {
+							outlineEntityList.add(entity);
+							entityWasRendered = true;
 						}
-						entityWasRendered = true;
 					}
-				}
+					if (entity.shouldRenderInPass(1)) {
+						if (((ICullable) entity).isVisible()) {
+							this.entityListNormalPass1.add(entity);
+							if (render.isMultipass()) {
+								this.entityListMultipassPass1.add(entity);
+							}
+							entityWasRendered = true;
+						}
+					}
 
-				if (entityWasRendered) {
-					entitiesRendered++;
-					this.entitiesRendered++;
-				} else {
-					this.entitiesOcclusionCulled++;
+					if (entityWasRendered) {
+						entitiesRendered++;
+						this.entitiesRendered++;
+					} else {
+						this.entitiesOcclusionCulled++;
+					}
 				}
 			}
 
