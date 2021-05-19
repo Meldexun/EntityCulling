@@ -271,8 +271,12 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
+		if (!((ICullable) entity).isCulledFast()) {
+			return true;
+		}
+
 		if (!EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.entityShadowsCullingLessAggressiveMode.get()) {
-			return !((ICullable) entity).isCulledFast();
+			return false;
 		}
 
 		// check if entity is boss (isNonBoss in forge mappings)
@@ -308,8 +312,12 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
+		if (!((ICullable) tileEntity).isCulledFast()) {
+			return true;
+		}
+
 		if (!EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.tileEntityShadowsCullingLessAggressiveMode.get()) {
-			return !((ICullable) tileEntity).isCulledFast();
+			return false;
 		}
 
 		AxisAlignedBB aabb = ((ITileEntityBBCache) tileEntity).getCachedAABB();
