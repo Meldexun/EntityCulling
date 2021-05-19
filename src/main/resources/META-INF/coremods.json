@@ -3,5 +3,6 @@
 	"Entity Transformer": "entity_culling/EntityTransformer.js",
 	"TileEntity Transformer": "entity_culling/TileEntityTransformer.js",
 	"SetupTerrain Transformer": "entity_culling/SetupTerrainTransformer.js",
-	"RenderShadowMap Transformer": "entity_culling/RenderShadowMapTransformer.js"
+	"RenderShadowMap Transformer": "entity_culling/RenderShadowMapTransformer.js",
+	"CubeInFrustum Transformer": "entity_culling/CubeInFrustumTransformer.js"
 }
