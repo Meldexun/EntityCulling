@@ -291,8 +291,12 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
+		if (!((ICullable) entity).isCulledFast()) {
+			return true;
+		}
+
 		if (!EntityCullingConfig.optifineShaderOptions.entityShadowsCullingLessAggressiveMode) {
-			return !((ICullable) entity).isCulledFast();
+			return false;
 		}
 
 		if (!entity.isNonBoss()) {
@@ -327,8 +331,12 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
+		if (!((ICullable) tileEntity).isCulledFast()) {
+			return true;
+		}
+
 		if (!EntityCullingConfig.optifineShaderOptions.tileEntityShadowsCullingLessAggressiveMode) {
-			return !((ICullable) tileEntity).isCulledFast();
+			return false;
 		}
 
 		AxisAlignedBB aabb = ((ITileEntityBBCache) tileEntity).getCachedAABB();
