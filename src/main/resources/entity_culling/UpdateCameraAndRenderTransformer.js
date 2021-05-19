@@ -77,22 +77,22 @@ function initializeCoreMod() {
 					methodNode.instructions.insert(targetNode6, popNode6);
 				} else {
 					// Optifine
-					targetNode1 = methodNode.instructions.get(1042);
-					popNode1 = methodNode.instructions.get(932);
+					targetNode1 = methodNode.instructions.get(1040);
+					popNode1 = methodNode.instructions.get(930);
 					
-					targetNode2 = methodNode.instructions.get(1212);
-					popNode2 = methodNode.instructions.get(1176);
+					targetNode2 = methodNode.instructions.get(1210);
+					popNode2 = methodNode.instructions.get(1174);
 					
-					targetNode3 = methodNode.instructions.get(1385);
-					popNode3 = methodNode.instructions.get(1349);
+					targetNode3 = methodNode.instructions.get(1383);
+					popNode3 = methodNode.instructions.get(1347);
 					
-					targetNode4 = methodNode.instructions.get(647);
+					targetNode4 = methodNode.instructions.get(645);
 					
-					targetNode5 = methodNode.instructions.get(1192);
-					var targetNode5_1 = methodNode.instructions.get(1197);
+					targetNode5 = methodNode.instructions.get(1190);
+					var targetNode5_1 = methodNode.instructions.get(1195);
 					
-					targetNode6 = methodNode.instructions.get(1365);
-					var targetNode6_1 = methodNode.instructions.get(1370);
+					targetNode6 = methodNode.instructions.get(1363);
+					var targetNode6_1 = methodNode.instructions.get(1368);
 					
 					methodNode.instructions.insertBefore(targetNode1, new VarInsnNode(Opcodes.ALOAD, 44));
 					methodNode.instructions.insertBefore(targetNode1, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "shouldRenderEntity", "(Lnet/minecraft/entity/Entity;)Z", false));
