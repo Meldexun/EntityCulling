@@ -12,7 +12,7 @@ function initializeCoreMod() {
 			"target": {
 				"type": "METHOD",
 				"class": "net.minecraft.client.renderer.culling.ClippingHelper",
-				"methodName": "cubeInFrustum",
+				"methodName": "func_228954_a_",
 				"methodDesc": "(FFFFFF)Z"
 			},
 			"transformer": function(methodNode) {
