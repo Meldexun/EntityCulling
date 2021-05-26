@@ -41,7 +41,7 @@ public class EntityCullingConfig {
 		public ClientConfig(ForgeConfigSpec.Builder builder) {
 			//this.betaFeatures = builder.comment("").define("betaFeatures", false);
 
-			this.cacheSize = builder.comment("Requires restart. Ram usage (in MB) = (x * 16 * 2) ^ 3 / 4").defineInRange("cacheSize", 12, 1, 32);
+			this.cacheSize = builder.comment("Requires restart. Ram usage (in Bytes) = ((x * 16 * 2) ^ 3) / 4").defineInRange("cacheSize", 12, 1, 32);
 
 			this.debug = builder.comment("").define("debug", false);
 
