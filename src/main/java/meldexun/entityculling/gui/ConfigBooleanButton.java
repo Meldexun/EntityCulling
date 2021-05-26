@@ -2,6 +2,7 @@ package meldexun.entityculling.gui;
 
 import net.minecraft.client.gui.widget.button.AbstractButton;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.ForgeConfigSpec;
 
@@ -17,7 +18,7 @@ public class ConfigBooleanButton extends AbstractButton implements IConfigWidget
 	}
 
 	public static ITextComponent getText(ForgeConfigSpec.BooleanValue config, boolean value) {
-		return new TranslationTextComponent(config.getPath().get(config.getPath().size() - 1), value);
+		return new TranslationTextComponent(config.getPath().get(config.getPath().size() - 1), (value ? TextFormatting.GREEN.toString() : TextFormatting.RED.toString()) + value);
 	}
 
 	@Override
@@ -29,6 +30,13 @@ public class ConfigBooleanButton extends AbstractButton implements IConfigWidget
 	@Override
 	public void updateConfig() {
 		this.config.set(this.value);
+	}
+
+	@Override
+	public void resetConfigWidget() {
+		this.config.set((Boolean) CONFIG_VALUE_DEFAULT_SUPPLIER.get(this.config).get());
+		this.value = this.config.get();
+		this.setMessage(getText(this.config, this.value));
 	}
 
 }
