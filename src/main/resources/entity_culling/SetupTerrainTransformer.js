@@ -14,26 +14,30 @@ function initializeCoreMod() {
 				"methodDesc": "(Lnet/minecraft/client/renderer/ActiveRenderInfo;Lnet/minecraft/client/renderer/culling/ClippingHelper;ZIZ)V"
 			},
 			"transformer": function(methodNode) {
-				//ASMAPI.log("INFO", "Transforming method: setupTerrain net.minecraft.client.renderer.WorldRenderer");
+				ASMAPI.log("INFO", "Transforming method: setupTerrain net.minecraft.client.renderer.WorldRenderer");
+				//ASMAPI.log("INFO", "{}", ASMAPI.methodNodeToString(methodNode));
 				
-				/*
-				var l = methodNode.instructions;
-				for (var i = 0; i < l.size(); i++) {
-					var ins = l.get(i);
-					if (ins.getOpcode() != -1) {
-						ASMAPI.log("INFO", "{} {}", i, ins.getOpcode());
+				var targetNode = ASMAPI.findFirstMethodCall(methodNode, ASMAPI.MethodType.STATIC, "net/optifine/util/ChunkUtils", "hasEntities", "(Lnet/minecraft/world/chunk/Chunk;)Z");
+				
+				if (targetNode != null) {
+					targetNode = ASMAPI.findFirstMethodCallBefore(methodNode, ASMAPI.MethodType.INTERFACE, "it/unimi/dsi/fastutil/objects/ObjectList", "add", "(Ljava/lang/Object;)Z", methodNode.instructions.indexOf(targetNode));
+					//targetNode = ASMAPI.findFirstInstructionBefore(methodNode, -1, methodNode.instructions.indexOf(targetNode));
+					{
+						for (var i = methodNode.instructions.indexOf(targetNode); i >= 0; i--) {
+							var insnNode = methodNode.instructions.get(i);
+							if (insnNode.getOpcode() == -1) {
+								targetNode = insnNode;
+								break;
+							}
+						}
 					}
-				}
-				*/
-				
-				var targetNode1 = methodNode.instructions.get(515);
-				var popNode1 = methodNode.instructions.get(520);
-				
-				if (targetNode1.getOpcode() == 25 &&
-					popNode1 instanceof LabelNode) {
-					methodNode.instructions.insertBefore(targetNode1, new VarInsnNode(Opcodes.ALOAD, 25));
-					methodNode.instructions.insertBefore(targetNode1, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "shouldRenderChunkShadow", "(Ljava/lang/Object;)Z", false));
-					methodNode.instructions.insertBefore(targetNode1, new JumpInsnNode(Opcodes.IFEQ, popNode1));
+					var popNode = ASMAPI.findFirstInstructionAfter(methodNode, -1, methodNode.instructions.indexOf(targetNode) + 1);
+					
+					methodNode.instructions.insert(targetNode, ASMAPI.listOf(
+							new VarInsnNode(Opcodes.ALOAD, 25),
+							new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "shouldRenderChunkShadow", "(Ljava/lang/Object;)Z", false),
+							new JumpInsnNode(Opcodes.IFEQ, popNode)
+					));
 				}
 				
 				return methodNode;

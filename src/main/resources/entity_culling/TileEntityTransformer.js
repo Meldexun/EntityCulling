@@ -13,7 +13,7 @@ function initializeCoreMod() {
 				"name": "net.minecraft.tileentity.TileEntity"
 			},
 			"transformer": function(classNode) {
-				// ASMAPI.log("INFO", "Transforming class: net.minecraft.tileentity.TileEntity");
+				ASMAPI.log("INFO", "Transforming class: net.minecraft.tileentity.TileEntity");
 				
 				classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "isCulledFast", "Z", null, false));
 				classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "isCulledSlow", "Z", null, false));

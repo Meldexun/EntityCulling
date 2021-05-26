@@ -17,29 +17,32 @@ function initializeCoreMod() {
 			},
 			"transformer": function(methodNode) {
 				ASMAPI.log("INFO", "Transforming method: cubeInFrustum net.minecraft.client.renderer.culling.ClippingHelper");
+				//ASMAPI.log("INFO", "{}", ASMAPI.methodNodeToString(methodNode));
 				
-				/*
-				var l = methodNode.instructions;
-				for (var i = 0; i < l.size(); i++) {
-					var ins = l.get(i);
-					if (ins.getOpcode() != -1) {
-						ASMAPI.log("INFO", "{} {}", i, ins.getOpcode());
-					}
-				}
-				*/
+				var targetNode = methodNode.instructions.getFirst();
+				var skipNode = new LabelNode();
 				
-				var targetNode = methodNode.instructions.get(0);
-				
-				methodNode.instructions.insertBefore(targetNode, new VarInsnNode(Opcodes.ALOAD, 0));
-				methodNode.instructions.insertBefore(targetNode, new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/client/renderer/culling/ClippingHelper", "frustumData", "[Lnet/minecraft/util/math/vector/Vector4f;"));
-				methodNode.instructions.insertBefore(targetNode, new VarInsnNode(Opcodes.FLOAD, 1));
-				methodNode.instructions.insertBefore(targetNode, new VarInsnNode(Opcodes.FLOAD, 2));
-				methodNode.instructions.insertBefore(targetNode, new VarInsnNode(Opcodes.FLOAD, 3));
-				methodNode.instructions.insertBefore(targetNode, new VarInsnNode(Opcodes.FLOAD, 4));
-				methodNode.instructions.insertBefore(targetNode, new VarInsnNode(Opcodes.FLOAD, 5));
-				methodNode.instructions.insertBefore(targetNode, new VarInsnNode(Opcodes.FLOAD, 6));
-				methodNode.instructions.insertBefore(targetNode, new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "cubeInFrustum", "([Lnet/minecraft/util/math/vector/Vector4f;FFFFFF)Z", false));
-				methodNode.instructions.insertBefore(targetNode, new InsnNode(Opcodes.IRETURN));
+				methodNode.instructions.insertBefore(targetNode, ASMAPI.listOf(
+						new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/EntityCullingConfig", "CLIENT_CONFIG", "Lmeldexun/entityculling/EntityCullingConfig$ClientConfig;"),
+						new FieldInsnNode(Opcodes.GETFIELD, "meldexun/entityculling/EntityCullingConfig$ClientConfig", "enabled", "Lnet/minecraftforge/common/ForgeConfigSpec$BooleanValue;"),
+						new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraftforge/common/ForgeConfigSpec$BooleanValue", "get", "()Ljava/lang/Object;", false),
+						new TypeInsnNode(Opcodes.CHECKCAST, "java/lang/Boolean"),
+						new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z", false),
+						new JumpInsnNode(Opcodes.IFEQ, skipNode),
+						
+						new VarInsnNode(Opcodes.ALOAD, 0),
+						new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/client/renderer/culling/ClippingHelper", ASMAPI.mapField("field_228948_a_"), "[Lnet/minecraft/util/math/vector/Vector4f;"),
+						new VarInsnNode(Opcodes.FLOAD, 1),
+						new VarInsnNode(Opcodes.FLOAD, 2),
+						new VarInsnNode(Opcodes.FLOAD, 3),
+						new VarInsnNode(Opcodes.FLOAD, 4),
+						new VarInsnNode(Opcodes.FLOAD, 5),
+						new VarInsnNode(Opcodes.FLOAD, 6),
+						new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "cubeInFrustum", "([Lnet/minecraft/util/math/vector/Vector4f;FFFFFF)Z", false),
+						new InsnNode(Opcodes.IRETURN),
+						
+						skipNode
+				));
 				
 				return methodNode;
 			}

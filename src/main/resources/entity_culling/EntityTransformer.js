@@ -13,7 +13,7 @@ function initializeCoreMod() {
 				"name": "net.minecraft.entity.Entity"
 			},
 			"transformer": function(classNode) {
-				// ASMAPI.log("INFO", "Transforming class: net.minecraft.entity.Entity");
+				ASMAPI.log("INFO", "Transforming class: net.minecraft.entity.Entity");
 				
 				classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "isCulledFast", "Z", null, false));
 				classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "isCulledSlow", "Z", null, false));
