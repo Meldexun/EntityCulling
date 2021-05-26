@@ -1,6 +1,7 @@
 {
-  "options.shadows.button": "Shadow Options",
-  "options.shadows.title": "Shadow Options For Optifine Shaders (Options added by Entity Culling)",
+  "options.entity_culling.config.button": "Entity Culling Options",
+  "options.entity_culling.shadows.button": "Shadow Options",
+  "options.entity_culling.shadows.title": "Shadow Options For Optifine Shaders (Options added by Entity Culling)",
 
   "entityShadowsEnabled": "Entity Shadows: %s",
   "entityShadowsDistanceLimited": "Entity Shadow Render Distance Limited: %s",

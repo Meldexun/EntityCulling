@@ -145,7 +145,7 @@ public class EntityCullingClient {
 			return;
 		}
 		Minecraft mc = Minecraft.getInstance();
-		event.addWidget(new Button(screen.width / 2 - 155, screen.height / 6 + 120 - 6 + 24, 150, 20, new TranslationTextComponent("options.shadows.button"), button -> {
+		event.addWidget(new Button(screen.width / 2 - 155, screen.height / 6 + 120 - 6 + 24, 150, 20, new TranslationTextComponent("options.entity_culling.shadows.button"), button -> {
 			mc.setScreen(new ShaderOptionsScreen(mc.screen));
 		}));
 	}
