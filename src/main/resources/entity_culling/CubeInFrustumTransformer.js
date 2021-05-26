@@ -7,6 +7,7 @@ function initializeCoreMod() {
 	JumpInsnNode = Java.type("org.objectweb.asm.tree.JumpInsnNode");
 	FieldInsnNode = Java.type("org.objectweb.asm.tree.FieldInsnNode");
 	InsnNode = Java.type("org.objectweb.asm.tree.InsnNode");
+	TypeInsnNode = Java.type("org.objectweb.asm.tree.TypeInsnNode");
 	return {
 		"ClippingHelper Transformer": {
 			"target": {

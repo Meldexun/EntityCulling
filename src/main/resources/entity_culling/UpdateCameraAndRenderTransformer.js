@@ -6,6 +6,8 @@ function initializeCoreMod() {
 	VarInsnNode = Java.type("org.objectweb.asm.tree.VarInsnNode");
 	MethodInsnNode = Java.type("org.objectweb.asm.tree.MethodInsnNode");
 	JumpInsnNode = Java.type("org.objectweb.asm.tree.JumpInsnNode");
+	FieldInsnNode = Java.type("org.objectweb.asm.tree.FieldInsnNode");
+	TypeInsnNode = Java.type("org.objectweb.asm.tree.TypeInsnNode");
 	return {
 		"UpdateCameraAndRender Transformer": {
 			"target": {
