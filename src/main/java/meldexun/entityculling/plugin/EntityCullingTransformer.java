@@ -35,6 +35,7 @@ public class EntityCullingTransformer implements IClassTransformer {
 	private static final Map<String, Map<String, List<MethodTransformer>>> METHOD_TRANSFORMERS = new HashMap<>();
 
 	public static final boolean IS_OPTIFINE_DETECTED;
+	public static final boolean IS_WORKSPACE_ENVIRONMENT;
 
 	public static void registerClassTransformer(ClassTransformer classTransformer) {
 		CLASS_TRANSFORMERS.computeIfAbsent(classTransformer.transformedClassName, key -> new ArrayList<>()).add(classTransformer);
@@ -61,6 +62,7 @@ public class EntityCullingTransformer implements IClassTransformer {
 			// ignore
 		}
 		IS_OPTIFINE_DETECTED = flag;
+		IS_WORKSPACE_ENVIRONMENT = !EntityCullingTransformer.class.getResource("").getProtocol().equals("jar");
 
 		registerClassTransformer(new ClassTransformer("ve", "net.minecraft.entity.Entity", classNode -> {
 			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "isCulledFast", "Z", null, false));
@@ -394,7 +396,7 @@ public class EntityCullingTransformer implements IClassTransformer {
 			AbstractInsnNode targetNode = method.instructions.get(0);
 
 			method.instructions.insertBefore(targetNode, new VarInsnNode(Opcodes.ALOAD, 0));
-			method.instructions.insertBefore(targetNode, new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/client/renderer/culling/ClippingHelper", "frustum", "[[F"));
+			method.instructions.insertBefore(targetNode, new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/client/renderer/culling/ClippingHelper", IS_WORKSPACE_ENVIRONMENT ? "frustum" : "field_78557_a", "[[F"));
 			method.instructions.insertBefore(targetNode, new VarInsnNode(Opcodes.DLOAD, 1));
 			method.instructions.insertBefore(targetNode, new VarInsnNode(Opcodes.DLOAD, 3));
 			method.instructions.insertBefore(targetNode, new VarInsnNode(Opcodes.DLOAD, 5));
