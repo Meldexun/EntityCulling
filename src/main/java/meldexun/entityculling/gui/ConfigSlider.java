@@ -63,7 +63,7 @@ public class ConfigSlider extends AbstractSlider implements IConfigWidget {
 		} else if (this.config instanceof ForgeConfigSpec.DoubleValue) {
 			((ForgeConfigSpec.DoubleValue) this.config).set((Double) CONFIG_VALUE_DEFAULT_SUPPLIER.get(this.config).get());
 		}
-		this.value = (double) this.config.get();
+		this.value = (Double) this.config.get();
 		this.setMessage(getText(this.config, this.value));
 	}
 
