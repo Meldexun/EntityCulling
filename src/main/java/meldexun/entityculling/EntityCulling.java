@@ -31,6 +31,7 @@ public class EntityCulling {
 	public EntityCulling() {
 		ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.DISPLAYTEST, () -> Pair.of(() -> FMLNetworkConstants.IGNORESERVERONLY, (a, b) -> true));
 		ModLoadingContext.get().registerConfig(Type.CLIENT, EntityCullingConfig.CLIENT_SPEC);
+		//ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.CONFIGGUIFACTORY, () -> (mc, lastScreen) -> new ConfigOptionsScreen(lastScreen));
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
 	}
 
