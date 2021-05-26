@@ -110,15 +110,9 @@ public class Hook {
 		ClippingHelper frustum = new ClippingHelper(matrixStackIn.last().pose(), projectionIn);
 		frustum.prepare(x, y, z);
 
-		if (!EntityCullingConfig.CLIENT_CONFIG.debug.get()) {
-			EntityCullingClient.CULLING_THREAD.camX = x;
-			EntityCullingClient.CULLING_THREAD.camY = y;
-			EntityCullingClient.CULLING_THREAD.camZ = z;
-		} else {
-			EntityCullingClient.CULLING_THREAD.camX = mc.getCameraEntity().getX();
-			EntityCullingClient.CULLING_THREAD.camY = mc.getCameraEntity().getEyeY();
-			EntityCullingClient.CULLING_THREAD.camZ = mc.getCameraEntity().getZ();
-		}
+		EntityCullingClient.CULLING_THREAD.camX = x;
+		EntityCullingClient.CULLING_THREAD.camY = y;
+		EntityCullingClient.CULLING_THREAD.camZ = z;
 		EntityCullingClient.CULLING_THREAD.matrix = matrixStackIn.last().pose().copy();
 		EntityCullingClient.CULLING_THREAD.projection = projectionIn.copy();
 
