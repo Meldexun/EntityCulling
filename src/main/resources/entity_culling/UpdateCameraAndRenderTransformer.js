@@ -119,8 +119,8 @@ function initializeCoreMod() {
 							new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "shouldRenderTileEntity", "(Lnet/minecraft/tileentity/TileEntity;)Z", false),
 							new JumpInsnNode(Opcodes.IFEQ, popNode3),
 							
-							new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/EntityCullingConfig", "CLIENT_CONFIG", "meldexun/entityculling/EntityCullingConfig$ClientConfig"),
-							new FieldInsnNode(Opcodes.GETFIELD, "meldexun/entityculling/EntityCullingConfig$ClientConfig", "enabled", "net/minecraftforge/common/ForgeConfigSpec$BooleanValue"),
+							new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/EntityCullingConfig", "CLIENT_CONFIG", "Lmeldexun/entityculling/EntityCullingConfig$ClientConfig;"),
+							new FieldInsnNode(Opcodes.GETFIELD, "meldexun/entityculling/EntityCullingConfig$ClientConfig", "enabled", "Lnet/minecraftforge/common/ForgeConfigSpec$BooleanValue;"),
 							new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraftforge/common/ForgeConfigSpec$BooleanValue", "get", "()Ljava/lang/Object;", false),
 							new TypeInsnNode(Opcodes.CHECKCAST, "java/lang/Boolean"),
 							new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z", false),
@@ -141,8 +141,8 @@ function initializeCoreMod() {
 							new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "shouldRenderTileEntity", "(Lnet/minecraft/tileentity/TileEntity;)Z", false),
 							new JumpInsnNode(Opcodes.IFEQ, popNode4),
 							
-							new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/EntityCullingConfig", "CLIENT_CONFIG", "meldexun/entityculling/EntityCullingConfig$ClientConfig"),
-							new FieldInsnNode(Opcodes.GETFIELD, "meldexun/entityculling/EntityCullingConfig$ClientConfig", "enabled", "net/minecraftforge/common/ForgeConfigSpec$BooleanValue"),
+							new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/EntityCullingConfig", "CLIENT_CONFIG", "Lmeldexun/entityculling/EntityCullingConfig$ClientConfig;"),
+							new FieldInsnNode(Opcodes.GETFIELD, "meldexun/entityculling/EntityCullingConfig$ClientConfig", "enabled", "Lnet/minecraftforge/common/ForgeConfigSpec$BooleanValue;"),
 							new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraftforge/common/ForgeConfigSpec$BooleanValue", "get", "()Ljava/lang/Object;", false),
 							new TypeInsnNode(Opcodes.CHECKCAST, "java/lang/Boolean"),
 							new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z", false),
