@@ -60,7 +60,7 @@ function initializeCoreMod() {
 							}
 						}
 					}
-					var popNode3 = ASMAPI.findFirstMethodCallBefore(methodNode, ASMAPI.MethodType.INTERFACE, "java/util/Iterator", "hasNext", "()Z", methodNode.instructions.indexOf(targetNode2));
+					var popNode3 = ASMAPI.findFirstMethodCallBefore(methodNode, ASMAPI.MethodType.INTERFACE, "java/util/Iterator", "hasNext", "()Z", methodNode.instructions.indexOf(targetNode3));
 					//popNode3 = ASMAPI.findFirstInstructionBefore(methodNode, -1, methodNode.instructions.indexOf(popNode3));
 					//popNode3 = ASMAPI.findFirstInstructionBefore(methodNode, -1, methodNode.instructions.indexOf(popNode3) - 1);
 					{
@@ -86,7 +86,7 @@ function initializeCoreMod() {
 							}
 						}
 					}
-					var popNode4 = ASMAPI.findFirstMethodCallBefore(methodNode, ASMAPI.MethodType.INTERFACE, "java/util/Iterator", "hasNext", "()Z", methodNode.instructions.indexOf(targetNode2));
+					var popNode4 = ASMAPI.findFirstMethodCallBefore(methodNode, ASMAPI.MethodType.INTERFACE, "java/util/Iterator", "hasNext", "()Z", methodNode.instructions.indexOf(targetNode4));
 					//popNode4 = ASMAPI.findFirstInstructionBefore(methodNode, -1, methodNode.instructions.indexOf(popNode4));
 					//popNode4 = ASMAPI.findFirstInstructionBefore(methodNode, -1, methodNode.instructions.indexOf(popNode4) - 1);
 					{
