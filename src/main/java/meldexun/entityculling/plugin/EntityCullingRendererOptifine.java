@@ -170,7 +170,7 @@ public class EntityCullingRendererOptifine extends EntityCullingRenderer {
 				if (shadersEnabled) {
 					METHOD_NEXT_ENTITY.invoke(null, entity);
 				}
-				renderManager.renderEntityStatic(entity, this.partialTicks, false);
+				renderManager.renderMultipass(entity, this.partialTicks);
 			}
 
 			if (this.isRenderEntityOutlines() && (!outlineEntityList.isEmpty() || this.entityOutlinesRendered)) {
@@ -216,7 +216,7 @@ public class EntityCullingRendererOptifine extends EntityCullingRenderer {
 			}
 
 			for (Entity entity : this.entityListMultipassPass1) {
-				renderManager.renderEntityStatic(entity, this.partialTicks, false);
+				renderManager.renderMultipass(entity, this.partialTicks);
 			}
 
 			if (!this.isRenderEntityOutlines() && (!this.entityListOutlinePass1.isEmpty() || this.entityOutlinesRendered)) {

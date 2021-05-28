@@ -196,7 +196,7 @@ public class EntityCullingRenderer {
 			}
 
 			for (Entity entity : multipassEntityList) {
-				renderManager.renderEntityStatic(entity, this.partialTicks, false);
+				renderManager.renderMultipass(entity, this.partialTicks);
 			}
 
 			if (this.isRenderEntityOutlines() && (!outlineEntityList.isEmpty() || this.entityOutlinesRendered)) {
@@ -239,7 +239,7 @@ public class EntityCullingRenderer {
 			}
 
 			for (Entity entity : this.entityListMultipassPass1) {
-				renderManager.renderEntityStatic(entity, this.partialTicks, false);
+				renderManager.renderMultipass(entity, this.partialTicks);
 			}
 		}
 
