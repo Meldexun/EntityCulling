@@ -22,12 +22,10 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.BlockPos.MutableBlockPos;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraftforge.fml.common.Loader;
 
@@ -659,28 +657,12 @@ public class CullingThread extends Thread {
 	}
 
 	private boolean checkVisibilityCached(World world, int endX, int endY, int endZ) {
-		boolean test = true;
-		if (test) {
-			return this.cache.getOrSetCachedValue(endX - this.camBlockX, endY - this.camBlockY, endZ - this.camBlockZ,
-					() -> this.checkVisibility(world, this.camX, this.camY, this.camZ, endX, endY, endZ, EntityCullingConfig.raytraceThreshold) ? 2 : 1) == 2;
-		}
-		int cachedValue = this.cache.getCachedValue(endX - this.camBlockX, endY - this.camBlockY, endZ - this.camBlockZ);
-		if (cachedValue > 0) {
-			return cachedValue == 2;
-		}
-
-		boolean flag = this.checkVisibility(world, this.camX, this.camY, this.camZ, endX, endY, endZ, EntityCullingConfig.raytraceThreshold);
-
-		if (cachedValue != -1) {
-			this.cache.setCachedValue(endX - this.camBlockX, endY - this.camBlockY, endZ - this.camBlockZ, flag ? 2 : 1);
-		}
-
-		return flag;
+		return this.cache.getOrSetCachedValue(endX - this.camBlockX, endY - this.camBlockY, endZ - this.camBlockZ,
+				() -> this.checkVisibility(world, this.camX, this.camY, this.camZ, endX, endY, endZ, EntityCullingConfig.raytraceThreshold) ? 2 : 1) == 2;
 	}
 
 	private boolean checkVisibility(World world, double startX, double startY, double startZ, double endX, double endY, double endZ, double maxDiff) {
-		MutableRayTraceResult rayTraceResult = engine.rayTraceBlocks(startX, startY, startZ, endX, endY, endZ, true, maxDiff,
-				this.mutableRayTraceResult);
+		MutableRayTraceResult rayTraceResult = engine.rayTraceBlocks(startX, startY, startZ, endX, endY, endZ, true, maxDiff, this.mutableRayTraceResult);
 		return rayTraceResult == null;
 	}
 
