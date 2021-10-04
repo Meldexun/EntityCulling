@@ -1,68 +1,87 @@
 buildscript {
     repositories {
-        maven { url = 'https://files.minecraftforge.net/maven' }
-        jcenter()
+        maven { url = 'https://maven.minecraftforge.net' }
         mavenCentral()
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
     }
 }
-        
 apply plugin: 'net.minecraftforge.gradle'
 // Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 apply plugin: 'eclipse'
-apply plugin: 'maven-publish'
 
-version = '1.12.2-4.1.5'
+version = '1.12.2-4.2.0-dev5.3'
 group = 'meldexun.entity_culling'
 archivesBaseName = 'EntityCulling'
 
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 
 minecraft {
     mappings channel: 'stable', version: '39-1.12'
 
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+
     runs {
         client {
-            workingDirectory project.file('run')
-
-            // Recommended logging data for a userdev environment
+            taskName 'runClient EC 1.12'
+            environment 'MC_VERSION', '1.12.2'
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-
-            // Recommended logging level for the console
-            property 'forge.logging.console.level', 'debug'
+            property 'forge.logging.console.level', 'info'
+            property 'fml.coreMods.load', 'meldexun.entityculling.asm.EntityCullingPlugin'
         }
 
         server {
-
-            // Recommended logging data for a userdev environment
+            taskName 'runServer EC 1.12'
+            environment 'MC_VERSION', '1.12.2'
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-
-            // Recommended logging level for the console
-            property 'forge.logging.console.level', 'debug'
+            property 'forge.logging.console.level', 'info'
         }
     }
 }
 
-jar {
-    manifest {
-        attributes 'ModSide': 'CLIENT'
-        attributes 'FMLCorePlugin': 'meldexun.entityculling.plugin.EntityCullingPlugin'
-        attributes 'FMLCorePluginContainsFMLMod': 'true'
-    }
+configurations {
+    includedDependencies
+    buildDependencies
+
+    implementation.extendsFrom(includedDependencies)
 }
 
 repositories {
-    maven {
-        url = "https://www.cursemaven.com"
+    ivy {
+        url 'https://github.com/'
+
+        patternLayout {
+            artifact '[organisation]/[module]/releases/download/v[revision]/[module]-[revision].[ext]'
+        }
+
+        metadataSources { artifact() } 
     }
+
+    maven { url = 'https://www.cursemaven.com' }
 }
 
 dependencies {
     minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2855'
+    includedDependencies 'meldexun:ASMUtil:1.0.0@jar'
+    includedDependencies 'meldexun:ReflectionUtil:1.0.0@jar'
+    includedDependencies 'meldexun:RaytraceUtil:1.0.0@jar'
+    buildDependencies 'curse.maven:CubicChunks-292243:3186888'
+}
 
-    if (project.hasProperty('buildjar')) {
-        compile 'curse.maven:CubicChunks-292243:3120272'
+jar {
+    from {
+        configurations.includedDependencies.collect { it.isDirectory() ? it : zipTree(it) }
     }
+
+    manifest {
+        attributes 'ModSide': 'CLIENT'
+        attributes 'FMLCorePlugin': 'meldexun.entityculling.asm.EntityCullingPlugin'
+        attributes 'FMLCorePluginContainsFMLMod': 'true'
+        attributes 'FMLAT': 'accesstransformer.cfg'
+    }
+}
+
+compileJava {
+    classpath = sourceSets.main.compileClasspath + configurations.buildDependencies
 }
