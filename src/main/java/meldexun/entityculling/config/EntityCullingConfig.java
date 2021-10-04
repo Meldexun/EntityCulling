@@ -1,21 +1,29 @@
-package meldexun.entityculling;
+package meldexun.entityculling.config;
 
+import meldexun.entityculling.EntityCulling;
 import net.minecraftforge.common.config.Config;
 
-@Config(modid = EntityCullingContainer.MOD_ID)
+@Config(modid = EntityCulling.MOD_ID)
 public class EntityCullingConfig {
 
-	@Config.Ignore
-	public static boolean betaFeatures = false;
-
 	@Config.RequiresMcRestart
-	@Config.Comment("Requires restart. Ram usage (in MB) = (x * 16 * 2) ^ 3 / 4")
+	@Config.Comment("Requires restart. Ram usage (in Bytes) = ((x * 16 * 2) ^ 3) / 4")
 	public static int cacheSize = 12;
 
-	public static boolean debug = false;
+	@Config.Comment("Enabling this should give more FPS because (tile-) entities are culled more accuratly. Also this does only not need the cache but the cache still requires memory. This might cause (tile-) entity flickering and lags due to the higher CPU usage.")
+	public static boolean cachelessMode = false;
+
+	public static boolean debugCullInfo = false;
+	public static boolean debugRenderBoxes = false;
+
+	public static boolean disabledInSpectator = true;
 
 	@Config.Comment("Disable all changes from this mod.")
 	public static boolean enabled = true;
+
+	@Config.Comment("If you feel the need to increase this value because of entities being culled falsely then another modder probably messed up his render bounding boxes and he should fix them instead.")
+	@Config.RangeDouble(min = 0.0009765625D, max = 1024.0D)
+	public static double raytraceThreshold = 1.0D;
 
 	@Config.Comment("Skip rendering of entities that are not visible (hidden behind blocks). Bosses will be rendered normally. This might cause issues where an entity is partly behind a block and thus does not get rendered but it's usually not really noticable.")
 	public static boolean skipHiddenEntityRendering = true;
@@ -32,6 +40,9 @@ public class EntityCullingConfig {
 	public static double skipHiddenTileEntityRenderingSize = 3.0D;
 	@Config.Comment("Tile entities which will always be rendered. (Format: 'modid:tile_entity_name')")
 	public static String[] skipHiddenTileEntityRenderingBlacklist = new String[0];
+
+	@Config.RequiresWorldRestart
+	public static String[] tileEntityCachedBoundingBoxBlacklist = { "fairylights" };
 
 	public static OptifineShaderOptions optifineShaderOptions = new OptifineShaderOptions();
 
