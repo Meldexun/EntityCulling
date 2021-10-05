@@ -18,7 +18,8 @@ public class ConfigBooleanButton extends AbstractButton implements IConfigWidget
 	}
 
 	public static ITextComponent getText(ForgeConfigSpec.BooleanValue config, boolean value) {
-		return new TranslationTextComponent(config.getPath().get(config.getPath().size() - 1), (value ? TextFormatting.GREEN.toString() : TextFormatting.RED.toString()) + value);
+		return new TranslationTextComponent(config.getPath().get(config.getPath().size() - 1),
+				(value ? TextFormatting.GREEN.toString() : TextFormatting.RED.toString()) + value);
 	}
 
 	@Override

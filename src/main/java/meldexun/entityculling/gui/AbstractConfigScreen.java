@@ -103,20 +103,24 @@ public abstract class AbstractConfigScreen extends Screen {
 				return new Widget(width, width, width, width, new StringTextComponent("dummy")) {
 					@Override
 					public void render(MatrixStack p_230430_1_, int p_230430_2_, int p_230430_3_, float p_230430_4_) {
-						
+
 					}
+
 					@Override
 					protected void narrate() {
-						
+
 					}
+
 					@Override
 					public boolean mouseClicked(double p_231044_1_, double p_231044_3_, int p_231044_5_) {
 						return false;
 					}
+
 					@Override
 					public boolean mouseReleased(double p_231048_1_, double p_231048_3_, int p_231048_5_) {
 						return false;
 					}
+
 					@Override
 					public boolean mouseDragged(double p_231045_1_, double p_231045_3_, int p_231045_5_, double p_231045_6_, double p_231045_8_) {
 						return false;
