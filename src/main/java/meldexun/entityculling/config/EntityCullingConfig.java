@@ -1,10 +1,10 @@
-package meldexun.entityculling;
+package meldexun.entityculling.config;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
-
-import com.google.common.collect.Lists;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 
@@ -20,13 +20,13 @@ public class EntityCullingConfig {
 
 	public static class ClientConfig {
 
-		//public final ForgeConfigSpec.BooleanValue betaFeatures;
-
 		public final ForgeConfigSpec.IntValue cacheSize;
 
 		public final ForgeConfigSpec.BooleanValue debug;
 
 		public final ForgeConfigSpec.BooleanValue enabled;
+
+		public final ForgeConfigSpec.DoubleValue raytraceThreshold;
 
 		public final ForgeConfigSpec.BooleanValue skipHiddenEntityRendering;
 		public final ForgeConfigSpec.DoubleValue skipHiddenEntityRenderingSize;
@@ -36,24 +36,28 @@ public class EntityCullingConfig {
 		public final ForgeConfigSpec.DoubleValue skipHiddenTileEntityRenderingSize;
 		public final ForgeConfigSpec.ConfigValue<List<? extends String>> skipHiddenTileEntityRenderingBlacklist;
 
+		public final ForgeConfigSpec.ConfigValue<List<? extends String>> tileEntityCachedBoundingBoxBlacklist;
+
 		public final OptifineShaderOptions optifineShaderOptions;
 
 		public ClientConfig(ForgeConfigSpec.Builder builder) {
-			//this.betaFeatures = builder.comment("").define("betaFeatures", false);
-
 			this.cacheSize = builder.comment("Requires restart. Ram usage (in Bytes) = ((x * 16 * 2) ^ 3) / 4").defineInRange("cacheSize", 12, 1, 32);
 
 			this.debug = builder.comment("").define("debug", false);
 
 			this.enabled = builder.comment("Disable all changes from this mod.").define("enabled", true);
 
+			this.raytraceThreshold = builder.comment("If you feel the need to increase this value because of entities being culled falsely then another modder probably messed up his render bounding boxes and he should fix them instead.").defineInRange("raytraceThreshold", 1.0D, 0.0009765625D, 1024.0D);
+
 			this.skipHiddenEntityRendering = builder.comment("Skip rendering of entities that are not visible (hidden behind blocks). Bosses will be rendered normally. This might cause issues where an entity is partly behind a block and thus does not get rendered but it's usually not really noticable.").define("skipHiddenEntityRendering", true);
 			this.skipHiddenEntityRenderingSize = builder.comment("Entities with a width or height greater than this value will always get rendered.").defineInRange("skipHiddenEntityRenderingSize", 3.0D, 0.0D, 128.0D);
-			this.skipHiddenEntityRenderingBlacklist = builder.comment("Entities which will always be rendered. (Format: 'modid:entity_name')").defineList("skipHiddenEntityRenderingBlacklist", Lists.newArrayList(), o -> true);
+			this.skipHiddenEntityRenderingBlacklist = builder.comment("Entities which will always be rendered. (Format: 'modid:entity_name')").defineList("skipHiddenEntityRenderingBlacklist", ArrayList::new, o -> true);
 
 			this.skipHiddenTileEntityRendering = builder.comment("Skip rendering of entities that are not visible (hidden behind blocks). This might cause issues where a tile entity is partly behind a block and thus does not get rendered but it's usually not really noticable.").define("skipHiddenTileEntityRendering", true);
 			this.skipHiddenTileEntityRenderingSize = builder.comment("Tile entities with a width or height greater than this value will always get rendered.").defineInRange("skipHiddenTileEntityRenderingSize", 3.0D, 0.0D, 128.0D);
-			this.skipHiddenTileEntityRenderingBlacklist = builder.comment("Tile entities which will always be rendered. (Format: 'modid:tile_entity_name')").defineList("skipHiddenTileEntityRenderingBlacklist", Lists.newArrayList(), o -> true);
+			this.skipHiddenTileEntityRenderingBlacklist = builder.comment("Tile entities which will always be rendered. (Format: 'modid:tile_entity_name')").defineList("skipHiddenTileEntityRenderingBlacklist", ArrayList::new, o -> true);
+
+			this.tileEntityCachedBoundingBoxBlacklist = builder.comment("").defineList("tileEntityCachedBoundingBoxBlacklist", () -> Arrays.asList("fairylights"), o -> true);
 
 			this.optifineShaderOptions = new OptifineShaderOptions(builder);
 		}
