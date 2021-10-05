@@ -1,8 +1,8 @@
 {
-	"UpdateCameraAndRender Transformer": "entity_culling/UpdateCameraAndRenderTransformer.js",
-	"Entity Transformer": "entity_culling/EntityTransformer.js",
-	"TileEntity Transformer": "entity_culling/TileEntityTransformer.js",
-	"SetupTerrain Transformer": "entity_culling/SetupTerrainTransformer.js",
-	"RenderShadowMap Transformer": "entity_culling/RenderShadowMapTransformer.js",
-	"CubeInFrustum Transformer": "entity_culling/CubeInFrustumTransformer.js"
+	"UpdateCameraAndRender Transformer": "asm/entity_culling/UpdateCameraAndRenderTransformer.js",
+	"Entity Transformer": "asm/entity_culling/EntityTransformer.js",
+	"TileEntity Transformer": "asm/entity_culling/TileEntityTransformer.js",
+	"SetupTerrain Transformer": "asm/entity_culling/SetupTerrainTransformer.js",
+	"RenderShadowMap Transformer": "asm/entity_culling/RenderShadowMapTransformer.js",
+	"CubeInFrustum Transformer": "asm/entity_culling/CubeInFrustumTransformer.js"
 }

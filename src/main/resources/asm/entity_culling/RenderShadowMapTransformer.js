@@ -78,13 +78,13 @@ function initializeCoreMod() {
 				
 				methodNode.instructions.insert(targetNode1, ASMAPI.listOf(
 						new VarInsnNode(Opcodes.ALOAD, 29),
-						new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "shouldRenderEntityShadow", "(Lnet/minecraft/entity/Entity;)Z", false),
+						new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/ShadersRenderHook", "shouldRenderEntityShadow", "(Lnet/minecraft/entity/Entity;)Z", false),
 						new JumpInsnNode(Opcodes.IFEQ, popNode1)
 				));
 				
 				methodNode.instructions.insert(targetNode2, ASMAPI.listOf(
 						new VarInsnNode(Opcodes.ALOAD, 30),
-						new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "shouldRenderTileEntityShadow", "(Lnet/minecraft/tileentity/TileEntity;)Z", false),
+						new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/ShadersRenderHook", "shouldRenderTileEntityShadow", "(Lnet/minecraft/tileentity/TileEntity;)Z", false),
 						new JumpInsnNode(Opcodes.IFEQ, popNode2)
 				));
 				

@@ -105,22 +105,22 @@ function initializeCoreMod() {
 							new VarInsnNode(Opcodes.ALOAD, 6),
 							new VarInsnNode(Opcodes.ALOAD, 1),
 							new VarInsnNode(Opcodes.ALOAD, 9),
-							new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "preRenderEntities", "(Lnet/minecraft/client/renderer/ActiveRenderInfo;Lcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/util/math/vector/Matrix4f;)V", false)
+							new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/WorldRendererHook", "preRenderEntities", "(Lnet/minecraft/client/renderer/ActiveRenderInfo;Lcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/util/math/vector/Matrix4f;)V", false)
 					));
 					
 					methodNode.instructions.insert(targetNode2, ASMAPI.listOf(
 							new VarInsnNode(Opcodes.ALOAD, 40),
-							new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "shouldRenderEntity", "(Lnet/minecraft/entity/Entity;)Z", false),
+							new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/WorldRendererHook", "shouldRenderEntity", "(Lnet/minecraft/entity/Entity;)Z", false),
 							new JumpInsnNode(Opcodes.IFEQ, popNode2)
 					));
 					
 					methodNode.instructions.insert(targetNode3, ASMAPI.listOf(
 							new VarInsnNode(Opcodes.ALOAD, 43),
-							new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "shouldRenderTileEntity", "(Lnet/minecraft/tileentity/TileEntity;)Z", false),
+							new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/WorldRendererHook", "shouldRenderTileEntity", "(Lnet/minecraft/tileentity/TileEntity;)Z", false),
 							new JumpInsnNode(Opcodes.IFEQ, popNode3),
 							
-							new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/EntityCullingConfig", "CLIENT_CONFIG", "Lmeldexun/entityculling/EntityCullingConfig$ClientConfig;"),
-							new FieldInsnNode(Opcodes.GETFIELD, "meldexun/entityculling/EntityCullingConfig$ClientConfig", "enabled", "Lnet/minecraftforge/common/ForgeConfigSpec$BooleanValue;"),
+							new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/config/EntityCullingConfig", "CLIENT_CONFIG", "Lmeldexun/entityculling/config/EntityCullingConfig$ClientConfig;"),
+							new FieldInsnNode(Opcodes.GETFIELD, "meldexun/entityculling/config/EntityCullingConfig$ClientConfig", "enabled", "Lnet/minecraftforge/common/ForgeConfigSpec$BooleanValue;"),
 							new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraftforge/common/ForgeConfigSpec$BooleanValue", "get", "()Ljava/lang/Object;", false),
 							new TypeInsnNode(Opcodes.CHECKCAST, "java/lang/Boolean"),
 							new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z", false),
@@ -128,7 +128,7 @@ function initializeCoreMod() {
 							
 							new VarInsnNode(Opcodes.ALOAD, 20),
 							new VarInsnNode(Opcodes.ALOAD, 43),
-							new MethodInsnNode(Opcodes.INVOKEINTERFACE, "meldexun/entityculling/ITileEntityBBCache", "getCachedAABB", "()Lnet/minecraft/util/math/AxisAlignedBB;", true),
+							new MethodInsnNode(Opcodes.INVOKEINTERFACE, "meldexun/entityculling/util/IBoundingBoxCache", "getOrCacheBoundingBox", "()Lnet/minecraft/util/math/AxisAlignedBB;", true),
 							new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/renderer/culling/ClippingHelper", ASMAPI.mapMethod("func_228957_a_"), "(Lnet/minecraft/util/math/AxisAlignedBB;)Z", false),
 							new JumpInsnNode(Opcodes.IFEQ, popNode3),
 							new JumpInsnNode(Opcodes.GOTO, popNode3_1),
@@ -138,11 +138,11 @@ function initializeCoreMod() {
 					
 					methodNode.instructions.insert(targetNode4, ASMAPI.listOf(
 							new VarInsnNode(Opcodes.ALOAD, 41),
-							new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "shouldRenderTileEntity", "(Lnet/minecraft/tileentity/TileEntity;)Z", false),
+							new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/WorldRendererHook", "shouldRenderTileEntity", "(Lnet/minecraft/tileentity/TileEntity;)Z", false),
 							new JumpInsnNode(Opcodes.IFEQ, popNode4),
 							
-							new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/EntityCullingConfig", "CLIENT_CONFIG", "Lmeldexun/entityculling/EntityCullingConfig$ClientConfig;"),
-							new FieldInsnNode(Opcodes.GETFIELD, "meldexun/entityculling/EntityCullingConfig$ClientConfig", "enabled", "Lnet/minecraftforge/common/ForgeConfigSpec$BooleanValue;"),
+							new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/config/EntityCullingConfig", "CLIENT_CONFIG", "Lmeldexun/entityculling/config/EntityCullingConfig$ClientConfig;"),
+							new FieldInsnNode(Opcodes.GETFIELD, "meldexun/entityculling/config/EntityCullingConfig$ClientConfig", "enabled", "Lnet/minecraftforge/common/ForgeConfigSpec$BooleanValue;"),
 							new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraftforge/common/ForgeConfigSpec$BooleanValue", "get", "()Ljava/lang/Object;", false),
 							new TypeInsnNode(Opcodes.CHECKCAST, "java/lang/Boolean"),
 							new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z", false),
@@ -150,7 +150,7 @@ function initializeCoreMod() {
 							
 							new VarInsnNode(Opcodes.ALOAD, 20),
 							new VarInsnNode(Opcodes.ALOAD, 41),
-							new MethodInsnNode(Opcodes.INVOKEINTERFACE, "meldexun/entityculling/ITileEntityBBCache", "getCachedAABB", "()Lnet/minecraft/util/math/AxisAlignedBB;", true),
+							new MethodInsnNode(Opcodes.INVOKEINTERFACE, "meldexun/entityculling/util/IBoundingBoxCache", "getOrCacheBoundingBox", "()Lnet/minecraft/util/math/AxisAlignedBB;", true),
 							new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/renderer/culling/ClippingHelper", ASMAPI.mapMethod("func_228957_a_"), "(Lnet/minecraft/util/math/AxisAlignedBB;)Z", false),
 							new JumpInsnNode(Opcodes.IFEQ, popNode4),
 							new JumpInsnNode(Opcodes.GOTO, popNode4_1),
@@ -242,29 +242,29 @@ function initializeCoreMod() {
 							new VarInsnNode(Opcodes.ALOAD, 6),
 							new VarInsnNode(Opcodes.ALOAD, 1),
 							new VarInsnNode(Opcodes.ALOAD, 9),
-							new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "preRenderEntities", "(Lnet/minecraft/client/renderer/ActiveRenderInfo;Lcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/util/math/vector/Matrix4f;)V", false)
+							new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/WorldRendererHook", "preRenderEntities", "(Lnet/minecraft/client/renderer/ActiveRenderInfo;Lcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/util/math/vector/Matrix4f;)V", false)
 					));
 					
 					methodNode.instructions.insert(targetNode2, ASMAPI.listOf(
 							new VarInsnNode(Opcodes.ALOAD, 44),
-							new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "shouldRenderEntity", "(Lnet/minecraft/entity/Entity;)Z", false),
+							new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/WorldRendererHook", "shouldRenderEntity", "(Lnet/minecraft/entity/Entity;)Z", false),
 							new JumpInsnNode(Opcodes.IFEQ, popNode2)
 					));
 					
 					methodNode.instructions.insert(targetNode3, ASMAPI.listOf(
 							new VarInsnNode(Opcodes.ALOAD, 47),
-							new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "shouldRenderTileEntity", "(Lnet/minecraft/tileentity/TileEntity;)Z", false),
+							new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/WorldRendererHook", "shouldRenderTileEntity", "(Lnet/minecraft/tileentity/TileEntity;)Z", false),
 							new JumpInsnNode(Opcodes.IFEQ, popNode3),
 							
-							new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/EntityCullingConfig", "CLIENT_CONFIG", "Lmeldexun/entityculling/EntityCullingConfig$ClientConfig;"),
-							new FieldInsnNode(Opcodes.GETFIELD, "meldexun/entityculling/EntityCullingConfig$ClientConfig", "enabled", "Lnet/minecraftforge/common/ForgeConfigSpec$BooleanValue;"),
+							new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/config/EntityCullingConfig", "CLIENT_CONFIG", "Lmeldexun/entityculling/config/EntityCullingConfig$ClientConfig;"),
+							new FieldInsnNode(Opcodes.GETFIELD, "meldexun/entityculling/config/EntityCullingConfig$ClientConfig", "enabled", "Lnet/minecraftforge/common/ForgeConfigSpec$BooleanValue;"),
 							new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraftforge/common/ForgeConfigSpec$BooleanValue", "get", "()Ljava/lang/Object;", false),
 							new TypeInsnNode(Opcodes.CHECKCAST, "java/lang/Boolean"),
 							new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z", false),
 							new JumpInsnNode(Opcodes.IFEQ, skipNode3),
 							
 							new VarInsnNode(Opcodes.ALOAD, 47),
-							new MethodInsnNode(Opcodes.INVOKEINTERFACE, "meldexun/entityculling/ITileEntityBBCache", "getCachedAABB", "()Lnet/minecraft/util/math/AxisAlignedBB;", true),
+							new MethodInsnNode(Opcodes.INVOKEINTERFACE, "meldexun/entityculling/util/IBoundingBoxCache", "getOrCacheBoundingBox", "()Lnet/minecraft/util/math/AxisAlignedBB;", true),
 							new VarInsnNode(Opcodes.ASTORE, 48),
 							new JumpInsnNode(Opcodes.GOTO, popNode3_1),
 							
@@ -273,18 +273,18 @@ function initializeCoreMod() {
 					
 					methodNode.instructions.insert(targetNode4, ASMAPI.listOf(
 							new VarInsnNode(Opcodes.ALOAD, 45),
-							new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "shouldRenderTileEntity", "(Lnet/minecraft/tileentity/TileEntity;)Z", false),
+							new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/WorldRendererHook", "shouldRenderTileEntity", "(Lnet/minecraft/tileentity/TileEntity;)Z", false),
 							new JumpInsnNode(Opcodes.IFEQ, popNode4),
 							
-							new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/EntityCullingConfig", "CLIENT_CONFIG", "Lmeldexun/entityculling/EntityCullingConfig$ClientConfig;"),
-							new FieldInsnNode(Opcodes.GETFIELD, "meldexun/entityculling/EntityCullingConfig$ClientConfig", "enabled", "Lnet/minecraftforge/common/ForgeConfigSpec$BooleanValue;"),
+							new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/config/EntityCullingConfig", "CLIENT_CONFIG", "Lmeldexun/entityculling/config/EntityCullingConfig$ClientConfig;"),
+							new FieldInsnNode(Opcodes.GETFIELD, "meldexun/entityculling/config/EntityCullingConfig$ClientConfig", "enabled", "Lnet/minecraftforge/common/ForgeConfigSpec$BooleanValue;"),
 							new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraftforge/common/ForgeConfigSpec$BooleanValue", "get", "()Ljava/lang/Object;", false),
 							new TypeInsnNode(Opcodes.CHECKCAST, "java/lang/Boolean"),
 							new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z", false),
 							new JumpInsnNode(Opcodes.IFEQ, skipNode4),
 							
 							new VarInsnNode(Opcodes.ALOAD, 45),
-							new MethodInsnNode(Opcodes.INVOKEINTERFACE, "meldexun/entityculling/ITileEntityBBCache", "getCachedAABB", "()Lnet/minecraft/util/math/AxisAlignedBB;", true),
+							new MethodInsnNode(Opcodes.INVOKEINTERFACE, "meldexun/entityculling/util/IBoundingBoxCache", "getOrCacheBoundingBox", "()Lnet/minecraft/util/math/AxisAlignedBB;", true),
 							new VarInsnNode(Opcodes.ASTORE, 46),
 							new JumpInsnNode(Opcodes.GOTO, popNode4_1),
 							

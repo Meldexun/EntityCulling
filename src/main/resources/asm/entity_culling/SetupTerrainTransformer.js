@@ -35,7 +35,7 @@ function initializeCoreMod() {
 					
 					methodNode.instructions.insert(targetNode, ASMAPI.listOf(
 							new VarInsnNode(Opcodes.ALOAD, 25),
-							new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "shouldRenderChunkShadow", "(Ljava/lang/Object;)Z", false),
+							new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/WorldRendererHook", "shouldRenderChunkShadow", "(Ljava/lang/Object;)Z", false),
 							new JumpInsnNode(Opcodes.IFEQ, popNode)
 					));
 				}

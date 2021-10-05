@@ -24,8 +24,8 @@ function initializeCoreMod() {
 				var skipNode = new LabelNode();
 				
 				methodNode.instructions.insertBefore(targetNode, ASMAPI.listOf(
-						new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/EntityCullingConfig", "CLIENT_CONFIG", "Lmeldexun/entityculling/EntityCullingConfig$ClientConfig;"),
-						new FieldInsnNode(Opcodes.GETFIELD, "meldexun/entityculling/EntityCullingConfig$ClientConfig", "enabled", "Lnet/minecraftforge/common/ForgeConfigSpec$BooleanValue;"),
+						new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/config/EntityCullingConfig", "CLIENT_CONFIG", "Lmeldexun/entityculling/config/EntityCullingConfig$ClientConfig;"),
+						new FieldInsnNode(Opcodes.GETFIELD, "meldexun/entityculling/config/EntityCullingConfig$ClientConfig", "enabled", "Lnet/minecraftforge/common/ForgeConfigSpec$BooleanValue;"),
 						new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraftforge/common/ForgeConfigSpec$BooleanValue", "get", "()Ljava/lang/Object;", false),
 						new TypeInsnNode(Opcodes.CHECKCAST, "java/lang/Boolean"),
 						new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z", false),
@@ -39,7 +39,7 @@ function initializeCoreMod() {
 						new VarInsnNode(Opcodes.FLOAD, 4),
 						new VarInsnNode(Opcodes.FLOAD, 5),
 						new VarInsnNode(Opcodes.FLOAD, 6),
-						new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/plugin/Hook", "cubeInFrustum", "([Lnet/minecraft/util/math/vector/Vector4f;FFFFFF)Z", false),
+						new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/ClippingHelperHook", "cubeInFrustum", "([Lnet/minecraft/util/math/vector/Vector4f;FFFFFF)Z", false),
 						new InsnNode(Opcodes.IRETURN),
 						
 						skipNode
