@@ -8,7 +8,6 @@ import java.util.Set;
 
 import meldexun.entityculling.asm.EntityCullingClassTransformer;
 import meldexun.entityculling.config.EntityCullingConfig;
-import meldexun.entityculling.integration.CubicChunks;
 import meldexun.raytraceutil.RayTracingCache;
 import meldexun.raytraceutil.RayTracingEngine;
 import meldexun.raytraceutil.RayTracingEngine.MutableRayTraceResult;
@@ -26,37 +25,17 @@ import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
-import net.minecraftforge.fml.common.Loader;
 
 public class CullingThread extends Thread {
 
 	private static final Set<Class<? extends Entity>> ENTITY_BLACKLIST = new HashSet<>();
 	private static final Set<Class<? extends TileEntity>> TILE_ENTITY_BLACKLIST = new HashSet<>();
 
+	private final CachedBlockAccess cachedBlockAccess = new CachedBlockAccess();
 	private final MutableBlockPos mutablePos = new MutableBlockPos();
-	private boolean blockStorageCached;
-	private int cachedX;
-	private int cachedY;
-	private int cachedZ;
-	private ExtendedBlockStorage cachedBlockStorage;
 	private final RayTracingEngine engine = new RayTracingEngine((x, y, z) -> {
-		Minecraft mc = Minecraft.getMinecraft();
-		if (mc.world.isOutsideBuildHeight(mutablePos.setPos(x, y, z))) {
-			return false;
-		}
-		if (!blockStorageCached || (x >> 4) != cachedX || (y >> 4) != cachedY || (z >> 4) != cachedZ) {
-			blockStorageCached = true;
-			cachedX = x >> 4;
-			cachedY = y >> 4;
-			cachedZ = z >> 4;
-			if (!Loader.isModLoaded("cubicChunks")) {
-				cachedBlockStorage = mc.world.getChunk(x >> 4, z >> 4).getBlockStorageArray()[y >> 4];
-			} else {
-				cachedBlockStorage = CubicChunks.getBlockStorage(mc.world, x >> 4, y >> 4, z >> 4);
-			}
-		}
-		return cachedBlockStorage.get(x & 15, y & 15, z & 15).isOpaqueCube();
+		this.mutablePos.setPos(x, y, z);
+		return this.cachedBlockAccess.getBlockState(this.mutablePos).isOpaqueCube();
 	});
 	// 0=not cached, 1=blocked, 2=visible
 	private final RayTracingCache cache = new RayTracingCache(EntityCullingConfig.cacheSize);
