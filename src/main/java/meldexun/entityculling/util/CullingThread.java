@@ -93,6 +93,7 @@ public class CullingThread extends Thread {
 		while (true) {
 			long t = System.nanoTime();
 			try {
+				this.cachedBlockAccess.setupCached(mc.world);
 				this.cache.clearCache();
 				privateDebugRayList.clear();
 
@@ -143,6 +144,9 @@ public class CullingThread extends Thread {
 				}
 			} catch (Exception e) {
 				// ignore
+			} finally {
+				this.cachedBlockAccess.clearCache();
+				this.cache.clearCache();
 			}
 
 			t = System.nanoTime() - t;
