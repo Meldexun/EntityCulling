@@ -31,6 +31,7 @@ import net.minecraft.tileentity.TileEntity;
  * - {@linkplain TileEntity}<br>
  * - {@linkplain RenderGlobal#setupTerrain(Entity, double, ICamera, int, boolean)}<br>
  * - {@linkplain RenderGlobal#renderEntities(Entity, ICamera, float)}<br>
+ * - {@linkplain RenderGlobal#updateTileEntities(Collection, Collection)}<br>
  * - {@linkplain Render#shouldRender(Entity, ICamera, double, double, double)}<br>
  * - {@linkplain TileEntityRendererDispatcher#render(TileEntity, float, int)}<br>
  * - {@linkplain Minecraft#getLimitFramerate()}<br>
@@ -229,6 +230,12 @@ public class EntityCullingClassTransformer extends AbstractClassTransformer impl
 				new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/hook/RenderGlobalHook", "renderTileEntities", "(F)Z", false),
 				new JumpInsnNode(Opcodes.IFNE, (LabelNode) popNode2)
 			));
+		});
+
+		this.registerMethodTransformer("buy", "a", "(Ljava/util/Collection;Ljava/util/Collection;)V", "net/minecraft/client/renderer/RenderGlobal", "updateTileEntities", "(Ljava/util/Collection;Ljava/util/Collection;)V", methodNode -> {
+			ASMUtil.LOGGER.info("Transforming method: RenderGlobal#updateTileEntities(Collection, Collection)");
+
+			methodNode.instructions.insert(new InsnNode(Opcodes.RETURN));
 		});
 
 		this.registerMethodTransformer("bzg", "a", "(Lvg;Lbxy;DDD)Z", "net/minecraft/client/renderer/entity/Render", "shouldRender", "(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;DDD)Z", methodNode -> {
