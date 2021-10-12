@@ -102,8 +102,8 @@ public class EntityRendererOptifine extends EntityRenderer {
 	}
 
 	@Override
-	public void renderEntities() {
-		super.renderEntities();
+	public void renderEntities(float partialTicks) {
+		super.renderEntities(partialTicks);
 
 		Minecraft mc = Minecraft.getMinecraft();
 		Collection<Entity> outlineEntities = MinecraftForgeClient.getRenderPass() == 0 ? this.entityListOutlinePass0 : this.entityListOutlinePass1;

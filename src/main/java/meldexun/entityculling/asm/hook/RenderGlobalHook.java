@@ -35,21 +35,21 @@ public final class RenderGlobalHook {
 		tileEntityRenderer.setup(frustum, x, y, z);
 	}
 
-	public static boolean renderEntities() {
+	public static boolean renderEntities(float partialTicks) {
 		if (!EntityCullingConfig.enabled) {
 			return false;
 		}
 
-		entityRenderer.renderEntities();
+		entityRenderer.renderEntities(partialTicks);
 		return true;
 	}
 
-	public static boolean renderTileEntities() {
+	public static boolean renderTileEntities(float partialTicks) {
 		if (!EntityCullingConfig.enabled) {
 			return false;
 		}
 
-		tileEntityRenderer.renderTileEntities();
+		tileEntityRenderer.renderTileEntities(partialTicks);
 		return true;
 	}
 

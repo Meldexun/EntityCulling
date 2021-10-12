@@ -219,12 +219,14 @@ public class EntityCullingClassTransformer extends AbstractClassTransformer impl
 			popNode2 = ASMUtil.findLastInsnByType(methodNode, AbstractInsnNode.LABEL, popNode2);
 
 			methodNode.instructions.insert(targetNode1, ASMUtil.listOf(
-				new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/hook/RenderGlobalHook", "renderEntities", "()Z", false),
+				new VarInsnNode(Opcodes.FLOAD, 3),
+				new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/hook/RenderGlobalHook", "renderEntities", "(F)Z", false),
 				new JumpInsnNode(Opcodes.IFNE, (LabelNode) popNode1)
 			));
 
 			methodNode.instructions.insert(targetNode2, ASMUtil.listOf(
-				new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/hook/RenderGlobalHook", "renderTileEntities", "()Z", false),
+				new VarInsnNode(Opcodes.FLOAD, 3),
+				new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/hook/RenderGlobalHook", "renderTileEntities", "(F)Z", false),
 				new JumpInsnNode(Opcodes.IFNE, (LabelNode) popNode2)
 			));
 		});

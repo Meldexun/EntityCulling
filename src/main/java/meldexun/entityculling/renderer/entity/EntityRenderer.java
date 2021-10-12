@@ -165,11 +165,10 @@ public class EntityRenderer {
 		return entity instanceof EntityPlayer;
 	}
 
-	public void renderEntities() {
+	public void renderEntities(float partialTicks) {
 		int pass = MinecraftForgeClient.getRenderPass();
 		Minecraft mc = Minecraft.getMinecraft();
 		RenderManager renderManager = mc.getRenderManager();
-		float partialTicks = mc.getRenderPartialTicks();
 
 		if (pass == 0) {
 			this.entityListStaticPass0.forEach(entity -> {

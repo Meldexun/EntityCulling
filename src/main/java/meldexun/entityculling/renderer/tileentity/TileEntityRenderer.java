@@ -85,10 +85,8 @@ public class TileEntityRenderer {
 		return ((ICullable) tileEntity).isCulled();
 	}
 
-	public void renderTileEntities() {
+	public void renderTileEntities(float partialTicks) {
 		int pass = MinecraftForgeClient.getRenderPass();
-		Minecraft mc = Minecraft.getMinecraft();
-		float partialTicks = mc.getRenderPartialTicks();
 
 		if (pass == 0) {
 			this.tileEntityListPass0.forEach(tileEntity -> {
