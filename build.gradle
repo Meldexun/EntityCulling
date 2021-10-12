@@ -86,7 +86,7 @@ repositories {
 dependencies {
     minecraft 'net.minecraftforge:forge:1.16.5-36.2.6'
     includedDependencies 'meldexun:ReflectionUtil:1.0.0@jar'
-    includedDependencies 'meldexun:RaytraceUtil:1.0.1@jar'
+    includedDependencies 'meldexun:RaytraceUtil:1.0.2@jar'
 }
 
 jar {
