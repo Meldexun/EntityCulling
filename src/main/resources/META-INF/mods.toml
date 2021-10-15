@@ -1,10 +1,10 @@
 modLoader="javafml"
-loaderVersion="[35,)"
+loaderVersion="[37,)"
 license="All rights reserved"
 issueTrackerURL="https://github.com/Meldexun/EntityCulling/issues"
 [[mods]]
 modId="entity_culling"
-version="2.1.6"
+version="1.0.0"
 displayName="Entity Culling"
 authors="Meldexun"
 description='''
