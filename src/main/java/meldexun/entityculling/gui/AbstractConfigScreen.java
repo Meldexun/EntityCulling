@@ -12,6 +12,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.OptionsList;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -34,9 +35,9 @@ public abstract class AbstractConfigScreen extends Screen {
 		this.list = new OptionsList(this.minecraft, this.width, this.height, 32, this.height - 32, 25);
 		this.configWidgets = new ArrayList<>();
 		this.initOptions(this.list);
-		this.children.add(this.list);
+		this.addWidget(this.list);
 
-		this.addButton(new Button(this.width / 2 - 100, this.height - 27, 200, 20, CommonComponents.GUI_DONE, button -> {
+		this.addWidget(new Button(this.width / 2 - 100, this.height - 27, 200, 20, CommonComponents.GUI_DONE, button -> {
 			for (IConfigWidget widget : this.configWidgets) {
 				widget.updateConfig();
 			}
@@ -102,12 +103,12 @@ public abstract class AbstractConfigScreen extends Screen {
 			public AbstractWidget createButton(Options gameSettings, int x, int y, int width) {
 				return new AbstractWidget(width, width, width, width, new TextComponent("dummy")) {
 					@Override
-					public void render(PoseStack p_230430_1_, int p_230430_2_, int p_230430_3_, float p_230430_4_) {
+					public void updateNarration(NarrationElementOutput p_169152_) {
 
 					}
 
 					@Override
-					protected void narrate() {
+					public void render(PoseStack p_230430_1_, int p_230430_2_, int p_230430_3_, float p_230430_4_) {
 
 					}
 
