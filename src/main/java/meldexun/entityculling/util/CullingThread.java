@@ -72,7 +72,7 @@ public class CullingThread extends Thread {
 
 		for (String s : EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRenderingBlacklist.get()) {
 			ResourceLocation rs = new ResourceLocation(s);
-			ForgeRegistries.TILE_ENTITIES.containsKey(rs);
+			ForgeRegistries.BLOCK_ENTITIES.containsKey(rs);
 			TILE_ENTITY_BLACKLIST.add(rs);
 		}
 	}
