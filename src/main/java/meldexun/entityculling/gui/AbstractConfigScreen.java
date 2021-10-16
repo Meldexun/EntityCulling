@@ -3,26 +3,26 @@ package meldexun.entityculling.gui;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 
-import net.minecraft.client.AbstractOption;
-import net.minecraft.client.GameSettings;
-import net.minecraft.client.gui.DialogTexts;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.gui.widget.list.OptionsRowList;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.Option;
+import net.minecraft.client.Options;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.OptionsList;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 public abstract class AbstractConfigScreen extends Screen {
 
 	private final Screen lastScreen;
-	private OptionsRowList list;
+	private OptionsList list;
 	private List<IConfigWidget> configWidgets;
 
-	public AbstractConfigScreen(ITextComponent title, Screen lastScreen) {
+	public AbstractConfigScreen(Component title, Screen lastScreen) {
 		super(title);
 		this.lastScreen = lastScreen;
 	}
@@ -31,12 +31,12 @@ public abstract class AbstractConfigScreen extends Screen {
 	protected void init() {
 		super.init();
 
-		this.list = new OptionsRowList(this.minecraft, this.width, this.height, 32, this.height - 32, 25);
+		this.list = new OptionsList(this.minecraft, this.width, this.height, 32, this.height - 32, 25);
 		this.configWidgets = new ArrayList<>();
 		this.initOptions(this.list);
 		this.children.add(this.list);
 
-		this.addButton(new Button(this.width / 2 - 100, this.height - 27, 200, 20, DialogTexts.GUI_DONE, button -> {
+		this.addButton(new Button(this.width / 2 - 100, this.height - 27, 200, 20, CommonComponents.GUI_DONE, button -> {
 			for (IConfigWidget widget : this.configWidgets) {
 				widget.updateConfig();
 			}
@@ -44,10 +44,10 @@ public abstract class AbstractConfigScreen extends Screen {
 		}));
 	}
 
-	protected abstract void initOptions(OptionsRowList list);
+	protected abstract void initOptions(OptionsList list);
 
 	@Override
-	public void render(MatrixStack matrixStack, int p_230430_2_, int p_230430_3_, float p_230430_4_) {
+	public void render(PoseStack matrixStack, int p_230430_2_, int p_230430_3_, float p_230430_4_) {
 		this.renderBackground(matrixStack);
 		this.list.render(matrixStack, p_230430_2_, p_230430_3_, p_230430_4_);
 		drawCenteredString(matrixStack, this.font, this.title, this.width / 2, 15, 16777215);
@@ -63,46 +63,46 @@ public abstract class AbstractConfigScreen extends Screen {
 		this.minecraft.setScreen(this.lastScreen);
 	}
 
-	protected AbstractOption createBooleanOption(ForgeConfigSpec.BooleanValue config) {
-		return new AbstractOption(ConfigBooleanButton.getText(config, config.get()).getString()) {
+	protected Option createBooleanOption(ForgeConfigSpec.BooleanValue config) {
+		return new Option(ConfigBooleanButton.getText(config, config.get()).getString()) {
 			@Override
-			public Widget createButton(GameSettings gameSettings, int x, int y, int width) {
-				Widget widget = new ConfigBooleanButton(x, y, width, 20, config);
+			public AbstractWidget createButton(Options gameSettings, int x, int y, int width) {
+				AbstractWidget widget = new ConfigBooleanButton(x, y, width, 20, config);
 				AbstractConfigScreen.this.configWidgets.add((IConfigWidget) widget);
 				return widget;
 			}
 		};
 	}
 
-	protected AbstractOption createDoubleSliderOption(ForgeConfigSpec.DoubleValue config, double min, double max, double stepSize) {
-		return new AbstractOption(ConfigSlider.getText(config, config.get()).getString()) {
+	protected Option createDoubleSliderOption(ForgeConfigSpec.DoubleValue config, double min, double max, double stepSize) {
+		return new Option(ConfigSlider.getText(config, config.get()).getString()) {
 			@Override
-			public Widget createButton(GameSettings gameSettings, int x, int y, int width) {
-				Widget widget = new ConfigSlider(x, y, width, 20, config, min, max, stepSize);
+			public AbstractWidget createButton(Options gameSettings, int x, int y, int width) {
+				AbstractWidget widget = new ConfigSlider(x, y, width, 20, config, min, max, stepSize);
 				AbstractConfigScreen.this.configWidgets.add((IConfigWidget) widget);
 				return widget;
 			}
 		};
 	}
 
-	protected AbstractOption createIntSliderOption(ForgeConfigSpec.IntValue config, int min, int max, int stepSize) {
-		return new AbstractOption(ConfigSlider.getText(config, config.get()).getString()) {
+	protected Option createIntSliderOption(ForgeConfigSpec.IntValue config, int min, int max, int stepSize) {
+		return new Option(ConfigSlider.getText(config, config.get()).getString()) {
 			@Override
-			public Widget createButton(GameSettings gameSettings, int x, int y, int width) {
-				Widget widget = new ConfigSlider(x, y, width, 20, config, min, max, stepSize);
+			public AbstractWidget createButton(Options gameSettings, int x, int y, int width) {
+				AbstractWidget widget = new ConfigSlider(x, y, width, 20, config, min, max, stepSize);
 				AbstractConfigScreen.this.configWidgets.add((IConfigWidget) widget);
 				return widget;
 			}
 		};
 	}
 
-	protected AbstractOption createDummyOption() {
-		return new AbstractOption("dummy") {
+	protected Option createDummyOption() {
+		return new Option("dummy") {
 			@Override
-			public Widget createButton(GameSettings gameSettings, int x, int y, int width) {
-				return new Widget(width, width, width, width, new StringTextComponent("dummy")) {
+			public AbstractWidget createButton(Options gameSettings, int x, int y, int width) {
+				return new AbstractWidget(width, width, width, width, new TextComponent("dummy")) {
 					@Override
-					public void render(MatrixStack p_230430_1_, int p_230430_2_, int p_230430_3_, float p_230430_4_) {
+					public void render(PoseStack p_230430_1_, int p_230430_2_, int p_230430_3_, float p_230430_4_) {
 
 					}
 

@@ -1,9 +1,9 @@
 package meldexun.entityculling.gui;
 
-import net.minecraft.client.gui.widget.button.AbstractButton;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.gui.components.AbstractButton;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 public class ConfigBooleanButton extends AbstractButton implements IConfigWidget {
@@ -17,9 +17,9 @@ public class ConfigBooleanButton extends AbstractButton implements IConfigWidget
 		this.value = config.get();
 	}
 
-	public static ITextComponent getText(ForgeConfigSpec.BooleanValue config, boolean value) {
-		return new TranslationTextComponent(config.getPath().get(config.getPath().size() - 1),
-				(value ? TextFormatting.GREEN.toString() : TextFormatting.RED.toString()) + value);
+	public static Component getText(ForgeConfigSpec.BooleanValue config, boolean value) {
+		return new TranslatableComponent(config.getPath().get(config.getPath().size() - 1),
+				(value ? ChatFormatting.GREEN.toString() : ChatFormatting.RED.toString()) + value);
 	}
 
 	@Override

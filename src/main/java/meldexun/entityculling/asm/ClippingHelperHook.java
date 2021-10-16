@@ -1,6 +1,6 @@
 package meldexun.entityculling.asm;
 
-import net.minecraft.util.math.vector.Vector4f;
+import com.mojang.math.Vector4f;
 
 public class ClippingHelperHook {
 

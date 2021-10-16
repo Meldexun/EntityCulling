@@ -1,18 +1,18 @@
 package meldexun.entityculling.gui;
 
 import meldexun.entityculling.config.EntityCullingConfig;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.list.OptionsRowList;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.OptionsList;
+import net.minecraft.network.chat.TextComponent;
 
 public class ConfigOptionsScreen extends AbstractConfigScreen {
 
 	public ConfigOptionsScreen(Screen lastScreen) {
-		super(new StringTextComponent("options.entity_culling.config.title"), lastScreen);
+		super(new TextComponent("options.entity_culling.config.title"), lastScreen);
 	}
 
 	@Override
-	protected void initOptions(OptionsRowList list) {
+	protected void initOptions(OptionsList list) {
 		list.addBig(this.createIntSliderOption(EntityCullingConfig.CLIENT_CONFIG.cacheSize, 1, 32, 1));
 		list.addBig(this.createBooleanOption(EntityCullingConfig.CLIENT_CONFIG.debug));
 		list.addBig(this.createBooleanOption(EntityCullingConfig.CLIENT_CONFIG.enabled));

@@ -10,15 +10,15 @@ import meldexun.raytraceutil.RayTracingCache;
 import meldexun.raytraceutil.RayTracingEngine;
 import meldexun.raytraceutil.RayTracingEngine.MutableRayTraceResult;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.culling.ClippingHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockPos.Mutable;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.BlockPos.MutableBlockPos;
+import net.minecraft.util.Mth;
+import com.mojang.math.Matrix4f;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class CullingThread extends Thread {
@@ -27,7 +27,7 @@ public class CullingThread extends Thread {
 	private static final Set<ResourceLocation> TILE_ENTITY_BLACKLIST = new HashSet<>();
 
 	private final CachedBlockReader cachedBlockReader = new CachedBlockReader();
-	private final Mutable mutablePos = new Mutable();
+	private final MutableBlockPos mutablePos = new MutableBlockPos();
 	private final RayTracingEngine engine = new RayTracingEngine((x, y, z) -> {
 		this.mutablePos.set(x, y, z);
 		return this.cachedBlockReader.getBlockState(this.mutablePos).isSolidRender(this.cachedBlockReader, this.mutablePos);
@@ -46,7 +46,7 @@ public class CullingThread extends Thread {
 	private int camBlockX;
 	private int camBlockY;
 	private int camBlockZ;
-	private ClippingHelper frustum;
+	private Frustum frustum;
 
 	private double sleepOverhead = 0.0D;
 
@@ -87,11 +87,11 @@ public class CullingThread extends Thread {
 				this.cachedBlockReader.setupCache(mc.level);
 
 				if (mc.level != null && mc.getCameraEntity() != null) {
-					this.frustum = new ClippingHelper(this.view, this.projection);
+					this.frustum = new Frustum(this.view, this.projection);
 					this.frustum.prepare(this.camX, this.camY, this.camZ);
-					this.camBlockX = MathHelper.floor(this.camX);
-					this.camBlockY = MathHelper.floor(this.camY);
-					this.camBlockZ = MathHelper.floor(this.camZ);
+					this.camBlockX = Mth.floor(this.camX);
+					this.camBlockY = Mth.floor(this.camY);
+					this.camBlockZ = Mth.floor(this.camZ);
 
 					Iterator<Entity> entityIterator = mc.level.entitiesForRendering().iterator();
 					while (entityIterator.hasNext()) {
@@ -104,10 +104,10 @@ public class CullingThread extends Thread {
 						}
 					}
 
-					Iterator<TileEntity> tileEntityIterator = mc.level.blockEntityList.iterator();
+					Iterator<BlockEntity> tileEntityIterator = mc.level.blockEntityList.iterator();
 					while (tileEntityIterator.hasNext()) {
 						try {
-							TileEntity tileEntity = tileEntityIterator.next();
+							BlockEntity tileEntity = tileEntityIterator.next();
 							this.updateTileEntityCullingState(tileEntity);
 						} catch (Exception e) {
 							// ignore
@@ -149,7 +149,7 @@ public class CullingThread extends Thread {
 		}
 	}
 
-	private void updateTileEntityCullingState(TileEntity tileEntity) {
+	private void updateTileEntityCullingState(BlockEntity tileEntity) {
 		((ICullable) tileEntity).setCulled(!this.checkTileEntityVisibility(tileEntity));
 		if (EntityCulling.IS_OPTIFINE_DETECTED) {
 			((ICullable) tileEntity).setShadowCulled(!this.checkTileEntityShadowVisibility(tileEntity));
@@ -181,7 +181,7 @@ public class CullingThread extends Thread {
 
 		double minX, minY, minZ, maxX, maxY, maxZ;
 		{
-			AxisAlignedBB aabb = entity.getBoundingBoxForCulling();
+			AABB aabb = entity.getBoundingBoxForCulling();
 
 			if (aabb.hasNaN()) {
 				minX = entity.getX() - 2.0D;
@@ -218,7 +218,7 @@ public class CullingThread extends Thread {
 		return this.checkBoundingBoxVisibility(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 
-	private boolean checkTileEntityVisibility(TileEntity tileEntity) {
+	private boolean checkTileEntityVisibility(BlockEntity tileEntity) {
 		if (!EntityCullingConfig.CLIENT_CONFIG.enabled.get()) {
 			return true;
 		}
@@ -227,7 +227,7 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		AxisAlignedBB aabb = ((IBoundingBoxCache) tileEntity).getOrCacheBoundingBox();
+		AABB aabb = ((IBoundingBoxCache) tileEntity).getOrCacheBoundingBox();
 		if (aabb.maxX - aabb.minX > EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRenderingSize.get()
 				|| aabb.maxY - aabb.minY > EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRenderingSize.get()
 				|| aabb.maxZ - aabb.minZ > EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRenderingSize.get()) {
@@ -310,7 +310,7 @@ public class CullingThread extends Thread {
 				EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.entityShadowsCullingLessAggressiveModeDiff.get());
 	}
 
-	private boolean checkTileEntityShadowVisibility(TileEntity tileEntity) {
+	private boolean checkTileEntityShadowVisibility(BlockEntity tileEntity) {
 		if (!EntityCullingConfig.CLIENT_CONFIG.enabled.get()) {
 			return true;
 		}
@@ -335,7 +335,7 @@ public class CullingThread extends Thread {
 			return false;
 		}
 
-		AxisAlignedBB aabb = ((IBoundingBoxCache) tileEntity).getOrCacheBoundingBox();
+		AABB aabb = ((IBoundingBoxCache) tileEntity).getOrCacheBoundingBox();
 		if (aabb.maxX - aabb.minX > EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRenderingSize.get()
 				|| aabb.maxY - aabb.minY > EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRenderingSize.get()
 				|| aabb.maxZ - aabb.minZ > EntityCullingConfig.CLIENT_CONFIG.skipHiddenTileEntityRenderingSize.get()) {
@@ -352,12 +352,12 @@ public class CullingThread extends Thread {
 	}
 
 	private boolean checkBoundingBoxVisibility(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
-		int startX = MathHelper.floor(minX);
-		int startY = MathHelper.floor(minY);
-		int startZ = MathHelper.floor(minZ);
-		int endX = MathHelper.ceil(maxX);
-		int endY = MathHelper.ceil(maxY);
-		int endZ = MathHelper.ceil(maxZ);
+		int startX = Mth.floor(minX);
+		int startY = Mth.floor(minY);
+		int startZ = Mth.floor(minZ);
+		int endX = Mth.ceil(maxX);
+		int endY = Mth.ceil(maxY);
+		int endZ = Mth.ceil(maxZ);
 
 		if ((this.camX >= startX && this.camX <= endX) && (this.camY >= startY && this.camY >= endY) && (this.camZ >= startZ && this.camZ >= endZ)) {
 			return true;

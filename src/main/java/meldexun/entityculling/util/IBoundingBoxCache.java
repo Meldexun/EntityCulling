@@ -4,10 +4,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import meldexun.entityculling.config.EntityCullingConfig;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.AABB;
 
 public interface IBoundingBoxCache {
 
@@ -25,22 +25,22 @@ public interface IBoundingBoxCache {
 	 */
 	void setCacheable(int cacheable);
 
-	AxisAlignedBB getCachedBoundingBox();
+	AABB getCachedBoundingBox();
 
-	void setCachedBoundingBox(AxisAlignedBB aabb);
+	void setCachedBoundingBox(AABB aabb);
 
-	default AxisAlignedBB getOrCacheBoundingBox() {
+	default AABB getOrCacheBoundingBox() {
 		if (this.isCacheable() == 0) {
-			ResourceLocation registryName = TileEntityType.getKey(((TileEntity) this).getType());
+			ResourceLocation registryName = BlockEntityType.getKey(((BlockEntity) this).getType());
 			if (BLACKLIST.contains(registryName.getNamespace()) || BLACKLIST.contains(registryName.toString())) {
 				this.setCacheable(2);
 			} else {
-				this.setCachedBoundingBox(((TileEntity) this).getRenderBoundingBox());
+				this.setCachedBoundingBox(((BlockEntity) this).getRenderBoundingBox());
 				this.setCacheable(1);
 			}
 		}
 		if (this.isCacheable() == 2) {
-			return ((TileEntity) this).getRenderBoundingBox();
+			return ((BlockEntity) this).getRenderBoundingBox();
 		}
 		return this.getCachedBoundingBox();
 	}

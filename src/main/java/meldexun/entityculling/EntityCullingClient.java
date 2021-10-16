@@ -3,17 +3,17 @@ package meldexun.entityculling;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 
 import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.gui.ShaderOptionsScreen;
 import meldexun.entityculling.util.CullingThread;
-import net.minecraft.client.MainWindow;
+import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.OptionsScreen;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.gui.screens.OptionsScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
@@ -40,7 +40,7 @@ public class EntityCullingClient {
 		}
 
 		Minecraft mc = Minecraft.getInstance();
-		MainWindow window = mc.getWindow();
+		Window window = mc.getWindow();
 
 		String s1 = "Time: " + FORMAT.format(Arrays.stream(CULLING_THREAD.time).average().getAsDouble() / 1_000_000.0D) + "ms";
 		String s2 = "E: " + mc.levelRenderer.renderedEntities + "/" + mc.levelRenderer.culledEntities + "/" + mc.level.getEntityCount();
@@ -51,7 +51,7 @@ public class EntityCullingClient {
 		this.drawOnLeft(event.getMatrixStack(), s3, window.getGuiScaledWidth(), 180);
 	}
 
-	private void drawOnLeft(MatrixStack matrixStack, String string, int x, int y) {
+	private void drawOnLeft(PoseStack matrixStack, String string, int x, int y) {
 		Minecraft mc = Minecraft.getInstance();
 		mc.font.draw(matrixStack, string, x - mc.font.width(string), y, 0xFFFFFFFF);
 	}
@@ -67,7 +67,7 @@ public class EntityCullingClient {
 		}
 		Minecraft mc = Minecraft.getInstance();
 		event.addWidget(new Button(screen.width / 2 - 155, screen.height / 6 + 120 - 6 + 24, 150, 20,
-				new TranslationTextComponent("options.entity_culling.shadows.button"), button -> {
+				new TranslatableComponent("options.entity_culling.shadows.button"), button -> {
 					mc.setScreen(new ShaderOptionsScreen(mc.screen));
 				}));
 	}

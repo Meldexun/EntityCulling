@@ -2,14 +2,14 @@ package meldexun.entityculling.asm;
 
 import meldexun.entityculling.config.EntityCullingConfig;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.WorldRenderer.LocalRenderInformationContainer;
-import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher.ChunkRender;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.client.renderer.LevelRenderer.RenderChunkInfo;
+import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher.RenderChunk;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 
 public class ShadersRenderHook {
 
-	public static boolean shouldRenderChunkShadow(LocalRenderInformationContainer renderInfoContainer) {
+	public static boolean shouldRenderChunkShadow(RenderChunkInfo renderInfoContainer) {
 		if (!EntityCullingConfig.CLIENT_CONFIG.enabled.get()) {
 			return true;
 		}
@@ -20,8 +20,8 @@ public class ShadersRenderHook {
 			return true;
 		}
 		Minecraft mc = Minecraft.getInstance();
-		Vector3d camera = mc.gameRenderer.getMainCamera().getPosition();
-		ChunkRender renderChunk = renderInfoContainer.chunk;
+		Vec3 camera = mc.gameRenderer.getMainCamera().getPosition();
+		RenderChunk renderChunk = renderInfoContainer.chunk;
 		BlockPos pos = renderChunk.getOrigin();
 		if (Math.abs(pos.getX() + 8.0D - camera.x) > EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.terrainShadowsMaxHorizontalDistance.get()
 				* 16.0D) {

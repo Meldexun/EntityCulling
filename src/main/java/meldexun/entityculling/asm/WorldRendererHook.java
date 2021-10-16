@@ -1,16 +1,16 @@
 package meldexun.entityculling.asm;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 
 import meldexun.entityculling.EntityCullingClient;
 import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.util.ICullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ActiveRenderInfo;
-import net.minecraft.entity.Entity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.client.Camera;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import com.mojang.math.Matrix4f;
+import net.minecraft.world.phys.Vec3;
 
 public class WorldRendererHook {
 
@@ -25,7 +25,7 @@ public class WorldRendererHook {
 		return true;
 	}
 
-	public static boolean shouldRenderTileEntity(TileEntity tileEntity) {
+	public static boolean shouldRenderTileEntity(BlockEntity tileEntity) {
 		if (((ICullable) tileEntity).isCulled()) {
 			EntityCullingClient.culledTileEntities++;
 			return false;
@@ -35,11 +35,11 @@ public class WorldRendererHook {
 		return true;
 	}
 
-	public static void preRenderEntities(ActiveRenderInfo activeRenderInfoIn, MatrixStack matrixStackIn, Matrix4f projectionIn) {
+	public static void preRenderEntities(Camera activeRenderInfoIn, PoseStack matrixStackIn, Matrix4f projectionIn) {
 		EntityCullingClient.renderedTileEntities = 0;
 		EntityCullingClient.culledTileEntities = 0;
 
-		Vector3d camera = activeRenderInfoIn.getPosition();
+		Vec3 camera = activeRenderInfoIn.getPosition();
 		EntityCullingClient.CULLING_THREAD.camX = camera.x;
 		EntityCullingClient.CULLING_THREAD.camY = camera.y;
 		EntityCullingClient.CULLING_THREAD.camZ = camera.z;
@@ -55,12 +55,12 @@ public class WorldRendererHook {
 			return true;
 		}
 		Minecraft mc = Minecraft.getInstance();
-		Vector3d camera = mc.gameRenderer.getMainCamera().getPosition();
+		Vec3 camera = mc.gameRenderer.getMainCamera().getPosition();
 		double d = EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.entityShadowsMaxDistance.get() * 16.0D;
 		return entity.distanceToSqr(camera.x, camera.y, camera.z) < d * d;
 	}
 
-	public static boolean shouldRenderTileEntityShadow(TileEntity tileEntity) {
+	public static boolean shouldRenderTileEntityShadow(BlockEntity tileEntity) {
 		if (((ICullable) tileEntity).isShadowCulled()) {
 			return false;
 		}
@@ -68,7 +68,7 @@ public class WorldRendererHook {
 			return true;
 		}
 		Minecraft mc = Minecraft.getInstance();
-		Vector3d camera = mc.gameRenderer.getMainCamera().getPosition();
+		Vec3 camera = mc.gameRenderer.getMainCamera().getPosition();
 		double d = EntityCullingConfig.CLIENT_CONFIG.optifineShaderOptions.tileEntityShadowsMaxDistance.get() * 16.0D;
 		return tileEntity.getBlockPos().distSqr(camera.x, camera.y, camera.z, true) < d * d;
 	}

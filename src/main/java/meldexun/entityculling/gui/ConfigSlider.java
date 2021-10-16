@@ -2,13 +2,13 @@ package meldexun.entityculling.gui;
 
 import java.text.DecimalFormat;
 
-import net.minecraft.client.gui.widget.AbstractSlider;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.gui.components.AbstractSliderButton;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.common.ForgeConfigSpec;
 
-public class ConfigSlider extends AbstractSlider implements IConfigWidget {
+public class ConfigSlider extends AbstractSliderButton implements IConfigWidget {
 
 	private static final DecimalFormat FORMAT = new DecimalFormat("#.##");
 	private final ForgeConfigSpec.ConfigValue<? extends Number> config;
@@ -32,8 +32,8 @@ public class ConfigSlider extends AbstractSlider implements IConfigWidget {
 		this.stepSize = stepSize;
 	}
 
-	public static ITextComponent getText(ForgeConfigSpec.ConfigValue<? extends Number> config, double value) {
-		return new TranslationTextComponent(config.getPath().get(config.getPath().size() - 1), TextFormatting.GRAY.toString() + FORMAT.format(value));
+	public static Component getText(ForgeConfigSpec.ConfigValue<? extends Number> config, double value) {
+		return new TranslatableComponent(config.getPath().get(config.getPath().size() - 1), ChatFormatting.GRAY.toString() + FORMAT.format(value));
 	}
 
 	@Override

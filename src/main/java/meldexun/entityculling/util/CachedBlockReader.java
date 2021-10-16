@@ -2,25 +2,25 @@ package meldexun.entityculling.util;
 
 import javax.annotation.Nullable;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkSection;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LevelChunkSection;
 
-public class CachedBlockReader implements IBlockReader {
+public class CachedBlockReader implements BlockGetter {
 
-	private World level;
-	private Chunk cachedChunk;
-	private ChunkSection cachedSection;
+	private Level level;
+	private LevelChunk cachedChunk;
+	private LevelChunkSection cachedSection;
 
-	public void setupCache(World level) {
+	public void setupCache(Level level) {
 		this.level = level;
 		this.cachedChunk = null;
 		this.cachedSection = null;
@@ -32,7 +32,7 @@ public class CachedBlockReader implements IBlockReader {
 		this.cachedSection = null;
 	}
 
-	private Chunk getChunk(int chunkX, int chunkZ) {
+	private LevelChunk getChunk(int chunkX, int chunkZ) {
 		if (this.cachedChunk == null || this.cachedChunk.getPos().x != chunkX || this.cachedChunk.getPos().z != chunkZ) {
 			this.cachedChunk = this.level.getChunk(chunkX, chunkZ);
 			this.cachedSection = null;
@@ -41,11 +41,11 @@ public class CachedBlockReader implements IBlockReader {
 	}
 
 	@Nullable
-	private ChunkSection getChunkSection(int chunkX, int chunkY, int chunkZ) {
+	private LevelChunkSection getChunkSection(int chunkX, int chunkY, int chunkZ) {
 		if (chunkY < 0 || chunkY >= this.level.getMaxBuildHeight() >> 4) {
 			return null;
 		}
-		Chunk chunk = this.getChunk(chunkX, chunkZ);
+		LevelChunk chunk = this.getChunk(chunkX, chunkZ);
 		if (this.cachedSection == null || this.cachedSection.bottomBlockY() >> 4 != chunkY) {
 			this.cachedSection = chunk.getSections()[chunkY];
 		}
@@ -54,12 +54,12 @@ public class CachedBlockReader implements IBlockReader {
 
 	@Override
 	@Nullable
-	public TileEntity getBlockEntity(BlockPos pos) {
+	public BlockEntity getBlockEntity(BlockPos pos) {
 		if (pos.getY() < 0 || pos.getY() >= this.level.getMaxBuildHeight()) {
 			return null;
 		}
 
-		for (TileEntity te : this.level.pendingBlockEntities) {
+		for (BlockEntity te : this.level.pendingBlockEntities) {
 			if (te.isRemoved()) {
 				continue;
 			}
@@ -69,23 +69,23 @@ public class CachedBlockReader implements IBlockReader {
 			return te;
 		}
 
-		Chunk chunk = this.getChunk(pos.getX() >> 4, pos.getZ() >> 4);
+		LevelChunk chunk = this.getChunk(pos.getX() >> 4, pos.getZ() >> 4);
 
-		TileEntity te = chunk.getBlockEntities().get(pos);
+		BlockEntity te = chunk.getBlockEntities().get(pos);
 		if (te != null && !te.isRemoved()) {
 			return te;
 		}
 
-		CompoundNBT nbt = chunk.pendingBlockEntities.get(pos);
+		CompoundTag nbt = chunk.pendingBlockEntities.get(pos);
 		if (nbt != null) {
 			BlockState state = this.getBlockState(pos);
-			TileEntity te1 = null;
+			BlockEntity te1 = null;
 			if ("DUMMY".equals(nbt.getString("id"))) {
 				if (state.hasTileEntity()) {
 					te1 = state.createTileEntity(this.level);
 				}
 			} else {
-				te1 = TileEntity.loadStatic(state, nbt);
+				te1 = BlockEntity.loadStatic(state, nbt);
 			}
 
 			if (te1 != null) {
@@ -100,7 +100,7 @@ public class CachedBlockReader implements IBlockReader {
 
 	@Override
 	public BlockState getBlockState(BlockPos pos) {
-		ChunkSection section = this.getChunkSection(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
+		LevelChunkSection section = this.getChunkSection(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
 		if (section == null) {
 			return Blocks.AIR.defaultBlockState();
 		}
@@ -109,7 +109,7 @@ public class CachedBlockReader implements IBlockReader {
 
 	@Override
 	public FluidState getFluidState(BlockPos pos) {
-		ChunkSection section = this.getChunkSection(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
+		LevelChunkSection section = this.getChunkSection(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
 		if (section == null) {
 			return Fluids.EMPTY.defaultFluidState();
 		}
