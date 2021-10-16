@@ -1,6 +1,7 @@
 package meldexun.entityculling.gui;
 
 import net.minecraft.client.gui.components.AbstractButton;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -38,6 +39,11 @@ public class ConfigBooleanButton extends AbstractButton implements IConfigWidget
 		this.config.set((Boolean) CONFIG_VALUE_DEFAULT_SUPPLIER.get(this.config).get());
 		this.value = this.config.get();
 		this.setMessage(getText(this.config, this.value));
+	}
+
+	@Override
+	public void updateNarration(NarrationElementOutput p_169152_) {
+
 	}
 
 }
