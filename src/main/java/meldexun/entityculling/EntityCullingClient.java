@@ -44,7 +44,8 @@ public class EntityCullingClient {
 
 		String s1 = "Time: " + FORMAT.format(Arrays.stream(CULLING_THREAD.time).average().getAsDouble() / 1_000_000.0D) + "ms";
 		String s2 = "E: " + mc.levelRenderer.renderedEntities + "/" + mc.levelRenderer.culledEntities + "/" + mc.level.getEntityCount();
-		String s3 = "TE: " + renderedTileEntities + "/" + culledTileEntities + "/" + mc.level.blockEntityList.size();
+		String s3 = "TE: " + renderedTileEntities + "/" + culledTileEntities + "/" + 0;
+		// TODO mc.level.blockEntityList.size();
 
 		this.drawOnLeft(event.getMatrixStack(), s1, window.getGuiScaledWidth(), 160);
 		this.drawOnLeft(event.getMatrixStack(), s2, window.getGuiScaledWidth(), 170);
