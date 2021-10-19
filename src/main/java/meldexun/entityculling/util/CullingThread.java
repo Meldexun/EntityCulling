@@ -259,7 +259,7 @@ public class CullingThread extends Thread {
 		}
 
 		BlockPos pos = tileEntity.getBlockPos();
-		if (pos.distSqr(this.camX, this.camY, this.camZ, true) >= tileEntity.getViewDistance() * tileEntity.getViewDistance()) {
+		if (pos.distSqr(this.camX, this.camY, this.camZ, true) >= 64 * 64) { // TODO fix workaround
 			return true;
 		}
 
