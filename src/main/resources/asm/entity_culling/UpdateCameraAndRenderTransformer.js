@@ -12,20 +12,20 @@ function initializeCoreMod() {
 		"UpdateCameraAndRender Transformer": {
 			"target": {
 				"type": "METHOD",
-				"class": "net.minecraft.client.renderer.WorldRenderer",
-				"methodName": "func_228426_a_",
+				"class": "net.minecraft.client.renderer.LevelRenderer",
+				"methodName": "m_109599_",
 				"methodDesc": "(Lcom/mojang/blaze3d/matrix/MatrixStack;FJZLnet/minecraft/client/renderer/ActiveRenderInfo;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/util/math/vector/Matrix4f;)V"
 			},
 			"transformer": function(methodNode) {
-				ASMAPI.log("INFO", "Transforming method: updateCameraAndRender net.minecraft.client.renderer.WorldRenderer");
-				//ASMAPI.log("INFO", "{}", ASMAPI.methodNodeToString(methodNode));
+				ASMAPI.log("INFO", "Transforming method: renderLevel net.minecraft.client.renderer.LevelRenderer");
+				ASMAPI.log("INFO", "{}", ASMAPI.methodNodeToString(methodNode));
 				
 				if (ASMAPI.findFirstMethodCall(methodNode, ASMAPI.MethodType.STATIC, "net/optifine/shaders/Shaders", "beginEntities", "()V") == null) {
 					// ---------- Vanilla ---------- //
-					var targetNode1 = ASMAPI.findFirstMethodCall(methodNode, ASMAPI.MethodType.VIRTUAL, "net/minecraft/client/world/ClientWorld", ASMAPI.mapMethod("func_217416_b"), "()Ljava/lang/Iterable;");
-					targetNode1 = ASMAPI.findFirstMethodCallBefore(methodNode, ASMAPI.MethodType.INTERFACE, "net/minecraft/profiler/IProfiler", ASMAPI.mapMethod("func_219895_b"), "(Ljava/lang/String;)V", methodNode.instructions.indexOf(targetNode1));
+					var targetNode1 = ASMAPI.findFirstMethodCall(methodNode, ASMAPI.MethodType.VIRTUAL, "net/minecraft/client/multiplayer/ClientLevel", ASMAPI.mapMethod("m_104735_"), "()Ljava/lang/Iterable;");
+					targetNode1 = ASMAPI.findFirstMethodCallBefore(methodNode, ASMAPI.MethodType.INTERFACE, "net/minecraft/util/profiling/ProfilerFiller", ASMAPI.mapMethod("m_6182_"), "(Ljava/lang/String;)V", methodNode.instructions.indexOf(targetNode1));
 					
-					var targetNode2 = ASMAPI.findFirstMethodCall(methodNode, ASMAPI.MethodType.SPECIAL, "net/minecraft/client/renderer/WorldRenderer", ASMAPI.mapMethod("func_228418_a_"), "(Lnet/minecraft/entity/Entity;DDDFLcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/client/renderer/IRenderTypeBuffer;)V");
+					var targetNode2 = ASMAPI.findFirstMethodCall(methodNode, ASMAPI.MethodType.SPECIAL, "net/minecraft/client/renderer/LevelRenderer", ASMAPI.mapMethod("m_109517_"), "(Lnet/minecraft/entity/Entity;DDDFLcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/client/renderer/IRenderTypeBuffer;)V");
 					//targetNode2 = ASMAPI.findFirstInstructionBefore(methodNode, Opcodes.ASTORE, methodNode.instructions.indexOf(targetNode2));
 					{
 						for (var i = methodNode.instructions.indexOf(targetNode2); i >= 0; i--) {
@@ -49,7 +49,7 @@ function initializeCoreMod() {
 						}
 					}
 					
-					var targetNode3 = ASMAPI.findFirstMethodCall(methodNode, ASMAPI.MethodType.VIRTUAL, "net/minecraft/client/renderer/culling/ClippingHelper", ASMAPI.mapMethod("func_228957_a_"), "(Lnet/minecraft/util/math/AxisAlignedBB;)Z");
+					var targetNode3 = ASMAPI.findFirstMethodCall(methodNode, ASMAPI.MethodType.VIRTUAL, "net/minecraft/client/renderer/culling/Frustum", ASMAPI.mapMethod("m_8323_"), "(Lnet/minecraft/world/phys/AABB;)Z");
 					//targetNode3 = ASMAPI.findFirstInstructionBefore(methodNode, -1, methodNode.instructions.indexOf(targetNode3));
 					{
 						for (var i = methodNode.instructions.indexOf(targetNode3); i >= 0; i--) {
@@ -75,7 +75,7 @@ function initializeCoreMod() {
 					var popNode3_1 = ASMAPI.findFirstInstructionAfter(methodNode, -1, methodNode.instructions.indexOf(targetNode3) + 1);
 					var skipNode3 = new LabelNode();
 					
-					var targetNode4 = ASMAPI.findFirstMethodCallAfter(methodNode, ASMAPI.MethodType.VIRTUAL, "net/minecraft/client/renderer/culling/ClippingHelper", ASMAPI.mapMethod("func_228957_a_"), "(Lnet/minecraft/util/math/AxisAlignedBB;)Z", methodNode.instructions.indexOf(popNode3_1));
+					var targetNode4 = ASMAPI.findFirstMethodCallAfter(methodNode, ASMAPI.MethodType.VIRTUAL, "net/minecraft/client/renderer/culling/Frustum", ASMAPI.mapMethod("m_8323_"), "(Lnet/minecraft/world/phys/AABB;)Z", methodNode.instructions.indexOf(popNode3_1));
 					//targetNode4 = ASMAPI.findFirstInstructionBefore(methodNode, -1, methodNode.instructions.indexOf(targetNode4));
 					{
 						for (var i = methodNode.instructions.indexOf(targetNode4); i >= 0; i--) {
