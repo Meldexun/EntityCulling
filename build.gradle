@@ -89,6 +89,13 @@ dependencies {
     includedDependencies 'meldexun:RaytraceUtil:1.0.2@jar'
 }
 
+// Fix non-mod dependencies not being loaded in dev
+minecraft.runs.all {
+    lazyToken('minecraft_classpath') {
+        configurations.includedDependencies.copyRecursive().resolve().collect { it.absolutePath }.join(File.pathSeparator)
+    }
+}
+
 jar {
     from {
         configurations.includedDependencies.collect { it.isDirectory() ? it : zipTree(it) }
