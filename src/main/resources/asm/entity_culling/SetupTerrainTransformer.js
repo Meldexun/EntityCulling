@@ -9,12 +9,12 @@ function initializeCoreMod() {
 		"SetupTerrain Transformer": {
 			"target": {
 				"type": "METHOD",
-				"class": "net.minecraft.client.renderer.WorldRenderer",
-				"methodName": "func_228437_a_",
+				"class": "net.minecraft.client.renderer.LevelRenderer",
+				"methodName": "m_109695_",
 				"methodDesc": "(Lnet/minecraft/client/renderer/ActiveRenderInfo;Lnet/minecraft/client/renderer/culling/ClippingHelper;ZIZ)V"
 			},
 			"transformer": function(methodNode) {
-				ASMAPI.log("INFO", "Transforming method: setupTerrain net.minecraft.client.renderer.WorldRenderer");
+				ASMAPI.log("INFO", "Transforming method: setupRender net.minecraft.client.renderer.LevelRenderer");
 				//ASMAPI.log("INFO", "{}", ASMAPI.methodNodeToString(methodNode));
 				
 				var targetNode = ASMAPI.findFirstMethodCall(methodNode, ASMAPI.MethodType.STATIC, "net/optifine/util/ChunkUtils", "hasEntities", "(Lnet/minecraft/world/chunk/Chunk;)Z");
