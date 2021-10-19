@@ -4,21 +4,24 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import com.mojang.math.Matrix4f;
+
 import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.raytraceutil.RayTracingCache;
 import meldexun.raytraceutil.RayTracingEngine;
 import meldexun.raytraceutil.RayTracingEngine.MutableRayTraceResult;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import com.mojang.math.Matrix4f;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class CullingThread extends Thread {
@@ -104,14 +107,21 @@ public class CullingThread extends Thread {
 						}
 					}
 
-					Iterator<BlockEntity> tileEntityIterator = mc.level.blockEntityList.iterator();
-					while (tileEntityIterator.hasNext()) {
-						try {
-							BlockEntity tileEntity = tileEntityIterator.next();
-							this.updateTileEntityCullingState(tileEntity);
-						} catch (Exception e) {
-							// ignore
-							break;
+					ClientChunkCache chunkSource = mc.level.getChunkSource();
+					for (int i = 0; i < chunkSource.storage.chunks.length(); i++) {
+						LevelChunk chunk = chunkSource.storage.chunks.get(i);
+						if (chunk == null) {
+							continue;
+						}
+						Iterator<BlockEntity> tileEntityIterator = chunk.getBlockEntities().values().iterator();
+						while (tileEntityIterator.hasNext()) {
+							try {
+								BlockEntity tileEntity = tileEntityIterator.next();
+								this.updateTileEntityCullingState(tileEntity);
+							} catch (Exception e) {
+								// ignore
+								break;
+							}
 						}
 					}
 				}
