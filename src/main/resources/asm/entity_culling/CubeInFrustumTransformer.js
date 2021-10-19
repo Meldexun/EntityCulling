@@ -12,12 +12,12 @@ function initializeCoreMod() {
 		"ClippingHelper Transformer": {
 			"target": {
 				"type": "METHOD",
-				"class": "net.minecraft.client.renderer.culling.ClippingHelper",
-				"methodName": "func_228954_a_",
+				"class": "net.minecraft.client.renderer.culling.Frustum",
+				"methodName": "m_113013_",
 				"methodDesc": "(FFFFFF)Z"
 			},
 			"transformer": function(methodNode) {
-				ASMAPI.log("INFO", "Transforming method: cubeInFrustum net.minecraft.client.renderer.culling.ClippingHelper");
+				ASMAPI.log("INFO", "Transforming method: cubeInFrustum net.minecraft.client.renderer.culling.Frustum");
 				//ASMAPI.log("INFO", "{}", ASMAPI.methodNodeToString(methodNode));
 				
 				var targetNode = methodNode.instructions.getFirst();
