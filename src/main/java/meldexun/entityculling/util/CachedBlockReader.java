@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.nbt.CompoundTag;
@@ -55,18 +56,8 @@ public class CachedBlockReader implements BlockGetter {
 	@Override
 	@Nullable
 	public BlockEntity getBlockEntity(BlockPos pos) {
-		if (pos.getY() < 0 || pos.getY() >= this.level.getMaxBuildHeight()) {
+		if (level.isOutsideBuildHeight(pos)) {
 			return null;
-		}
-
-		for (BlockEntity te : this.level.pendingBlockEntities) {
-			if (te.isRemoved()) {
-				continue;
-			}
-			if (!te.getBlockPos().equals(pos)) {
-				continue;
-			}
-			return te;
 		}
 
 		LevelChunk chunk = this.getChunk(pos.getX() >> 4, pos.getZ() >> 4);
@@ -81,21 +72,27 @@ public class CachedBlockReader implements BlockGetter {
 			BlockState state = this.getBlockState(pos);
 			BlockEntity te1 = null;
 			if ("DUMMY".equals(nbt.getString("id"))) {
-				if (state.hasTileEntity()) {
-					te1 = state.createTileEntity(this.level);
+				if (state.hasBlockEntity()) {
+					te1 = ((EntityBlock) state.getBlock()).newBlockEntity(pos, state);
 				}
 			} else {
-				te1 = BlockEntity.loadStatic(state, nbt);
+				te1 = BlockEntity.loadStatic(pos, state, nbt);
 			}
 
 			if (te1 != null) {
-				te1.setLevelAndPosition(this.level, pos);
+				te1.setLevel(this.level);
 				return te1;
 			}
 		}
 
 		BlockState state = this.getBlockState(pos);
-		return !state.hasTileEntity() ? null : state.createTileEntity(this.level);
+		if (!state.hasBlockEntity()) {
+			return null;
+		}
+
+		BlockEntity te1 = ((EntityBlock) state.getBlock()).newBlockEntity(pos, state);
+		te1.setLevel(level);
+		return te1;
 	}
 
 	@Override
@@ -114,6 +111,16 @@ public class CachedBlockReader implements BlockGetter {
 			return Fluids.EMPTY.defaultFluidState();
 		}
 		return section.getFluidState(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15);
+	}
+
+	@Override
+	public int getHeight() {
+		return level.getHeight();
+	}
+
+	@Override
+	public int getMinBuildHeight() {
+		return level.getMinBuildHeight();
 	}
 
 }
