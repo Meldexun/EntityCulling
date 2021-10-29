@@ -17,6 +17,7 @@ import net.minecraft.client.renderer.culling.ClippingHelperImpl;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -93,13 +94,15 @@ public class CullingThread extends Thread {
 		while (true) {
 			long t = System.nanoTime();
 			try {
-				this.cachedBlockAccess.setupCached(mc.world);
-				this.cache.clearCache();
 				privateDebugRayList.clear();
 
-				if (mc.world != null && mc.getRenderViewEntity() != null) {
-					this.spectator = mc.player.isSpectator();
-					Entity renderViewEntity = mc.getRenderViewEntity();
+				World world = mc.world;
+				EntityPlayer player = mc.player;
+				Entity renderViewEntity = mc.getRenderViewEntity();
+
+				if (world != null && player != null && renderViewEntity != null) {
+					this.cachedBlockAccess.setupCached(world);
+					this.spectator = player.isSpectator();
 					float partialTicks = mc.getRenderPartialTicks();
 					this.x = renderViewEntity.lastTickPosX + (renderViewEntity.posX - renderViewEntity.lastTickPosX) * partialTicks;
 					this.y = renderViewEntity.lastTickPosY + (renderViewEntity.posY - renderViewEntity.lastTickPosY) * partialTicks;
@@ -114,7 +117,7 @@ public class CullingThread extends Thread {
 					this.camBlockY = MathHelper.floor(this.camY);
 					this.camBlockZ = MathHelper.floor(this.camZ);
 
-					Iterator<Entity> entityIterator = mc.world.loadedEntityList.iterator();
+					Iterator<Entity> entityIterator = world.loadedEntityList.iterator();
 					while (entityIterator.hasNext()) {
 						try {
 							Entity entity = entityIterator.next();
@@ -125,7 +128,7 @@ public class CullingThread extends Thread {
 						}
 					}
 
-					Iterator<TileEntity> tileEntityIterator = mc.world.loadedTileEntityList.iterator();
+					Iterator<TileEntity> tileEntityIterator = world.loadedTileEntityList.iterator();
 					while (tileEntityIterator.hasNext()) {
 						try {
 							TileEntity tileEntity = tileEntityIterator.next();
