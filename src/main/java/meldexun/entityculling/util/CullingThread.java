@@ -1,9 +1,11 @@
 package meldexun.entityculling.util;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import meldexun.entityculling.asm.EntityCullingClassTransformer;
@@ -15,6 +17,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.culling.ClippingHelperImpl;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
@@ -119,24 +122,26 @@ public class CullingThread extends Thread {
 
 					Iterator<Entity> entityIterator = world.loadedEntityList.iterator();
 					while (entityIterator.hasNext()) {
+						Entity entity;
 						try {
-							Entity entity = entityIterator.next();
-							this.updateEntityCullingState(entity);
-						} catch (Exception e) {
+							entity = entityIterator.next();
+						} catch (ConcurrentModificationException | NoSuchElementException e) {
 							// ignore
 							break;
 						}
+						this.updateEntityCullingState(entity);
 					}
 
 					Iterator<TileEntity> tileEntityIterator = world.loadedTileEntityList.iterator();
 					while (tileEntityIterator.hasNext()) {
+						TileEntity tileEntity;
 						try {
-							TileEntity tileEntity = tileEntityIterator.next();
-							this.updateTileEntityCullingState(tileEntity);
-						} catch (Exception e) {
+							tileEntity = tileEntityIterator.next();
+						} catch (ConcurrentModificationException | NoSuchElementException e) {
 							// ignore
 							break;
 						}
+						this.updateTileEntityCullingState(tileEntity);
 					}
 				}
 
@@ -146,7 +151,7 @@ public class CullingThread extends Thread {
 					privateDebugRayList = temp;
 				}
 			} catch (Exception e) {
-				// ignore
+				mc.crashed(new CrashReport("Culling Thread crashed!", e));
 			} finally {
 				this.cachedBlockAccess.clearCache();
 				this.cache.clearCache();
