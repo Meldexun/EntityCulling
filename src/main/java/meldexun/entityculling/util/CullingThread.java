@@ -75,14 +75,14 @@ public class CullingThread extends Thread {
 		ENTITY_BLACKLIST.clear();
 		TILE_ENTITY_BLACKLIST.clear();
 
-		for (String s : EntityCullingConfig.skipHiddenEntityRenderingBlacklist) {
+		for (String s : EntityCullingConfig.entity.skipHiddenEntityRenderingBlacklist) {
 			Class<? extends Entity> entityClass = EntityList.getClassFromName(s);
 			if (entityClass != null) {
 				ENTITY_BLACKLIST.add(entityClass);
 			}
 		}
 
-		for (String s : EntityCullingConfig.skipHiddenTileEntityRenderingBlacklist) {
+		for (String s : EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingBlacklist) {
 			Class<? extends TileEntity> tileEntityClass = TileEntity.REGISTRY.getObject(new ResourceLocation(s));
 			if (tileEntityClass != null) {
 				TILE_ENTITY_BLACKLIST.add(tileEntityClass);
@@ -195,7 +195,7 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		if (!EntityCullingConfig.skipHiddenEntityRendering) {
+		if (!EntityCullingConfig.entity.skipHiddenEntityRendering) {
 			return true;
 		}
 
@@ -207,7 +207,7 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		if (entity.width > EntityCullingConfig.skipHiddenEntityRenderingSize || entity.height > EntityCullingConfig.skipHiddenEntityRenderingSize) {
+		if (entity.width > EntityCullingConfig.entity.skipHiddenEntityRenderingSize || entity.height > EntityCullingConfig.entity.skipHiddenEntityRenderingSize) {
 			return true;
 		}
 
@@ -266,7 +266,7 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		if (!EntityCullingConfig.skipHiddenTileEntityRendering) {
+		if (!EntityCullingConfig.tileEntity.skipHiddenTileEntityRendering) {
 			return true;
 		}
 
@@ -275,9 +275,9 @@ public class CullingThread extends Thread {
 		}
 
 		AxisAlignedBB aabb = ((IBoundingBoxCache) tileEntity).getOrCacheBoundingBox();
-		if (aabb.maxX - aabb.minX > EntityCullingConfig.skipHiddenTileEntityRenderingSize
-				|| aabb.maxY - aabb.minY > EntityCullingConfig.skipHiddenTileEntityRenderingSize
-				|| aabb.maxZ - aabb.minZ > EntityCullingConfig.skipHiddenTileEntityRenderingSize) {
+		if (aabb.maxX - aabb.minX > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize
+				|| aabb.maxY - aabb.minY > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize
+				|| aabb.maxZ - aabb.minZ > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize) {
 			return true;
 		}
 
@@ -329,7 +329,7 @@ public class CullingThread extends Thread {
 			return false;
 		}
 
-		if (!EntityCullingConfig.skipHiddenEntityRendering) {
+		if (!EntityCullingConfig.entity.skipHiddenEntityRendering) {
 			return true;
 		}
 
@@ -349,7 +349,7 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		if (entity.width >= EntityCullingConfig.skipHiddenEntityRenderingSize || entity.height >= EntityCullingConfig.skipHiddenEntityRenderingSize) {
+		if (entity.width >= EntityCullingConfig.entity.skipHiddenEntityRenderingSize || entity.height >= EntityCullingConfig.entity.skipHiddenEntityRenderingSize) {
 			return true;
 		}
 
@@ -370,7 +370,7 @@ public class CullingThread extends Thread {
 			return false;
 		}
 
-		if (!EntityCullingConfig.skipHiddenTileEntityRendering) {
+		if (!EntityCullingConfig.tileEntity.skipHiddenTileEntityRendering) {
 			return true;
 		}
 
@@ -387,9 +387,9 @@ public class CullingThread extends Thread {
 		}
 
 		AxisAlignedBB aabb = ((IBoundingBoxCache) tileEntity).getOrCacheBoundingBox();
-		if (aabb.maxX - aabb.minX > EntityCullingConfig.skipHiddenTileEntityRenderingSize
-				|| aabb.maxY - aabb.minY > EntityCullingConfig.skipHiddenTileEntityRenderingSize
-				|| aabb.maxZ - aabb.minZ > EntityCullingConfig.skipHiddenTileEntityRenderingSize) {
+		if (aabb.maxX - aabb.minX > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize
+				|| aabb.maxY - aabb.minY > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize
+				|| aabb.maxZ - aabb.minZ > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize) {
 			return true;
 		}
 
