@@ -200,7 +200,16 @@ public class CullingThread extends Thread {
 		if (!EntityCullingConfig.entity.skipHiddenEntityRendering) {
 			return true;
 		}
-		if (!entity.isNonBoss()) {
+		if (EntityCullingConfig.entity.alwaysRenderBosses && !entity.isNonBoss()) {
+			return true;
+		}
+		if (EntityCullingConfig.entity.alwaysRenderEntitiesWithName && entity.getAlwaysRenderNameTagForRender()) {
+			return true;
+		}
+		if (EntityCullingConfig.entity.alwaysRenderPlayers && entity instanceof EntityPlayer) {
+			return true;
+		}
+		if (EntityCullingConfig.entity.alwaysRenderViewEntity && entity == Minecraft.getMinecraft().getRenderViewEntity()) {
 			return true;
 		}
 		if (!ENTITY_BLACKLIST.isEmpty() && ENTITY_BLACKLIST.contains(entity.getClass())) {

@@ -38,6 +38,10 @@ public class EntityCullingConfig {
 
 	public static class Entity {
 
+		public boolean alwaysRenderBosses = true;
+		public boolean alwaysRenderEntitiesWithName = true;
+		public boolean alwaysRenderPlayers = true;
+		public boolean alwaysRenderViewEntity = true;
 		@Config.Comment("Skip rendering of entities that are not visible (hidden behind blocks). Bosses will be rendered normally. This might cause issues where an entity is partly behind a block and thus does not get rendered but it's usually not really noticable.")
 		public boolean skipHiddenEntityRendering = true;
 		@Config.Comment("Entities with a width or height greater than this value will always get rendered.")
