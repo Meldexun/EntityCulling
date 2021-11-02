@@ -57,7 +57,7 @@ public class BoundingBoxHelper {
 
 	public static void drawPoints() {
 		if (EntityCullingConfig.debugRenderBoxes) {
-			List<double[]> copy;
+			List<RaytraceInfo> copy;
 			synchronized (CullingThread.class) {
 				copy = new ArrayList<>(CullingThread.publicDebugRayList);
 			}
@@ -78,13 +78,13 @@ public class BoundingBoxHelper {
 			GlStateManager.pushMatrix();
 			GlStateManager.translate(-x, -y, -z);
 			GlStateManager.glBegin(GL11.GL_POINTS);
-			for (double[] v : copy) {
-				if (v[3] == 1) {
+			for (RaytraceInfo raytraceInfo : copy) {
+				if (!raytraceInfo.tested) {
 					GlStateManager.color(1, 1, 1);
 				} else {
 					GlStateManager.color(1, 0, 0);
 				}
-				GlStateManager.glVertex3f((float) v[0], (float) v[1], (float) v[2]);
+				GlStateManager.glVertex3f((float) raytraceInfo.x, (float) raytraceInfo.y, (float) raytraceInfo.z);
 			}
 			GlStateManager.color(1, 1, 1);
 			GlStateManager.glEnd();

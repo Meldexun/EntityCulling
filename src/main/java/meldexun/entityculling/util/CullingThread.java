@@ -50,8 +50,8 @@ public class CullingThread extends Thread {
 	private int counter = 0;
 	public long[] time = new long[100];
 	private boolean result = false;
-	private static List<double[]> privateDebugRayList = new ArrayList<>();
-	public static List<double[]> publicDebugRayList = new ArrayList<>();
+	private static List<RaytraceInfo> privateDebugRayList = new ArrayList<>();
+	public static List<RaytraceInfo> publicDebugRayList = new ArrayList<>();
 
 	private boolean spectator;
 	private Frustum frustum;
@@ -146,7 +146,7 @@ public class CullingThread extends Thread {
 				}
 
 				synchronized (CullingThread.class) {
-					List<double[]> temp = publicDebugRayList;
+					List<RaytraceInfo> temp = publicDebugRayList;
 					publicDebugRayList = privateDebugRayList;
 					privateDebugRayList = temp;
 				}
@@ -239,11 +239,7 @@ public class CullingThread extends Thread {
 		}
 
 		if (EntityCullingConfig.debugRenderBoxes) {
-			privateDebugRayList.add(new double[] {
-					(minX + maxX) * 0.5D,
-					(minY + maxY) * 0.5D,
-					(minZ + maxZ) * 0.5D,
-					0 });
+			privateDebugRayList.add(new RaytraceInfo((minX + maxX) * 0.5D, (minY + maxY) * 0.5D, (minZ + maxZ) * 0.5D, true));
 		}
 		this.result = this.checkVisibility(entity.world, this.camX, this.camY, this.camZ, (minX + maxX) * 0.5D, (minY + maxY) * 0.5D, (minZ + maxZ) * 0.5D,
 				EntityCullingConfig.raytraceThreshold);
@@ -282,11 +278,7 @@ public class CullingThread extends Thread {
 		}
 
 		if (EntityCullingConfig.debugRenderBoxes) {
-			privateDebugRayList.add(new double[] {
-					(aabb.minX + aabb.maxX) * 0.5D,
-					(aabb.minY + aabb.maxY) * 0.5D,
-					(aabb.minZ + aabb.maxZ) * 0.5D,
-					0 });
+			privateDebugRayList.add(new RaytraceInfo((aabb.minX + aabb.maxX) * 0.5D, (aabb.minY + aabb.maxY) * 0.5D, (aabb.minZ + aabb.maxZ) * 0.5D, true));
 		}
 		this.result = this.checkVisibility(tileEntity.getWorld(), this.camX, this.camY, this.camZ, (aabb.minX + aabb.maxX) * 0.5D, (aabb.minY + aabb.maxY) * 0.5D,
 				(aabb.minZ + aabb.maxZ) * 0.5D, EntityCullingConfig.raytraceThreshold);
@@ -350,11 +342,7 @@ public class CullingThread extends Thread {
 			for (int y = startY; y <= endY; y++) {
 				for (int z = startZ; z <= endZ; z++) {
 					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new double[] {
-								x,
-								y,
-								z,
-								this.result ? 1 : 0 });
+						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
 					}
 					if (!this.result && this.checkVisibilityCached(world, x, y, z)) {
 						this.result = true;
@@ -366,11 +354,7 @@ public class CullingThread extends Thread {
 			for (int y = startY; y <= endY; y++) {
 				for (int z = startZ; z <= endZ; z++) {
 					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new double[] {
-								x,
-								y,
-								z,
-								this.result ? 1 : 0 });
+						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
 					}
 					if (!this.result && this.checkVisibilityCached(world, x, y, z)) {
 						this.result = true;
@@ -383,11 +367,7 @@ public class CullingThread extends Thread {
 			for (int x = startX; x <= endX; x++) {
 				for (int z = startZ; z <= endZ; z++) {
 					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new double[] {
-								x,
-								y,
-								z,
-								this.result ? 1 : 0 });
+						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
 					}
 					if (!this.result && this.checkVisibilityCached(world, x, y, z)) {
 						this.result = true;
@@ -399,11 +379,7 @@ public class CullingThread extends Thread {
 			for (int x = startX; x <= endX; x++) {
 				for (int z = startZ; z <= endZ; z++) {
 					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new double[] {
-								x,
-								y,
-								z,
-								this.result ? 1 : 0 });
+						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
 					}
 					if (!this.result && this.checkVisibilityCached(world, x, y, z)) {
 						this.result = true;
@@ -416,11 +392,7 @@ public class CullingThread extends Thread {
 			for (int x = startX; x <= endX; x++) {
 				for (int y = startY; y <= endY; y++) {
 					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new double[] {
-								x,
-								y,
-								z,
-								this.result ? 1 : 0 });
+						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
 					}
 					if (!this.result && this.checkVisibilityCached(world, x, y, z)) {
 						this.result = true;
@@ -432,11 +404,7 @@ public class CullingThread extends Thread {
 			for (int x = startX; x <= endX; x++) {
 				for (int y = startY; y <= endY; y++) {
 					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new double[] {
-								x,
-								y,
-								z,
-								this.result ? 1 : 0 });
+						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
 					}
 					if (!this.result && this.checkVisibilityCached(world, x, y, z)) {
 						this.result = true;
@@ -464,11 +432,7 @@ public class CullingThread extends Thread {
 				for (int iz = 0; iz <= stepsZ; iz++) {
 					double z = minZ + (maxZ - minZ) * iz / stepsZ;
 					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new double[] {
-								x,
-								y,
-								z,
-								this.result ? 1 : 0 });
+						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
 					}
 					if (!this.result && this.checkVisibility(world, this.camX, this.camY, this.camZ, x, y, z, EntityCullingConfig.raytraceThreshold)) {
 						this.result = true;
@@ -482,11 +446,7 @@ public class CullingThread extends Thread {
 				for (int iz = 0; iz <= stepsZ; iz++) {
 					double z = minZ + (maxZ - minZ) * iz / stepsZ;
 					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new double[] {
-								x,
-								y,
-								z,
-								this.result ? 1 : 0 });
+						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
 					}
 					if (!this.result && this.checkVisibility(world, this.camX, this.camY, this.camZ, x, y, z, EntityCullingConfig.raytraceThreshold)) {
 						this.result = true;
@@ -502,11 +462,7 @@ public class CullingThread extends Thread {
 				for (int iz = 0; iz <= stepsZ; iz++) {
 					double z = minZ + (maxZ - minZ) * iz / stepsZ;
 					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new double[] {
-								x,
-								y,
-								z,
-								this.result ? 1 : 0 });
+						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
 					}
 					if (!this.result && this.checkVisibility(world, this.camX, this.camY, this.camZ, x, y, z, EntityCullingConfig.raytraceThreshold)) {
 						this.result = true;
@@ -520,11 +476,7 @@ public class CullingThread extends Thread {
 				for (int iz = 0; iz <= stepsZ; iz++) {
 					double z = minZ + (maxZ - minZ) * iz / stepsZ;
 					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new double[] {
-								x,
-								y,
-								z,
-								this.result ? 1 : 0 });
+						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
 					}
 					if (!this.result && this.checkVisibility(world, this.camX, this.camY, this.camZ, x, y, z, EntityCullingConfig.raytraceThreshold)) {
 						this.result = true;
@@ -540,11 +492,7 @@ public class CullingThread extends Thread {
 				for (int iy = 0; iy <= stepsY; iy++) {
 					double y = minY + (maxY - minY) * iy / stepsY;
 					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new double[] {
-								x,
-								y,
-								z,
-								this.result ? 1 : 0 });
+						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
 					}
 					if (!this.result && this.checkVisibility(world, this.camX, this.camY, this.camZ, x, y, z, EntityCullingConfig.raytraceThreshold)) {
 						this.result = true;
@@ -558,11 +506,7 @@ public class CullingThread extends Thread {
 				for (int iy = 0; iy <= stepsY; iy++) {
 					double y = minY + (maxY - minY) * iy / stepsY;
 					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new double[] {
-								x,
-								y,
-								z,
-								this.result ? 1 : 0 });
+						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
 					}
 					if (!this.result && this.checkVisibility(world, this.camX, this.camY, this.camZ, x, y, z, EntityCullingConfig.raytraceThreshold)) {
 						this.result = true;
