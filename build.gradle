@@ -65,7 +65,7 @@ dependencies {
     minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2855'
     includedDependencies 'meldexun:ASMUtil:1.0.0@jar'
     includedDependencies 'meldexun:ReflectionUtil:1.0.0@jar'
-    includedDependencies 'meldexun:RaytraceUtil:1.0.2@jar'
+    includedDependencies 'meldexun:RaytraceUtil:1.0.3@jar'
     buildDependencies 'curse.maven:CubicChunks-292243:3186888'
 }
 
