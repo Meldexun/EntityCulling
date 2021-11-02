@@ -241,9 +241,9 @@ public class CullingThread extends Thread {
 		if (EntityCullingConfig.debugRenderBoxes) {
 			privateDebugRayList.add(new RaytraceInfo((minX + maxX) * 0.5D, (minY + maxY) * 0.5D, (minZ + maxZ) * 0.5D, true));
 		}
-		this.result = this.checkVisibility(entity.world, this.camX, this.camY, this.camZ, (minX + maxX) * 0.5D, (minY + maxY) * 0.5D, (minZ + maxZ) * 0.5D,
+		this.result = this.checkPointUncached(this.camX, this.camY, this.camZ, (minX + maxX) * 0.5D, (minY + maxY) * 0.5D, (minZ + maxZ) * 0.5D,
 				EntityCullingConfig.raytraceThreshold);
-		this.result |= this.checkBoundingBoxVisibility(entity.world, minX, minY, minZ, maxX, maxY, maxZ);
+		this.result |= this.checkBoxCached(minX, minY, minZ, maxX, maxY, maxZ);
 		return this.result;
 	}
 
@@ -280,9 +280,9 @@ public class CullingThread extends Thread {
 		if (EntityCullingConfig.debugRenderBoxes) {
 			privateDebugRayList.add(new RaytraceInfo((aabb.minX + aabb.maxX) * 0.5D, (aabb.minY + aabb.maxY) * 0.5D, (aabb.minZ + aabb.maxZ) * 0.5D, true));
 		}
-		this.result = this.checkVisibility(tileEntity.getWorld(), this.camX, this.camY, this.camZ, (aabb.minX + aabb.maxX) * 0.5D, (aabb.minY + aabb.maxY) * 0.5D,
+		this.result = this.checkPointUncached(this.camX, this.camY, this.camZ, (aabb.minX + aabb.maxX) * 0.5D, (aabb.minY + aabb.maxY) * 0.5D,
 				(aabb.minZ + aabb.maxZ) * 0.5D, EntityCullingConfig.raytraceThreshold);
-		this.result |= this.checkBoundingBoxVisibility(tileEntity.getWorld(), aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ);
+		this.result |= this.checkBoxCached(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ);
 		return this.result;
 	}
 
@@ -299,7 +299,7 @@ public class CullingThread extends Thread {
 		if (!EntityCullingConfig.optifineShaderOptions.entityShadowsCullingLessAggressiveMode) {
 			return false;
 		}
-		return this.checkVisibility(entity.world, this.camX, this.camY, this.camZ, entity.posX, entity.posY + entity.height * 0.5D, entity.posZ,
+		return this.checkPointUncached(this.camX, this.camY, this.camZ, entity.posX, entity.posY + entity.height * 0.5D, entity.posZ,
 				EntityCullingConfig.optifineShaderOptions.entityShadowsCullingLessAggressiveModeDiff);
 	}
 
@@ -317,13 +317,13 @@ public class CullingThread extends Thread {
 			return false;
 		}
 		BlockPos pos = tileEntity.getPos();
-		return this.checkVisibility(tileEntity.getWorld(), this.camX, this.camY, this.camZ, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
+		return this.checkPointUncached(this.camX, this.camY, this.camZ, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
 				EntityCullingConfig.optifineShaderOptions.tileEntityShadowsCullingLessAggressiveModeDiff);
 	}
 
-	private boolean checkBoundingBoxVisibility(World world, double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
+	private boolean checkBoxCached(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
 		if (EntityCullingConfig.cachelessMode) {
-			return this.checkBoundingBoxVisibility2(world, minX, minY, minZ, maxX, maxY, maxZ);
+			return this.checkBoxUncached(minX, minY, minZ, maxX, maxY, maxZ);
 		}
 
 		int startX = MathHelper.floor(minX);
@@ -336,87 +336,35 @@ public class CullingThread extends Thread {
 		if (this.camX >= startX && this.camX <= endX && this.camY >= startY && this.camY <= endY && this.camZ >= startZ && this.camZ <= endZ) {
 			this.result = true;
 		}
-
 		if (this.camX < startX) {
-			int x = startX;
-			for (int y = startY; y <= endY; y++) {
-				for (int z = startZ; z <= endZ; z++) {
-					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
-					}
-					if (!this.result && this.checkVisibilityCached(world, x, y, z)) {
-						this.result = true;
-					}
-				}
-			}
+			IntUtil.forEach(startY, endY, startZ, endZ, (y, z) -> this.checkPointCachedAndDebug(startX, y, z));
 		} else if (this.camX > endX) {
-			int x = endX;
-			for (int y = startY; y <= endY; y++) {
-				for (int z = startZ; z <= endZ; z++) {
-					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
-					}
-					if (!this.result && this.checkVisibilityCached(world, x, y, z)) {
-						this.result = true;
-					}
-				}
-			}
+			IntUtil.forEach(startY, endY, startZ, endZ, (y, z) -> this.checkPointCachedAndDebug(endX, y, z));
 		}
 		if (this.camY < startY) {
-			int y = startY;
-			for (int x = startX; x <= endX; x++) {
-				for (int z = startZ; z <= endZ; z++) {
-					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
-					}
-					if (!this.result && this.checkVisibilityCached(world, x, y, z)) {
-						this.result = true;
-					}
-				}
-			}
+			IntUtil.forEach(startX, endX, startZ, endZ, (x, z) -> this.checkPointCachedAndDebug(x, startY, z));
 		} else if (this.camY > endY) {
-			int y = endY;
-			for (int x = startX; x <= endX; x++) {
-				for (int z = startZ; z <= endZ; z++) {
-					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
-					}
-					if (!this.result && this.checkVisibilityCached(world, x, y, z)) {
-						this.result = true;
-					}
-				}
-			}
+			IntUtil.forEach(startX, endX, startZ, endZ, (x, z) -> this.checkPointCachedAndDebug(x, endY, z));
 		}
 		if (this.camZ < startZ) {
-			int z = startZ;
-			for (int x = startX; x <= endX; x++) {
-				for (int y = startY; y <= endY; y++) {
-					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
-					}
-					if (!this.result && this.checkVisibilityCached(world, x, y, z)) {
-						this.result = true;
-					}
-				}
-			}
+			IntUtil.forEach(startX, endX, startY, endY, (x, y) -> this.checkPointCachedAndDebug(x, y, startZ));
 		} else if (this.camZ > endZ) {
-			int z = endZ;
-			for (int x = startX; x <= endX; x++) {
-				for (int y = startY; y <= endY; y++) {
-					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
-					}
-					if (!this.result && this.checkVisibilityCached(world, x, y, z)) {
-						this.result = true;
-					}
-				}
-			}
+			IntUtil.forEach(startX, endX, startY, endY, (x, y) -> this.checkPointCachedAndDebug(x, y, endZ));
 		}
 
 		return this.result;
 	}
 
-	private boolean checkBoundingBoxVisibility2(World world, double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
+	private void checkPointCachedAndDebug(int x, int y, int z) {
+		if (EntityCullingConfig.debugRenderBoxes) {
+			privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
+		}
+		if (!this.result && this.checkPointCached(x, y, z)) {
+			this.result = true;
+		}
+	}
+
+	private boolean checkBoxUncached(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
 		if (this.camX >= minX && this.camX <= maxX && this.camY >= minY && this.camY <= maxY && this.camZ >= minZ && this.camZ <= maxZ) {
 			this.result = true;
 		}
@@ -426,106 +374,66 @@ public class CullingThread extends Thread {
 		int stepsZ = MathHelper.ceil(maxZ - minZ);
 
 		if (this.camX < minX) {
-			double x = minX;
-			for (int iy = 0; iy <= stepsY; iy++) {
-				double y = minY + (maxY - minY) * iy / stepsY;
-				for (int iz = 0; iz <= stepsZ; iz++) {
-					double z = minZ + (maxZ - minZ) * iz / stepsZ;
-					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
-					}
-					if (!this.result && this.checkVisibility(world, this.camX, this.camY, this.camZ, x, y, z, EntityCullingConfig.raytraceThreshold)) {
-						this.result = true;
-					}
-				}
-			}
+			IntUtil.forEach(0, stepsY, 0, stepsZ, (iy, iz) -> {
+				double y = MathUtil.lerp(minY, maxY, (double) iy / stepsY);
+				double z = MathUtil.lerp(minZ, maxZ, (double) iz / stepsZ);
+				this.checkPointUncachedAndDebug(minX, y, z);
+			});
 		} else if (this.camX > maxX) {
-			double x = maxX;
-			for (int iy = 0; iy <= stepsY; iy++) {
-				double y = minY + (maxY - minY) * iy / stepsY;
-				for (int iz = 0; iz <= stepsZ; iz++) {
-					double z = minZ + (maxZ - minZ) * iz / stepsZ;
-					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
-					}
-					if (!this.result && this.checkVisibility(world, this.camX, this.camY, this.camZ, x, y, z, EntityCullingConfig.raytraceThreshold)) {
-						this.result = true;
-					}
-				}
-			}
+			IntUtil.forEach(0, stepsY, 0, stepsZ, (iy, iz) -> {
+				double y = MathUtil.lerp(minY, maxY, (double) iy / stepsY);
+				double z = MathUtil.lerp(minZ, maxZ, (double) iz / stepsZ);
+				this.checkPointUncachedAndDebug(maxX, y, z);
+			});
 		}
 
 		if (this.camY < minY) {
-			double y = minY;
-			for (int ix = 0; ix <= stepsX; ix++) {
-				double x = minX + (maxX - minX) * ix / stepsX;
-				for (int iz = 0; iz <= stepsZ; iz++) {
-					double z = minZ + (maxZ - minZ) * iz / stepsZ;
-					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
-					}
-					if (!this.result && this.checkVisibility(world, this.camX, this.camY, this.camZ, x, y, z, EntityCullingConfig.raytraceThreshold)) {
-						this.result = true;
-					}
-				}
-			}
+			IntUtil.forEach(0, stepsX, 0, stepsZ, (ix, iz) -> {
+				double x = MathUtil.lerp(minX, maxX, (double) ix / stepsX);
+				double z = MathUtil.lerp(minZ, maxZ, (double) iz / stepsZ);
+				this.checkPointUncachedAndDebug(x, minY, z);
+			});
 		} else if (this.camY > maxY) {
-			double y = maxY;
-			for (int ix = 0; ix <= stepsX; ix++) {
-				double x = minX + (maxX - minX) * ix / stepsX;
-				for (int iz = 0; iz <= stepsZ; iz++) {
-					double z = minZ + (maxZ - minZ) * iz / stepsZ;
-					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
-					}
-					if (!this.result && this.checkVisibility(world, this.camX, this.camY, this.camZ, x, y, z, EntityCullingConfig.raytraceThreshold)) {
-						this.result = true;
-					}
-				}
-			}
+			IntUtil.forEach(0, stepsX, 0, stepsZ, (ix, iz) -> {
+				double x = MathUtil.lerp(minX, maxX, (double) ix / stepsX);
+				double z = MathUtil.lerp(minZ, maxZ, (double) iz / stepsZ);
+				this.checkPointUncachedAndDebug(x, maxY, z);
+			});
 		}
 
 		if (this.camZ < minZ) {
-			double z = minZ;
-			for (int ix = 0; ix <= stepsX; ix++) {
-				double x = minX + (maxX - minX) * ix / stepsX;
-				for (int iy = 0; iy <= stepsY; iy++) {
-					double y = minY + (maxY - minY) * iy / stepsY;
-					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
-					}
-					if (!this.result && this.checkVisibility(world, this.camX, this.camY, this.camZ, x, y, z, EntityCullingConfig.raytraceThreshold)) {
-						this.result = true;
-					}
-				}
-			}
+			IntUtil.forEach(0, stepsX, 0, stepsY, (ix, iy) -> {
+				double x = MathUtil.lerp(minX, maxX, (double) ix / stepsX);
+				double y = MathUtil.lerp(minY, maxY, (double) iy / stepsY);
+				this.checkPointUncachedAndDebug(x, y, minZ);
+			});
 		} else if (this.camZ > maxZ) {
-			double z = maxZ;
-			for (int ix = 0; ix <= stepsX; ix++) {
-				double x = minX + (maxX - minX) * ix / stepsX;
-				for (int iy = 0; iy <= stepsY; iy++) {
-					double y = minY + (maxY - minY) * iy / stepsY;
-					if (EntityCullingConfig.debugRenderBoxes) {
-						privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
-					}
-					if (!this.result && this.checkVisibility(world, this.camX, this.camY, this.camZ, x, y, z, EntityCullingConfig.raytraceThreshold)) {
-						this.result = true;
-					}
-				}
-			}
+			IntUtil.forEach(0, stepsX, 0, stepsY, (ix, iy) -> {
+				double x = MathUtil.lerp(minX, maxX, (double) ix / stepsX);
+				double y = MathUtil.lerp(minY, maxY, (double) iy / stepsY);
+				this.checkPointUncachedAndDebug(x, y, maxZ);
+			});
 		}
 
 		return this.result;
 	}
 
-	private boolean checkVisibilityCached(World world, int endX, int endY, int endZ) {
-		return this.cache.getOrSetCachedValue(endX - this.camBlockX, endY - this.camBlockY, endZ - this.camBlockZ,
-				() -> this.checkVisibility(world, this.camX, this.camY, this.camZ, endX, endY, endZ, EntityCullingConfig.raytraceThreshold) ? 2 : 1) == 2;
+	private void checkPointUncachedAndDebug(double x, double y, double z) {
+		if (EntityCullingConfig.debugRenderBoxes) {
+			privateDebugRayList.add(new RaytraceInfo(x, y, z, !this.result));
+		}
+		if (!this.result && this.checkPointUncached(this.camX, this.camY, this.camZ, x, y, z, EntityCullingConfig.raytraceThreshold)) {
+			this.result = true;
+		}
 	}
 
-	private boolean checkVisibility(World world, double startX, double startY, double startZ, double endX, double endY, double endZ, double maxDiff) {
-		MutableRayTraceResult rayTraceResult = engine.rayTraceBlocks(startX, startY, startZ, endX, endY, endZ, true, maxDiff, this.mutableRayTraceResult);
-		return rayTraceResult == null;
+	private boolean checkPointCached(int endX, int endY, int endZ) {
+		return this.cache.getOrSetCachedValue(endX - this.camBlockX, endY - this.camBlockY, endZ - this.camBlockZ,
+				() -> this.checkPointUncached(this.camX, this.camY, this.camZ, endX, endY, endZ, EntityCullingConfig.raytraceThreshold) ? 2 : 1) == 2;
+	}
+
+	private boolean checkPointUncached(double startX, double startY, double startZ, double endX, double endY, double endZ, double maxDiff) {
+		return this.engine.rayTraceBlocks(startX, startY, startZ, endX, endY, endZ, true, maxDiff, this.mutableRayTraceResult) == null;
 	}
 
 }
