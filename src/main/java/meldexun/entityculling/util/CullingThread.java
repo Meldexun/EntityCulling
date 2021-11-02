@@ -194,52 +194,34 @@ public class CullingThread extends Thread {
 		if (!EntityCullingConfig.enabled) {
 			return true;
 		}
-
-		if (!EntityCullingConfig.entity.skipHiddenEntityRendering) {
-			return true;
-		}
-
 		if (EntityCullingConfig.disabledInSpectator && this.spectator) {
 			return true;
 		}
-
+		if (!EntityCullingConfig.entity.skipHiddenEntityRendering) {
+			return true;
+		}
 		if (!entity.isNonBoss()) {
 			return true;
 		}
-
-		if (entity.width > EntityCullingConfig.entity.skipHiddenEntityRenderingSize || entity.height > EntityCullingConfig.entity.skipHiddenEntityRenderingSize) {
-			return true;
-		}
-
 		if (!ENTITY_BLACKLIST.isEmpty() && ENTITY_BLACKLIST.contains(entity.getClass())) {
 			return true;
 		}
 
-		double minX, minY, minZ, maxX, maxY, maxZ;
-		{
-			AxisAlignedBB aabb = entity.getRenderBoundingBox();
-
-			if (aabb.hasNaN()) {
-				minX = entity.posX - 2.0D;
-				minY = entity.posY - 2.0D;
-				minZ = entity.posZ - 2.0D;
-				maxX = entity.posX + 2.0D;
-				maxY = entity.posY + 2.0D;
-				maxZ = entity.posZ + 2.0D;
-			} else {
-				minX = aabb.minX - 0.5D;
-				minY = aabb.minY - 0.5D;
-				minZ = aabb.minZ - 0.5D;
-				maxX = aabb.maxX + 0.5D;
-				maxY = aabb.maxY + 0.5D;
-				maxZ = aabb.maxZ + 0.5D;
-			}
+		AxisAlignedBB aabb = entity.getRenderBoundingBox();
+		double minX = aabb.minX - 0.5D;
+		double minY = aabb.minY - 0.5D;
+		double minZ = aabb.minZ - 0.5D;
+		double maxX = aabb.maxX + 0.5D;
+		double maxY = aabb.maxY + 0.5D;
+		double maxZ = aabb.maxZ + 0.5D;
+		if (maxX - minX > EntityCullingConfig.entity.skipHiddenEntityRenderingSize
+				|| maxY - minY > EntityCullingConfig.entity.skipHiddenEntityRenderingSize
+				|| maxZ - minZ > EntityCullingConfig.entity.skipHiddenEntityRenderingSize) {
+			return true;
 		}
-
 		if (!entity.isInRangeToRender3d(this.x, this.y, this.z)) {
 			return true;
 		}
-
 		if (!this.frustum.isBoxInFrustum(minX, minY, minZ, maxX, maxY, maxZ)) {
 			// Assume that entities outside of the fov don't get rendered and thus there is no need to ray trace if they are
 			// visible.
@@ -257,7 +239,6 @@ public class CullingThread extends Thread {
 		this.result = this.checkVisibility(entity.world, this.camX, this.camY, this.camZ, (minX + maxX) * 0.5D, (minY + maxY) * 0.5D, (minZ + maxZ) * 0.5D,
 				EntityCullingConfig.raytraceThreshold);
 		this.result |= this.checkBoundingBoxVisibility(entity.world, minX, minY, minZ, maxX, maxY, maxZ);
-
 		return this.result;
 	}
 
@@ -265,12 +246,13 @@ public class CullingThread extends Thread {
 		if (!EntityCullingConfig.enabled) {
 			return true;
 		}
-
+		if (EntityCullingConfig.disabledInSpectator && this.spectator) {
+			return true;
+		}
 		if (!EntityCullingConfig.tileEntity.skipHiddenTileEntityRendering) {
 			return true;
 		}
-
-		if (EntityCullingConfig.disabledInSpectator && this.spectator) {
+		if (!TILE_ENTITY_BLACKLIST.isEmpty() && TILE_ENTITY_BLACKLIST.contains(tileEntity.getClass())) {
 			return true;
 		}
 
@@ -280,26 +262,10 @@ public class CullingThread extends Thread {
 				|| aabb.maxZ - aabb.minZ > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize) {
 			return true;
 		}
-
-		if (!TILE_ENTITY_BLACKLIST.isEmpty() && TILE_ENTITY_BLACKLIST.contains(tileEntity.getClass())) {
-			return true;
-		}
-
-		double minX, minY, minZ, maxX, maxY, maxZ;
-		{
-			minX = aabb.minX;
-			minY = aabb.minY;
-			minZ = aabb.minZ;
-			maxX = aabb.maxX;
-			maxY = aabb.maxY;
-			maxZ = aabb.maxZ;
-		}
-
 		if (tileEntity.getDistanceSq(this.x, this.y, this.z) >= tileEntity.getMaxRenderDistanceSquared()) {
 			return true;
 		}
-
-		if (!this.frustum.isBoxInFrustum(minX, minY, minZ, maxX, maxY, maxZ)) {
+		if (!this.frustum.isBoxInFrustum(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ)) {
 			// Assume that tile entities outside of the fov don't get rendered and thus there is no need to ray trace if they are
 			// visible.
 			// But return true because there might be special entities which are always rendered.
@@ -308,95 +274,47 @@ public class CullingThread extends Thread {
 
 		if (EntityCullingConfig.debugRenderBoxes) {
 			privateDebugRayList.add(new double[] {
-					(minX + maxX) * 0.5D,
-					(minY + maxY) * 0.5D,
-					(minZ + maxZ) * 0.5D,
+					(aabb.minX + aabb.maxX) * 0.5D,
+					(aabb.minY + aabb.maxY) * 0.5D,
+					(aabb.minZ + aabb.maxZ) * 0.5D,
 					0 });
 		}
-		this.result = this.checkVisibility(tileEntity.getWorld(), this.camX, this.camY, this.camZ, (minX + maxX) * 0.5D, (minY + maxY) * 0.5D,
-				(minZ + maxZ) * 0.5D, EntityCullingConfig.raytraceThreshold);
-		this.result |= this.checkBoundingBoxVisibility(tileEntity.getWorld(), minX, minY, minZ, maxX, maxY, maxZ);
-
+		this.result = this.checkVisibility(tileEntity.getWorld(), this.camX, this.camY, this.camZ, (aabb.minX + aabb.maxX) * 0.5D, (aabb.minY + aabb.maxY) * 0.5D,
+				(aabb.minZ + aabb.maxZ) * 0.5D, EntityCullingConfig.raytraceThreshold);
+		this.result |= this.checkBoundingBoxVisibility(tileEntity.getWorld(), aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ);
 		return this.result;
 	}
 
 	private boolean checkEntityShadowVisibility(Entity entity) {
-		if (!EntityCullingConfig.enabled) {
-			return true;
-		}
-
 		if (!EntityCullingConfig.optifineShaderOptions.entityShadowsEnabled) {
 			return false;
 		}
-
-		if (!EntityCullingConfig.entity.skipHiddenEntityRendering) {
-			return true;
-		}
-
 		if (!EntityCullingConfig.optifineShaderOptions.entityShadowsCulling) {
 			return true;
 		}
-
 		if (!((ICullable) entity).isCulled()) {
 			return true;
 		}
-
 		if (!EntityCullingConfig.optifineShaderOptions.entityShadowsCullingLessAggressiveMode) {
 			return false;
 		}
-
-		if (!entity.isNonBoss()) {
-			return true;
-		}
-
-		if (entity.width >= EntityCullingConfig.entity.skipHiddenEntityRenderingSize || entity.height >= EntityCullingConfig.entity.skipHiddenEntityRenderingSize) {
-			return true;
-		}
-
-		if (!ENTITY_BLACKLIST.isEmpty() && ENTITY_BLACKLIST.contains(entity.getClass())) {
-			return true;
-		}
-
 		return this.checkVisibility(entity.world, this.camX, this.camY, this.camZ, entity.posX, entity.posY + entity.height * 0.5D, entity.posZ,
 				EntityCullingConfig.optifineShaderOptions.entityShadowsCullingLessAggressiveModeDiff);
 	}
 
 	private boolean checkTileEntityShadowVisibility(TileEntity tileEntity) {
-		if (!EntityCullingConfig.enabled) {
-			return true;
-		}
-
 		if (!EntityCullingConfig.optifineShaderOptions.tileEntityShadowsEnabled) {
 			return false;
 		}
-
-		if (!EntityCullingConfig.tileEntity.skipHiddenTileEntityRendering) {
-			return true;
-		}
-
 		if (!EntityCullingConfig.optifineShaderOptions.tileEntityShadowsCulling) {
 			return true;
 		}
-
 		if (!((ICullable) tileEntity).isCulled()) {
 			return true;
 		}
-
 		if (!EntityCullingConfig.optifineShaderOptions.tileEntityShadowsCullingLessAggressiveMode) {
 			return false;
 		}
-
-		AxisAlignedBB aabb = ((IBoundingBoxCache) tileEntity).getOrCacheBoundingBox();
-		if (aabb.maxX - aabb.minX > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize
-				|| aabb.maxY - aabb.minY > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize
-				|| aabb.maxZ - aabb.minZ > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize) {
-			return true;
-		}
-
-		if (!TILE_ENTITY_BLACKLIST.isEmpty() && TILE_ENTITY_BLACKLIST.contains(tileEntity.getClass())) {
-			return true;
-		}
-
 		BlockPos pos = tileEntity.getPos();
 		return this.checkVisibility(tileEntity.getWorld(), this.camX, this.camY, this.camZ, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
 				EntityCullingConfig.optifineShaderOptions.tileEntityShadowsCullingLessAggressiveModeDiff);
