@@ -129,6 +129,9 @@ public class CullingThread extends Thread {
 							// ignore
 							break;
 						}
+						if (entity == null) {
+							continue;
+						}
 						this.updateEntityCullingState(entity);
 					}
 
@@ -140,6 +143,9 @@ public class CullingThread extends Thread {
 						} catch (ConcurrentModificationException | NoSuchElementException e) {
 							// ignore
 							break;
+						}
+						if (tileEntity == null) {
+							continue;
 						}
 						this.updateTileEntityCullingState(tileEntity);
 					}
