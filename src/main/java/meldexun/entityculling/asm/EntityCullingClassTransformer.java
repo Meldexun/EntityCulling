@@ -1,5 +1,6 @@
 package meldexun.entityculling.asm;
 
+import java.util.Collection;
 import java.util.NoSuchElementException;
 
 import org.objectweb.asm.Opcodes;
@@ -169,11 +170,13 @@ public class EntityCullingClassTransformer extends AbstractClassTransformer impl
 			ASMUtil.LOGGER.info("Transforming method: RenderGlobal#setupTerrain(Entity, double, ICamera, int, boolean)");
 
 			if (OPTIFINE_DETECTED) {
-				// TODO don't use indices... just no
-				AbstractInsnNode targetNode1 = methodNode.instructions.get(558);
-				AbstractInsnNode popNode1 = methodNode.instructions.get(565);
+				AbstractInsnNode targetNode1 = ASMUtil.findFirstMethodCall(methodNode, Opcodes.INVOKEINTERFACE, "java/util/List", "add", "(Ljava/lang/Object;)Z", "java/util/List", "add", "(Ljava/lang/Object;)Z");
+				targetNode1 = ASMUtil.findFirstMethodCall(methodNode, Opcodes.INVOKEINTERFACE, "java/util/List", "add", "(Ljava/lang/Object;)Z", "java/util/List", "add", "(Ljava/lang/Object;)Z", targetNode1);
+				targetNode1 = ASMUtil.findLastInsnByType(methodNode, AbstractInsnNode.LABEL, targetNode1);
+				AbstractInsnNode popNode1 = ASMUtil.findFirstInsnByType(methodNode, AbstractInsnNode.JUMP_INSN, targetNode1);
+				popNode1 = ASMUtil.findLastInsnByType(methodNode, AbstractInsnNode.LABEL, popNode1);
 
-				methodNode.instructions.insertBefore(targetNode1, ASMUtil.listOf(
+				methodNode.instructions.insert(targetNode1, ASMUtil.listOf(
 					new VarInsnNode(Opcodes.ALOAD, 28),
 					new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/hook/RenderGlobalHook", "shouldRenderChunkShadow", "(Lnet/minecraft/client/renderer/RenderGlobal$ContainerLocalRenderInformation;)Z", false),
 					new JumpInsnNode(Opcodes.IFEQ, (LabelNode) popNode1)
