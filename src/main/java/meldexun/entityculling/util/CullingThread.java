@@ -131,13 +131,11 @@ public class CullingThread extends Thread {
 			this.sleepOverhead = d % 1.0D;
 			long sleepTime = 10 - (long) d;
 			if (sleepTime > 0) {
-				/*
-				 * try {
-				 * Thread.sleep(sleepTime);
-				 * } catch (InterruptedException e) {
-				 * Thread.currentThread().interrupt();
-				 * }
-				 */
+				try {
+					Thread.sleep(sleepTime);
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
 			}
 		}
 	}
