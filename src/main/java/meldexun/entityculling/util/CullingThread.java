@@ -380,13 +380,13 @@ public class CullingThread extends Thread {
 		int stepsZ = MathHelper.ceil(maxZ - minZ);
 
 		if (this.camX < minX) {
-			IntUtil.forEach(0, stepsY, 0, stepsZ, (iy, iz) -> {
+			IntUtil.forEach(0, stepsY + 1, 0, stepsZ + 1, (iy, iz) -> {
 				double y = MathUtil.lerp(minY, maxY, (double) iy / stepsY);
 				double z = MathUtil.lerp(minZ, maxZ, (double) iz / stepsZ);
 				this.checkPointUncachedAndDebug(minX, y, z);
 			});
 		} else if (this.camX > maxX) {
-			IntUtil.forEach(0, stepsY, 0, stepsZ, (iy, iz) -> {
+			IntUtil.forEach(0, stepsY + 1, 0, stepsZ + 1, (iy, iz) -> {
 				double y = MathUtil.lerp(minY, maxY, (double) iy / stepsY);
 				double z = MathUtil.lerp(minZ, maxZ, (double) iz / stepsZ);
 				this.checkPointUncachedAndDebug(maxX, y, z);
@@ -394,13 +394,13 @@ public class CullingThread extends Thread {
 		}
 
 		if (this.camY < minY) {
-			IntUtil.forEach(0, stepsX, 0, stepsZ, (ix, iz) -> {
+			IntUtil.forEach(0, stepsX + 1, 0, stepsZ + 1, (ix, iz) -> {
 				double x = MathUtil.lerp(minX, maxX, (double) ix / stepsX);
 				double z = MathUtil.lerp(minZ, maxZ, (double) iz / stepsZ);
 				this.checkPointUncachedAndDebug(x, minY, z);
 			});
 		} else if (this.camY > maxY) {
-			IntUtil.forEach(0, stepsX, 0, stepsZ, (ix, iz) -> {
+			IntUtil.forEach(0, stepsX + 1, 0, stepsZ + 1, (ix, iz) -> {
 				double x = MathUtil.lerp(minX, maxX, (double) ix / stepsX);
 				double z = MathUtil.lerp(minZ, maxZ, (double) iz / stepsZ);
 				this.checkPointUncachedAndDebug(x, maxY, z);
@@ -408,13 +408,13 @@ public class CullingThread extends Thread {
 		}
 
 		if (this.camZ < minZ) {
-			IntUtil.forEach(0, stepsX, 0, stepsY, (ix, iy) -> {
+			IntUtil.forEach(0, stepsX + 1, 0, stepsY + 1, (ix, iy) -> {
 				double x = MathUtil.lerp(minX, maxX, (double) ix / stepsX);
 				double y = MathUtil.lerp(minY, maxY, (double) iy / stepsY);
 				this.checkPointUncachedAndDebug(x, y, minZ);
 			});
 		} else if (this.camZ > maxZ) {
-			IntUtil.forEach(0, stepsX, 0, stepsY, (ix, iy) -> {
+			IntUtil.forEach(0, stepsX + 1, 0, stepsY + 1, (ix, iy) -> {
 				double x = MathUtil.lerp(minX, maxX, (double) ix / stepsX);
 				double y = MathUtil.lerp(minY, maxY, (double) iy / stepsY);
 				this.checkPointUncachedAndDebug(x, y, maxZ);
