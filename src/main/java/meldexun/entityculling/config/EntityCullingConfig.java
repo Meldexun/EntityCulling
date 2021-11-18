@@ -26,7 +26,7 @@ public class EntityCullingConfig {
 	public static double raytraceThreshold = 1.0D;
 
 	@Config.RequiresWorldRestart
-	public static String[] tileEntityCachedBoundingBoxBlacklist = { "fairylights" };
+	public static String[] tileEntityCachedBoundingBoxBlacklist = { "fairylights:fastener", "ancientwarfarestructure:gate_proxy_tile" };
 
 	public static Entity entity = new Entity();
 	public static TileEntity tileEntity = new TileEntity();
