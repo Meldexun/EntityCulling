@@ -238,7 +238,14 @@ public class EntityCullingClassTransformer extends AbstractClassTransformer impl
 		this.registerMethodTransformer("buy", "a", "(Ljava/util/Collection;Ljava/util/Collection;)V", "net/minecraft/client/renderer/RenderGlobal", "updateTileEntities", "(Ljava/util/Collection;Ljava/util/Collection;)V", methodNode -> {
 			ASMUtil.LOGGER.info("Transforming method: RenderGlobal#updateTileEntities(Collection, Collection)");
 
-			methodNode.instructions.insert(new InsnNode(Opcodes.RETURN));
+			LabelNode popNode1 = new LabelNode();
+
+			methodNode.instructions.insert(ASMUtil.listOf(
+				new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/config/EntityCullingConfig", "enabled", "Z"),
+				new JumpInsnNode(Opcodes.IFEQ, popNode1),
+				new InsnNode(Opcodes.RETURN),
+				popNode1
+			));
 		});
 
 		this.registerMethodTransformer("bzg", "a", "(Lvg;Lbxy;DDD)Z", "net/minecraft/client/renderer/entity/Render", "shouldRender", "(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;DDD)Z", methodNode -> {
