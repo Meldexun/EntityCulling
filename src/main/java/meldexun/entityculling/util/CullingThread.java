@@ -156,7 +156,7 @@ public class CullingThread extends Thread {
 					publicDebugRayList = privateDebugRayList;
 					privateDebugRayList = temp;
 				}
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				mc.crashed(new CrashReport("Culling Thread crashed!", e));
 			} finally {
 				this.cachedBlockAccess.clearCache();
