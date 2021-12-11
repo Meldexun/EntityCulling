@@ -47,7 +47,7 @@ public class EntityCullingConfig {
 		public boolean skipHiddenEntityRendering = true;
 		@Config.Comment("Entities with a width or height greater than this value will always get rendered.")
 		@Config.RangeDouble(min = 0.0D, max = 256.0D)
-		public double skipHiddenEntityRenderingSize = 3.0D;
+		public double skipHiddenEntityRenderingSize = 16.0D;
 		@Config.Comment("Tile entities which will always be rendered. (Format: 'modid:entity_name')")
 		public String[] skipHiddenEntityRenderingBlacklist = new String[0];
 
@@ -59,7 +59,7 @@ public class EntityCullingConfig {
 		public boolean skipHiddenTileEntityRendering = true;
 		@Config.Comment("Tile entities with a width or height greater than this value will always get rendered.")
 		@Config.RangeDouble(min = 0.0D, max = 256.0D)
-		public double skipHiddenTileEntityRenderingSize = 3.0D;
+		public double skipHiddenTileEntityRenderingSize = 16.0D;
 		@Config.Comment("Tile entities which will always be rendered. (Format: 'modid:tile_entity_name')")
 		public String[] skipHiddenTileEntityRenderingBlacklist = new String[0];
 
