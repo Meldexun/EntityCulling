@@ -2,6 +2,7 @@ package meldexun.entityculling.util;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 
 import meldexun.entityculling.config.EntityCullingConfig;
@@ -10,6 +11,14 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 
 public interface IBoundingBoxCache {
+
+	Random RAND = new Random();
+	Set<String> BLACKLIST = new HashSet<>();
+
+	static void updateBlacklist() {
+		BLACKLIST.clear();
+		Arrays.stream(EntityCullingConfig.tileEntityCachedBoundingBoxBlacklist).forEach(BLACKLIST::add);
+	}
 
 	/**
 	 * 0 = needs update<br>
@@ -42,14 +51,10 @@ public interface IBoundingBoxCache {
 		if (this.isCacheable() == 2) {
 			return ((TileEntity) this).getRenderBoundingBox();
 		}
+		if (RAND.nextFloat() < 0.01F) {
+			this.setCachedBoundingBox(((TileEntity) this).getRenderBoundingBox());
+		}
 		return this.getCachedBoundingBox();
-	}
-
-	Set<String> BLACKLIST = new HashSet<>();
-
-	static void updateBlacklist() {
-		BLACKLIST.clear();
-		Arrays.stream(EntityCullingConfig.tileEntityCachedBoundingBoxBlacklist).forEach(BLACKLIST::add);
 	}
 
 }
