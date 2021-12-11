@@ -49,7 +49,7 @@ public class CachedBlockAccess implements IBlockAccess {
 		if (this.level.isOutsideBuildHeight(mutable.setPos(chunkX << 4, chunkY << 4, chunkZ << 4))) {
 			return null;
 		}
-		if (Loader.isModLoaded("cubicChunks")) {
+		if (Loader.isModLoaded("cubicchunks")) {
 			this.cachedSection = CubicChunks.getBlockStorage(this.level, chunkX, chunkY, chunkZ);
 		} else {
 			Chunk chunk = this.getChunk(chunkX, chunkZ);
