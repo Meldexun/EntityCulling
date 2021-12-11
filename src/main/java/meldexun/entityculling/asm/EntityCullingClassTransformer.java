@@ -1,7 +1,6 @@
 package meldexun.entityculling.asm;
 
 import java.util.Collection;
-import java.util.NoSuchElementException;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -196,29 +195,20 @@ public class EntityCullingClassTransformer extends AbstractClassTransformer impl
 			targetNode1 = ASMUtil.findLastInsnByType(methodNode, AbstractInsnNode.LABEL, targetNode1);
 			AbstractInsnNode popNode1 = ASMUtil.findFirstMethodCall(methodNode, Opcodes.INVOKEVIRTUAL, "bwx", "preDrawBatch", "()V", "net/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher", "preDrawBatch", "()V", targetNode1);
 			popNode1 = ASMUtil.findLastMethodCall(methodNode, Opcodes.INVOKEVIRTUAL, "rl", "c", "(Ljava/lang/String;)V", "net/minecraft/profiler/Profiler", "endStartSection", "(Ljava/lang/String;)V", popNode1);
-			try {
-				// optifine compatibility
+			if (OPTIFINE_DETECTED) {
 				popNode1 = ASMUtil.findLastMethodCall(methodNode, Opcodes.INVOKESTATIC, "net/optifine/shaders/Shaders", "endEntities", "()V", "net/optifine/shaders/Shaders", "endEntities", "()V", popNode1);
 				popNode1 = ASMUtil.findLastInsnByType(methodNode, AbstractInsnNode.JUMP_INSN, popNode1);
-			} catch (NoSuchElementException e) {
-				// ignore
 			}
 			popNode1 = ASMUtil.findLastInsnByType(methodNode, AbstractInsnNode.LABEL, popNode1);
 
 			AbstractInsnNode targetNode2 = ASMUtil.findFirstMethodCall(methodNode, Opcodes.INVOKEVIRTUAL, "bwx", "preDrawBatch", "()V", "net/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher", "preDrawBatch", "()V", popNode1);
-			try {
-				// optifine compatibility
+			if (OPTIFINE_DETECTED) {
 				targetNode2 = ASMUtil.findFirstMethodCall(methodNode, Opcodes.INVOKESTATIC, "bxf", "updateTextRenderDistance", "()V", "net/minecraft/client/renderer/tileentity/TileEntitySignRenderer", "updateTextRenderDistance", "()V", targetNode2);
-			} catch (NoSuchElementException e) {
-				// ignore
 			}
 			targetNode2 = ASMUtil.findFirstInsnByType(methodNode, AbstractInsnNode.LABEL, targetNode2);
 			AbstractInsnNode popNode2 = ASMUtil.findFirstMethodCall(methodNode, Opcodes.INVOKEVIRTUAL, "bwx", "drawBatch", "(I)V", "net/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher", "drawBatch", "(I)V", targetNode2);
-			try {
-				// optifine compatibility
+			if (OPTIFINE_DETECTED) {
 				popNode2 = ASMUtil.findLastMethodCall(methodNode, Opcodes.INVOKESTATIC, "net/optifine/reflect/ReflectorField", "exists", "()Z", "net/optifine/reflect/ReflectorField", "exists", "()Z", popNode2);
-			} catch (NoSuchElementException e) {
-				// ignore
 			}
 			popNode2 = ASMUtil.findLastInsnByType(methodNode, AbstractInsnNode.LABEL, popNode2);
 
