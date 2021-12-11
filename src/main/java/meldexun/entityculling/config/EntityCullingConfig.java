@@ -18,6 +18,7 @@ public class EntityCullingConfig {
 
 	public static boolean disabledInSpectator = true;
 
+	@Config.RequiresWorldRestart
 	@Config.Comment("Disable all changes from this mod.")
 	public static boolean enabled = true;
 
