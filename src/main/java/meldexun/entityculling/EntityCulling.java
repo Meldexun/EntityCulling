@@ -37,7 +37,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 public class EntityCulling extends DummyModContainer {
 
 	public static final String MOD_ID = "entity_culling";
-	private static final CullingThread CULLING_THREAD = new CullingThread();
+	private static CullingThread cullingThread;
 	private static final DecimalFormat FORMAT = new DecimalFormat("#.#");
 	public static boolean isCubicChunksInstalled;
 
@@ -65,7 +65,8 @@ public class EntityCulling extends DummyModContainer {
 
 		MinecraftForge.EVENT_BUS.register(this);
 
-		CULLING_THREAD.start();
+		cullingThread = new CullingThread();
+		cullingThread.start();
 	}
 
 	@Subscribe
@@ -92,7 +93,7 @@ public class EntityCulling extends DummyModContainer {
 		}
 		Minecraft mc = Minecraft.getMinecraft();
 		ScaledResolution scaled = new ScaledResolution(mc);
-		this.drawOnLeft("Time: " + FORMAT.format(Arrays.stream(CULLING_THREAD.time).average().getAsDouble() / 1_000_000.0D) + "ms", scaled.getScaledWidth(),
+		this.drawOnLeft("Time: " + FORMAT.format(Arrays.stream(cullingThread.time).average().getAsDouble() / 1_000_000.0D) + "ms", scaled.getScaledWidth(),
 				160);
 		this.drawOnLeft("E: " + RenderGlobalHook.entityRenderer.renderedEntities + "/" + RenderGlobalHook.entityRenderer.occludedEntities + "/"
 				+ RenderGlobalHook.entityRenderer.totalEntities, scaled.getScaledWidth(), 170);
