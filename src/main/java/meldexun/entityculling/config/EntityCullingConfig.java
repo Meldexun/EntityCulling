@@ -7,7 +7,7 @@ import net.minecraftforge.common.config.Config;
 public class EntityCullingConfig {
 
 	@Config.RequiresMcRestart
-	@Config.Comment("Ideally should be set to equal the render distance. Ram usage (in Bytes) = 8192 * x ^ 3")
+	@Config.Comment("Ideally should be set to equal the render distance. Ram usage (in Bytes) = 1063 * (2x + 1) ^ 3")
 	public static int cacheSize = 12;
 
 	@Config.Comment("Enabling this should give more FPS because (tile-) entities are culled more accuratly. Also this does only not need the cache but the cache still requires memory. This might cause (tile-) entity flickering and lags due to the higher CPU usage.")
