@@ -30,7 +30,7 @@ public class EntityCullingConfig {
 	@Config.RangeInt(min = 2, max = 1_000_000)
 	public static int tileEntityCachedBoundingBoxUpdateInterval = 100;
 	@Config.RequiresWorldRestart
-	public static String[] tileEntityCachedBoundingBoxBlacklist = { "fairylights:fastener", "ancientwarfarestructure:gate_proxy_tile" };
+	public static String[] tileEntityCachedBoundingBoxBlacklist = new String[0];
 
 	public static Entity entity = new Entity();
 	public static TileEntity tileEntity = new TileEntity();
