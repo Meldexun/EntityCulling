@@ -28,8 +28,10 @@ import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.DummyModContainer;
 import net.minecraftforge.fml.common.LoadController;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModMetadata;
 import net.minecraftforge.fml.common.event.FMLConstructionEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class EntityCulling extends DummyModContainer {
@@ -37,6 +39,7 @@ public class EntityCulling extends DummyModContainer {
 	public static final String MOD_ID = "entity_culling";
 	private static final CullingThread CULLING_THREAD = new CullingThread();
 	private static final DecimalFormat FORMAT = new DecimalFormat("#.#");
+	public static boolean isCubicChunksInstalled;
 
 	public EntityCulling() {
 		super(new ModMetadata());
@@ -63,6 +66,11 @@ public class EntityCulling extends DummyModContainer {
 		MinecraftForge.EVENT_BUS.register(this);
 
 		CULLING_THREAD.start();
+	}
+
+	@Subscribe
+	public void onFMLPostInitializationEvent(FMLPostInitializationEvent event) {
+		isCubicChunksInstalled = Loader.isModLoaded("cubicchunks");
 	}
 
 	@SubscribeEvent

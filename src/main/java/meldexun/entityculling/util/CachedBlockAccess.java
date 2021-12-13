@@ -2,6 +2,7 @@ package meldexun.entityculling.util;
 
 import javax.annotation.Nullable;
 
+import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.integration.CubicChunks;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -49,7 +50,7 @@ public class CachedBlockAccess implements IBlockAccess {
 		if (this.level.isOutsideBuildHeight(mutable.setPos(chunkX << 4, chunkY << 4, chunkZ << 4))) {
 			return null;
 		}
-		if (Loader.isModLoaded("cubicchunks")) {
+		if (EntityCulling.isCubicChunksInstalled) {
 			this.cachedSection = CubicChunks.getBlockStorage(this.level, chunkX, chunkY, chunkZ);
 		} else {
 			Chunk chunk = this.getChunk(chunkX, chunkZ);
