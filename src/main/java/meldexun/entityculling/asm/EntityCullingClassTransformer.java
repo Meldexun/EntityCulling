@@ -208,7 +208,7 @@ public class EntityCullingClassTransformer extends AbstractClassTransformer impl
 			targetNode2 = ASMUtil.findFirstInsnByType(methodNode, AbstractInsnNode.LABEL, targetNode2);
 			AbstractInsnNode popNode2 = ASMUtil.findFirstMethodCall(methodNode, Opcodes.INVOKEVIRTUAL, "bwx", "drawBatch", "(I)V", "net/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher", "drawBatch", "(I)V", targetNode2);
 			if (OPTIFINE_DETECTED) {
-				popNode2 = ASMUtil.findLastMethodCall(methodNode, Opcodes.INVOKESTATIC, "net/optifine/reflect/ReflectorField", "exists", "()Z", "net/optifine/reflect/ReflectorField", "exists", "()Z", popNode2);
+				popNode2 = ASMUtil.findLastMethodCall(methodNode, Opcodes.INVOKEVIRTUAL, "net/optifine/reflect/ReflectorMethod", "exists", "()Z", "net/optifine/reflect/ReflectorMethod", "exists", "()Z", popNode2);
 			}
 			popNode2 = ASMUtil.findLastInsnByType(methodNode, AbstractInsnNode.LABEL, popNode2);
 
