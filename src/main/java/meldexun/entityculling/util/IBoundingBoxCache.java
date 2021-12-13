@@ -56,6 +56,9 @@ public interface IBoundingBoxCache {
 	void setCachedBoundingBox(AxisAlignedBB aabb);
 
 	default AxisAlignedBB getOrCacheBoundingBox() {
+		if (!EntityCullingConfig.tileEntityCachedBoundingBoxEnabled) {
+			return ((TileEntity) this).getRenderBoundingBox();
+		}
 		if (this.isCacheable() == 0) {
 			ResourceLocation registryName = TileEntity.REGISTRY.getNameForObject(((TileEntity) this).getClass());
 			if (BLACKLIST.contains(registryName.getNamespace()) || BLACKLIST.contains(registryName.toString())) {
@@ -68,7 +71,7 @@ public interface IBoundingBoxCache {
 		if (this.isCacheable() == 2) {
 			return ((TileEntity) this).getRenderBoundingBox();
 		}
-		if (RAND.nextFloat() < 0.01F) {
+		if (RAND.nextInt(EntityCullingConfig.tileEntityCachedBoundingBoxUpdateInterval) == 0) {
 			this.setCachedBoundingBox(((TileEntity) this).getRenderBoundingBox());
 		}
 		return this.getCachedBoundingBox();

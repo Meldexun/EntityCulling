@@ -26,6 +26,9 @@ public class EntityCullingConfig {
 	@Config.RangeDouble(min = 0.0009765625D, max = 1024.0D)
 	public static double raytraceThreshold = 1.0D;
 
+	public static boolean tileEntityCachedBoundingBoxEnabled = true;
+	@Config.RangeInt(min = 2, max = 1_000_000)
+	public static int tileEntityCachedBoundingBoxUpdateInterval = 100;
 	@Config.RequiresWorldRestart
 	public static String[] tileEntityCachedBoundingBoxBlacklist = { "fairylights:fastener", "ancientwarfarestructure:gate_proxy_tile" };
 
