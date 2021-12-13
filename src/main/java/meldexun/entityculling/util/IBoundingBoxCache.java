@@ -12,7 +12,24 @@ import net.minecraft.util.math.AxisAlignedBB;
 
 public interface IBoundingBoxCache {
 
-	Random RAND = new Random();
+	@SuppressWarnings("serial")
+	Random RAND = new Random() {
+		private static final long MULTIPLIER = 0x5_DEEC_E66DL;
+		private static final long ADDEND = 0xBL;
+		private static final long MASK = (1L << 48) - 1;
+		private long seed = 0L;
+
+		@Override
+		public void setSeed(long seed) {
+			this.seed = (seed ^ MULTIPLIER) & MASK;
+		}
+
+		@Override
+		protected int next(int bits) {
+			this.seed = (this.seed * MULTIPLIER + ADDEND) & MASK;
+			return (int) (this.seed >>> (48 - bits));
+		}
+	};
 	Set<String> BLACKLIST = new HashSet<>();
 
 	static void updateBlacklist() {
