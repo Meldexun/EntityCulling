@@ -67,6 +67,7 @@ dependencies {
     includedDependencies 'meldexun:ReflectionUtil:1.0.0@jar'
     includedDependencies 'meldexun:RaytraceUtil:1.0.4@jar'
     buildDependencies 'curse.maven:CubicChunks-292243:3546640'
+    buildDependencies 'curse.maven:FairyLights-233342:3068499'
 }
 
 jar {

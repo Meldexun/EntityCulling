@@ -6,7 +6,9 @@ import java.util.Queue;
 
 import org.lwjgl.opengl.GL11;
 
+import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.config.EntityCullingConfig;
+import meldexun.entityculling.integration.FairyLights;
 import meldexun.entityculling.util.BoundingBoxHelper;
 import meldexun.entityculling.util.ICullable;
 import net.minecraft.client.Minecraft;
@@ -72,7 +74,9 @@ public class EntityRenderer {
 		if (renderer == null) {
 			return false;
 		}
-		if (!renderer.shouldRender(entity, camera, camX, camY, camZ) && !entity.isRidingOrBeingRiddenBy(mc.player)) {
+		if (!renderer.shouldRender(entity, camera, camX, camY, camZ)
+				&& !entity.isRidingOrBeingRiddenBy(mc.player)
+				&& (!EntityCulling.isFairyLightsInstalled || !FairyLights.isFairyLightEntity(entity))) {
 			return false;
 		}
 		if (!this.shouldRenderEntity(entity, camX, camY, camZ)) {

@@ -40,6 +40,7 @@ public class EntityCulling extends DummyModContainer {
 	private static CullingThread cullingThread;
 	private static final DecimalFormat FORMAT = new DecimalFormat("#.#");
 	public static boolean isCubicChunksInstalled;
+	public static boolean isFairyLightsInstalled;
 
 	public EntityCulling() {
 		super(new ModMetadata());
@@ -72,6 +73,7 @@ public class EntityCulling extends DummyModContainer {
 	@Subscribe
 	public void onFMLPostInitializationEvent(FMLPostInitializationEvent event) {
 		isCubicChunksInstalled = Loader.isModLoaded("cubicchunks");
+		isFairyLightsInstalled = Loader.isModLoaded("fairylights");
 	}
 
 	@SubscribeEvent
