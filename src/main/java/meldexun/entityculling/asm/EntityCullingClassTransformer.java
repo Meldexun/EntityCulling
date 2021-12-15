@@ -313,7 +313,7 @@ public class EntityCullingClassTransformer extends AbstractClassTransformer impl
 		});
 
 		this.registerMethodTransformer("axw", "a", "(Let;Laxw$a;)Lavj;", "net/minecraft/world/chunk/Chunk", "getTileEntity", "(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/world/chunk/Chunk$EnumCreateEntityType;)Lnet/minecraft/tileentity/TileEntity;", methodNode -> {
-			ASMUtil.LOGGER.info("Transforming method: ClippingHelper#isBoxInFrustum(double, double, double, double, double, double)");
+			ASMUtil.LOGGER.info("Transforming method: Chunk#getTileEntity(BlockPos, EnumCreateEntityType)");
 
 			LabelNode popNode1 = new LabelNode();
 
