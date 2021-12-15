@@ -7,8 +7,8 @@ import net.minecraft.world.chunk.Chunk;
 
 public class ChunkHook {
 
-	public static boolean checkAccess() {
-		return Minecraft.getMinecraft().isCallingFromMinecraftThread();
+	public static boolean checkAccess(Chunk chunk) {
+		return !chunk.getWorld().isRemote || Minecraft.getMinecraft().isCallingFromMinecraftThread();
 	}
 
 	public static TileEntity getTileEntity(Chunk chunk, BlockPos pos) {

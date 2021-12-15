@@ -318,7 +318,8 @@ public class EntityCullingClassTransformer extends AbstractClassTransformer impl
 			LabelNode popNode1 = new LabelNode();
 
 			methodNode.instructions.insert(ASMUtil.listOf(
-				new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/hook/ChunkHook", "checkAccess", "()Z", false),
+				new VarInsnNode(Opcodes.ALOAD, 0),
+				new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/hook/ChunkHook", "checkAccess", "(Lnet/minecraft/world/chunk/Chunk;)Z", false),
 				new JumpInsnNode(Opcodes.IFNE, popNode1),
 				new VarInsnNode(Opcodes.ALOAD, 0),
 				new VarInsnNode(Opcodes.ALOAD, 1),
