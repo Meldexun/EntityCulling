@@ -311,6 +311,22 @@ public class EntityCullingClassTransformer extends AbstractClassTransformer impl
 				popNode1
 			));
 		});
+
+		this.registerMethodTransformer("axw", "a", "(Let;Laxw$a;)Lavj;", "net/minecraft/world/chunk/Chunk", "getTileEntity", "(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/world/chunk/Chunk$EnumCreateEntityType;)Lnet/minecraft/tileentity/TileEntity;", methodNode -> {
+			ASMUtil.LOGGER.info("Transforming method: ClippingHelper#isBoxInFrustum(double, double, double, double, double, double)");
+
+			LabelNode popNode1 = new LabelNode();
+
+			methodNode.instructions.insert(ASMUtil.listOf(
+				new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/hook/ChunkHook", "checkAccess", "()Z", false),
+				new JumpInsnNode(Opcodes.IFNE, popNode1),
+				new VarInsnNode(Opcodes.ALOAD, 0),
+				new VarInsnNode(Opcodes.ALOAD, 1),
+				new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/hook/ChunkHook", "getTileEntity", "(Lnet/minecraft/world/chunk/Chunk;Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/tileentity/TileEntity;", false),
+				new InsnNode(Opcodes.ARETURN),
+				popNode1
+			));
+		});
 		// @formatter:on
 	}
 
