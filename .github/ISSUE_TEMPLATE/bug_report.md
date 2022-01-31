@@ -2,9 +2,8 @@
 name: Bug report
 about: Create a report to help us improve
 title: ''
-labels: ''
+labels: 'bug'
 assignees: ''
-
 ---
 
 **Describe the bug**
@@ -12,25 +11,20 @@ A clear and concise description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+1. Go to ...
+2. Use item ...
+3. Place block ...
+4. ...
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
-
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Screenshots/Videos**
+If applicable, add screenshots or videos to help explain your problem.
 
 **Versions**
-Entity Culling:
-Forge:
-Minecraft:
+Entity Culling: 
+Forge: 
+Minecraft: 
+Other mods (necessary to reproduce the bug): 
 
-**Other**
-Crash report (upload as a file):
-Latest log (upload as a file):
-Singleplayer/Multiplayer:
-Other mods (that are necessary to produce the bug):
-Other mods (that are also installed):
+**Log File**
+Please use a paste site to upload the log file (for example https://gist.github.com/) and provide the link to the file here:
+
