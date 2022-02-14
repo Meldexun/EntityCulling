@@ -7,9 +7,7 @@ import java.util.Queue;
 import org.lwjgl.opengl.GL11;
 
 import meldexun.entityculling.EntityCulling;
-import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.integration.FairyLights;
-import meldexun.entityculling.util.BoundingBoxHelper;
 import meldexun.entityculling.util.ICullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -21,7 +19,6 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.client.MinecraftForgeClient;
 
 public class EntityRenderer {
@@ -57,10 +54,6 @@ public class EntityRenderer {
 	}
 
 	protected <T extends Entity> boolean addToRenderLists(T entity, ICamera camera, double camX, double camY, double camZ, double partialTicks) {
-		if (EntityCullingConfig.debugRenderBoxes) {
-			this.drawBox(entity, camX, camY, camZ, partialTicks);
-		}
-
 		this.totalEntities++;
 
 		if (!entity.shouldRenderInPass(0) && !entity.shouldRenderInPass(1)) {
@@ -123,21 +116,6 @@ public class EntityRenderer {
 		}
 
 		return true;
-	}
-
-	protected void drawBox(Entity entity, double camX, double camY, double camZ, double partialTicks) {
-		if (entity == Minecraft.getMinecraft().getRenderViewEntity()) {
-			return;
-		}
-		AxisAlignedBB aabb = entity.getRenderBoundingBox().grow(0.5D);
-		if (aabb.hasNaN()) {
-			aabb = new AxisAlignedBB(entity.posX - 2.0D, entity.posY - 2.0D, entity.posZ - 2.0D, entity.posX + 2.0D, entity.posY + 2.0D, entity.posZ + 2.0D);
-		}
-		double x = -(entity.posX - entity.lastTickPosX) * (1.0D - partialTicks);
-		double y = -(entity.posY - entity.lastTickPosY) * (1.0D - partialTicks);
-		double z = -(entity.posZ - entity.lastTickPosZ) * (1.0D - partialTicks);
-		aabb = aabb.offset(x, y, z);
-		BoundingBoxHelper.drawBox(aabb, camX, camY, camZ);
 	}
 
 	protected boolean isOcclusionCulled(Entity entity, double partialTicks) {

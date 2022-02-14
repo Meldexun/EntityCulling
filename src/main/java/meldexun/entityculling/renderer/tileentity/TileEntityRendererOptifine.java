@@ -49,14 +49,6 @@ public class TileEntityRendererOptifine extends TileEntityRenderer {
 	}
 
 	@Override
-	protected void drawBox(TileEntity tileEntity, double camX, double camY, double camZ, double partialTicks) {
-		if (IS_SHADOW_PASS.getBoolean(null)) {
-			return;
-		}
-		super.drawBox(tileEntity, camX, camY, camZ, partialTicks);
-	}
-
-	@Override
 	protected boolean isOcclusionCulled(TileEntity tileEntity, double partialTicks) {
 		if (IS_SHADOW_PASS.getBoolean(null)) {
 			return ((ICullable) tileEntity).isShadowCulled();

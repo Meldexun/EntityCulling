@@ -3,7 +3,6 @@ package meldexun.entityculling.renderer.tileentity;
 import java.util.ArrayDeque;
 import java.util.Queue;
 
-import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.util.BoundingBoxHelper;
 import meldexun.entityculling.util.IBoundingBoxCache;
 import meldexun.entityculling.util.ICullable;
@@ -11,8 +10,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.client.MinecraftForgeClient;
 
 public class TileEntityRenderer {
@@ -42,10 +39,6 @@ public class TileEntityRenderer {
 	}
 
 	protected void addToRenderLists(TileEntity tileEntity, ICamera camera, double camX, double camY, double camZ, double partialTicks) {
-		if (EntityCullingConfig.debugRenderBoxes) {
-			this.drawBox(tileEntity, camX, camY, camZ, partialTicks);
-		}
-
 		this.totalTileEntities++;
 
 		if (!tileEntity.shouldRenderInPass(0) && !tileEntity.shouldRenderInPass(1)) {
@@ -70,15 +63,6 @@ public class TileEntityRenderer {
 		if (tileEntity.shouldRenderInPass(1)) {
 			this.tileEntityListPass1.add(tileEntity);
 		}
-	}
-
-	protected void drawBox(TileEntity tileEntity, double camX, double camY, double camZ, double partialTicks) {
-		AxisAlignedBB aabb = ((IBoundingBoxCache) tileEntity).getOrCacheBoundingBox();
-		if (aabb.hasNaN()) {
-			BlockPos pos = tileEntity.getPos();
-			aabb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
-		}
-		BoundingBoxHelper.drawBox(aabb, camX, camY, camZ);
 	}
 
 	protected boolean isOcclusionCulled(TileEntity tileEntity, double partialTicks) {

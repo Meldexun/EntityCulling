@@ -1,103 +1,169 @@
 package meldexun.entityculling.util;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL15;
 
 import meldexun.entityculling.config.EntityCullingConfig;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 
 public class BoundingBoxHelper {
 
-	public static void drawBox(AxisAlignedBB aabb, double camX, double camY, double camZ) {
+	private static int cubeVBO = -1;
+
+	public static void drawPoints() {
+		if (!EntityCullingConfig.debugRenderBoxes) {
+			return;
+		}
+
+		if (cubeVBO == -1) {
+			Tessellator tesselator = Tessellator.getInstance();
+			BufferBuilder bufferBuilder = tesselator.getBuffer();
+			bufferBuilder.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION);
+			bufferBuilder.pos(0, 0, 0).endVertex();
+			bufferBuilder.pos(0, 0, 1).endVertex();
+			bufferBuilder.pos(0, 0, 1).endVertex();
+			bufferBuilder.pos(1, 0, 1).endVertex();
+			bufferBuilder.pos(1, 0, 1).endVertex();
+			bufferBuilder.pos(1, 0, 0).endVertex();
+			bufferBuilder.pos(1, 0, 0).endVertex();
+			bufferBuilder.pos(0, 0, 0).endVertex();
+
+			bufferBuilder.pos(0, 0, 0).endVertex();
+			bufferBuilder.pos(0, 1, 0).endVertex();
+			bufferBuilder.pos(0, 0, 1).endVertex();
+			bufferBuilder.pos(0, 1, 1).endVertex();
+			bufferBuilder.pos(1, 0, 0).endVertex();
+			bufferBuilder.pos(1, 1, 0).endVertex();
+			bufferBuilder.pos(1, 0, 1).endVertex();
+			bufferBuilder.pos(1, 1, 1).endVertex();
+
+			bufferBuilder.pos(0, 1, 0).endVertex();
+			bufferBuilder.pos(0, 1, 1).endVertex();
+			bufferBuilder.pos(0, 1, 1).endVertex();
+			bufferBuilder.pos(1, 1, 1).endVertex();
+			bufferBuilder.pos(1, 1, 1).endVertex();
+			bufferBuilder.pos(1, 1, 0).endVertex();
+			bufferBuilder.pos(1, 1, 0).endVertex();
+			bufferBuilder.pos(0, 1, 0).endVertex();
+			bufferBuilder.finishDrawing();
+
+			cubeVBO = GL15.glGenBuffers();
+			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, cubeVBO);
+			GL15.glBufferData(GL15.GL_ARRAY_BUFFER, bufferBuilder.getByteBuffer(), GL15.GL_STATIC_DRAW);
+			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+
+			bufferBuilder.reset();
+		}
+
+		Minecraft mc = Minecraft.getMinecraft();
+		Entity ce = mc.getRenderViewEntity();
+		double pt = mc.getRenderPartialTicks();
+		double camX = ce.lastTickPosX + (ce.posX - ce.lastTickPosX) * pt;
+		double camY = ce.lastTickPosY + (ce.posY - ce.lastTickPosY) * pt;
+		double camZ = ce.lastTickPosZ + (ce.posZ - ce.lastTickPosZ) * pt;
+
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		GlStateManager.disableAlpha();
+		GlStateManager.disableBlend();
 		GlStateManager.disableFog();
+		GlStateManager.disableLighting();
 		GlStateManager.disableTexture2D();
+		GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+		GlStateManager.disableTexture2D();
+		GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
 
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(-camX, -camY, -camZ);
-		GlStateManager.glBegin(GL11.GL_LINES);
-		GlStateManager.glVertex3f((float) aabb.minX, (float) aabb.minY, (float) aabb.minZ);
-		GlStateManager.glVertex3f((float) aabb.minX, (float) aabb.minY, (float) aabb.maxZ);
-		GlStateManager.glVertex3f((float) aabb.minX, (float) aabb.minY, (float) aabb.maxZ);
-		GlStateManager.glVertex3f((float) aabb.maxX, (float) aabb.minY, (float) aabb.maxZ);
-		GlStateManager.glVertex3f((float) aabb.maxX, (float) aabb.minY, (float) aabb.maxZ);
-		GlStateManager.glVertex3f((float) aabb.maxX, (float) aabb.minY, (float) aabb.minZ);
-		GlStateManager.glVertex3f((float) aabb.maxX, (float) aabb.minY, (float) aabb.minZ);
-		GlStateManager.glVertex3f((float) aabb.minX, (float) aabb.minY, (float) aabb.minZ);
 
-		GlStateManager.glVertex3f((float) aabb.minX, (float) aabb.minY, (float) aabb.minZ);
-		GlStateManager.glVertex3f((float) aabb.minX, (float) aabb.maxY, (float) aabb.minZ);
-		GlStateManager.glVertex3f((float) aabb.minX, (float) aabb.minY, (float) aabb.maxZ);
-		GlStateManager.glVertex3f((float) aabb.minX, (float) aabb.maxY, (float) aabb.maxZ);
-		GlStateManager.glVertex3f((float) aabb.maxX, (float) aabb.minY, (float) aabb.minZ);
-		GlStateManager.glVertex3f((float) aabb.maxX, (float) aabb.maxY, (float) aabb.minZ);
-		GlStateManager.glVertex3f((float) aabb.maxX, (float) aabb.minY, (float) aabb.maxZ);
-		GlStateManager.glVertex3f((float) aabb.maxX, (float) aabb.maxY, (float) aabb.maxZ);
+		{
+			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, cubeVBO);
+			GL11.glVertexPointer(3, GL11.GL_FLOAT, 12, 0);
+			GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
 
-		GlStateManager.glVertex3f((float) aabb.minX, (float) aabb.maxY, (float) aabb.minZ);
-		GlStateManager.glVertex3f((float) aabb.minX, (float) aabb.maxY, (float) aabb.maxZ);
-		GlStateManager.glVertex3f((float) aabb.minX, (float) aabb.maxY, (float) aabb.maxZ);
-		GlStateManager.glVertex3f((float) aabb.maxX, (float) aabb.maxY, (float) aabb.maxZ);
-		GlStateManager.glVertex3f((float) aabb.maxX, (float) aabb.maxY, (float) aabb.maxZ);
-		GlStateManager.glVertex3f((float) aabb.maxX, (float) aabb.maxY, (float) aabb.minZ);
-		GlStateManager.glVertex3f((float) aabb.maxX, (float) aabb.maxY, (float) aabb.minZ);
-		GlStateManager.glVertex3f((float) aabb.minX, (float) aabb.maxY, (float) aabb.minZ);
-		GlStateManager.glEnd();
-		GlStateManager.popMatrix();
+			for (Entity e : Minecraft.getMinecraft().world.loadedEntityList) {
+				AxisAlignedBB aabb = e.getRenderBoundingBox();
+				double px = -(e.posX - e.lastTickPosX) * (1.0D - pt);
+				double py = -(e.posY - e.lastTickPosY) * (1.0D - pt);
+				double pz = -(e.posZ - e.lastTickPosZ) * (1.0D - pt);
+				double sc = 0.5D;
 
-		GlStateManager.enableTexture2D();
-		GlStateManager.enableFog();
-		GlStateManager.enableAlpha();
-	}
+				GlStateManager.pushMatrix();
+				GlStateManager.translate(aabb.minX + px - sc, aabb.minY + py - sc, aabb.minZ + pz - sc);
+				GlStateManager.scale(aabb.maxX - aabb.minX + sc, aabb.maxY - aabb.minY + sc, aabb.maxZ - aabb.minZ + sc);
 
-	public static void drawPoints() {
-		if (EntityCullingConfig.debugRenderBoxes) {
+				GL11.glDrawArrays(GL11.GL_LINES, 0, 24);
+
+				GlStateManager.popMatrix();
+			}
+
+			for (TileEntity te : Minecraft.getMinecraft().world.loadedTileEntityList) {
+				AxisAlignedBB aabb = ((IBoundingBoxCache) te).getOrCacheBoundingBox();
+
+				GlStateManager.pushMatrix();
+				GlStateManager.translate(aabb.minX, aabb.minY, aabb.minZ);
+				GlStateManager.scale(aabb.maxX - aabb.minX, aabb.maxY - aabb.minY, aabb.maxZ - aabb.minZ);
+
+				GL11.glDrawArrays(GL11.GL_LINES, 0, 24);
+
+				GlStateManager.popMatrix();
+			}
+
+			GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
+			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+		}
+
+		{
 			List<RaytraceInfo> copy;
 			synchronized (CullingThread.class) {
 				copy = new ArrayList<>(CullingThread.publicDebugRayList);
 			}
-			Minecraft mc = Minecraft.getMinecraft();
-			Entity viewEntity = mc.getRenderViewEntity();
-			double partialTicks = mc.getRenderPartialTicks();
-			double x = viewEntity.lastTickPosX + (viewEntity.posX - viewEntity.lastTickPosX) * partialTicks;
-			double y = viewEntity.lastTickPosY + (viewEntity.posY - viewEntity.lastTickPosY) * partialTicks;
-			double z = viewEntity.lastTickPosZ + (viewEntity.posZ - viewEntity.lastTickPosZ) * partialTicks;
-			GlStateManager.disableAlpha();
-			GlStateManager.disableBlend();
-			GlStateManager.disableFog();
-			GlStateManager.disableTexture2D();
-			GlStateManager.disableLighting();
-			GlStateManager.depthFunc(GL11.GL_ALWAYS);
-			GlStateManager.depthMask(true);
 			GL11.glPointSize(4.0F);
-			GlStateManager.pushMatrix();
-			GlStateManager.translate(-x, -y, -z);
-			GlStateManager.glBegin(GL11.GL_POINTS);
-			for (RaytraceInfo raytraceInfo : copy) {
-				if (!raytraceInfo.tested) {
-					GlStateManager.color(1, 1, 1);
-				} else {
-					GlStateManager.color(1, 0, 0);
-				}
-				GlStateManager.glVertex3f((float) raytraceInfo.x, (float) raytraceInfo.y, (float) raytraceInfo.z);
+
+			Tessellator tesselator = Tessellator.getInstance();
+			BufferBuilder bufferBuilder = tesselator.getBuffer();
+			ByteBuffer byteBuffer = bufferBuilder.getByteBuffer();
+			bufferBuilder.begin(GL11.GL_POINTS, DefaultVertexFormats.POSITION_COLOR);
+
+			for (int i = 0; i < copy.size(); i++) {
+				RaytraceInfo raytraceInfo = copy.get(i);
+				byteBuffer.putFloat(i * 16, (float) raytraceInfo.x);
+				byteBuffer.putFloat(i * 16 + 4, (float) raytraceInfo.y);
+				byteBuffer.putFloat(i * 16 + 8, (float) raytraceInfo.z);
+				byteBuffer.put(i * 16 + 12, (byte) 255);
+				byteBuffer.put(i * 16 + 13, (byte) 255);
+				byteBuffer.put(i * 16 + 14, (byte) 255);
+				byteBuffer.put(i * 16 + 15, (byte) 255);
+				bufferBuilder.endVertex();
 			}
-			GlStateManager.color(1, 1, 1);
-			GlStateManager.glEnd();
-			GlStateManager.popMatrix();
+
+			tesselator.draw();
+			bufferBuilder.reset();
+
 			GL11.glPointSize(1.0F);
-			GlStateManager.depthMask(false);
-			GlStateManager.depthFunc(GL11.GL_LEQUAL);
-			GlStateManager.enableLighting();
-			GlStateManager.enableTexture2D();
-			GlStateManager.enableFog();
-			GlStateManager.enableBlend();
-			GlStateManager.enableAlpha();
 		}
+
+		GlStateManager.popMatrix();
+
+		GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+		GlStateManager.enableTexture2D();
+		GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+		GlStateManager.enableTexture2D();
+		GlStateManager.enableLighting();
+		GlStateManager.enableFog();
+		GlStateManager.enableBlend();
+		GlStateManager.enableAlpha();
 	}
 
 }

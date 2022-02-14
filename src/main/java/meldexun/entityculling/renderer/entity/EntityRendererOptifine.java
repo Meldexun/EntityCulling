@@ -72,14 +72,6 @@ public class EntityRendererOptifine extends EntityRenderer {
 	}
 
 	@Override
-	protected void drawBox(Entity entity, double camX, double camY, double camZ, double partialTicks) {
-		if (IS_SHADOW_PASS.getBoolean(null)) {
-			return;
-		}
-		super.drawBox(entity, camX, camY, camZ, partialTicks);
-	}
-
-	@Override
 	protected boolean shouldRenderEntity(Entity entity, double camX, double camY, double camZ) {
 		if (IS_SHADOW_PASS.getBoolean(null)) {
 			if (EntityCullingConfig.optifineShaderOptions.entityShadowsDistanceLimited) {
