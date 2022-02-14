@@ -7,6 +7,7 @@
   "mixins": [
   ],
   "client": [
+    "MixinCullable"
   ],
   "injectors": {
     "defaultRequire": 1

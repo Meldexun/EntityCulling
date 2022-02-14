@@ -4,10 +4,10 @@ public interface ICullable {
 
 	boolean isCulled();
 
-	void setCulled(boolean isCulled);
+	void setCulled(boolean culled);
 
 	boolean isShadowCulled();
 
-	void setShadowCulled(boolean isShadowCulled);
+	void setShadowCulled(boolean shadowCulled);
 
 }

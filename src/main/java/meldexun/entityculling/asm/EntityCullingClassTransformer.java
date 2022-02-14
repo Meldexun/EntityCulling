@@ -54,85 +54,13 @@ public class EntityCullingClassTransformer extends AbstractClassTransformer impl
 	@Override
 	protected void registerTransformers() {
 		// @formatter:off
-		this.registerClassTransformer("vg", "net/minecraft/entity/Entity", classNode -> {
-			ASMUtil.LOGGER.info("Transforming class: Entity");
-
-			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "isCulled", "Z", null, false));
-			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "isShadowCulled", "Z", null, false));
-
-			classNode.interfaces.add("meldexun/entityculling/util/ICullable");
-
-			MethodNode methodIsCulled = new MethodNode(Opcodes.ACC_PUBLIC, "isCulled", "()Z", null, null);
-			methodIsCulled.instructions.clear();
-			methodIsCulled.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-			methodIsCulled.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/entity/Entity", "isCulled", "Z"));
-			methodIsCulled.instructions.add(new InsnNode(Opcodes.IRETURN));
-			classNode.methods.add(methodIsCulled);
-
-			MethodNode methodSetCulled = new MethodNode(Opcodes.ACC_PUBLIC, "setCulled", "(Z)V", null, null);
-			methodSetCulled.instructions.clear();
-			methodSetCulled.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-			methodSetCulled.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
-			methodSetCulled.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/entity/Entity", "isCulled", "Z"));
-			methodSetCulled.instructions.add(new InsnNode(Opcodes.RETURN));
-			classNode.methods.add(methodSetCulled);
-
-			MethodNode methodIsShadowCulled = new MethodNode(Opcodes.ACC_PUBLIC, "isShadowCulled", "()Z", null, null);
-			methodIsShadowCulled.instructions.clear();
-			methodIsShadowCulled.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-			methodIsShadowCulled.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/entity/Entity", "isShadowCulled", "Z"));
-			methodIsShadowCulled.instructions.add(new InsnNode(Opcodes.IRETURN));
-			classNode.methods.add(methodIsShadowCulled);
-
-			MethodNode methodSetShadowCulled = new MethodNode(Opcodes.ACC_PUBLIC, "setShadowCulled", "(Z)V", null, null);
-			methodSetShadowCulled.instructions.clear();
-			methodSetShadowCulled.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-			methodSetShadowCulled.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
-			methodSetShadowCulled.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/entity/Entity", "isShadowCulled", "Z"));
-			methodSetShadowCulled.instructions.add(new InsnNode(Opcodes.RETURN));
-			classNode.methods.add(methodSetShadowCulled);
-		});
-
 		this.registerClassTransformer("avj", "net/minecraft/tileentity/TileEntity", classNode -> {
 			ASMUtil.LOGGER.info("Transforming class: TileEntity");
 
-			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "isCulled", "Z", null, false));
-			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "isShadowCulled", "Z", null, false));
 			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "isCacheable", "I", null, 0));
 			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "cachedBoundingBox", "Lnet/minecraft/util/math/AxisAlignedBB;", null, null));
 
-			classNode.interfaces.add("meldexun/entityculling/util/ICullable");
 			classNode.interfaces.add("meldexun/entityculling/util/IBoundingBoxCache");
-
-			MethodNode methodIsCulled = new MethodNode(Opcodes.ACC_PUBLIC, "isCulled", "()Z", null, null);
-			methodIsCulled.instructions.clear();
-			methodIsCulled.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-			methodIsCulled.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/tileentity/TileEntity", "isCulled", "Z"));
-			methodIsCulled.instructions.add(new InsnNode(Opcodes.IRETURN));
-			classNode.methods.add(methodIsCulled);
-
-			MethodNode methodSetCulled = new MethodNode(Opcodes.ACC_PUBLIC, "setCulled", "(Z)V", null, null);
-			methodSetCulled.instructions.clear();
-			methodSetCulled.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-			methodSetCulled.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
-			methodSetCulled.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/tileentity/TileEntity", "isCulled", "Z"));
-			methodSetCulled.instructions.add(new InsnNode(Opcodes.RETURN));
-			classNode.methods.add(methodSetCulled);
-
-			MethodNode methodIsShadowCulled = new MethodNode(Opcodes.ACC_PUBLIC, "isShadowCulled", "()Z", null, null);
-			methodIsShadowCulled.instructions.clear();
-			methodIsShadowCulled.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-			methodIsShadowCulled.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/tileentity/TileEntity", "isShadowCulled", "Z"));
-			methodIsShadowCulled.instructions.add(new InsnNode(Opcodes.IRETURN));
-			classNode.methods.add(methodIsShadowCulled);
-
-			MethodNode methodSetShadowCulled = new MethodNode(Opcodes.ACC_PUBLIC, "setShadowCulled", "(Z)V", null, null);
-			methodSetShadowCulled.instructions.clear();
-			methodSetShadowCulled.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-			methodSetShadowCulled.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
-			methodSetShadowCulled.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/tileentity/TileEntity", "isShadowCulled", "Z"));
-			methodSetShadowCulled.instructions.add(new InsnNode(Opcodes.RETURN));
-			classNode.methods.add(methodSetShadowCulled);
 
 			MethodNode methodIsCacheable = new MethodNode(Opcodes.ACC_PUBLIC, "isCacheable", "()I", null, null);
 			methodIsCacheable.instructions.clear();
