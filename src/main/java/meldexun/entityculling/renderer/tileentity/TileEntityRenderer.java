@@ -85,7 +85,7 @@ public class TileEntityRenderer {
 				this.postRenderTileEntity();
 			});
 
-			this.drawPoints();
+			this.drawPoints(partialTicks);
 		}
 	}
 
@@ -97,8 +97,8 @@ public class TileEntityRenderer {
 
 	}
 
-	protected void drawPoints() {
-		BoundingBoxHelper.drawPoints();
+	protected void drawPoints(double partialTicks) {
+		BoundingBoxHelper.drawPoints(partialTicks);
 	}
 
 }

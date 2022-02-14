@@ -65,11 +65,11 @@ public class TileEntityRendererOptifine extends TileEntityRenderer {
 	}
 
 	@Override
-	protected void drawPoints() {
+	protected void drawPoints(double partialTicks) {
 		if (IS_SHADOW_PASS.getBoolean(null)) {
 			return;
 		}
-		super.drawPoints();
+		super.drawPoints(partialTicks);
 	}
 
 }

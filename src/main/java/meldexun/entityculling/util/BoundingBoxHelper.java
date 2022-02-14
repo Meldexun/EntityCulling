@@ -22,7 +22,7 @@ public class BoundingBoxHelper {
 
 	private static int cubeVBO = -1;
 
-	public static void drawPoints() {
+	public static void drawPoints(double partialTicks) {
 		if (!EntityCullingConfig.debugRenderBoxes) {
 			return;
 		}
@@ -69,10 +69,9 @@ public class BoundingBoxHelper {
 
 		Minecraft mc = Minecraft.getMinecraft();
 		Entity ce = mc.getRenderViewEntity();
-		double pt = mc.getRenderPartialTicks();
-		double camX = ce.lastTickPosX + (ce.posX - ce.lastTickPosX) * pt;
-		double camY = ce.lastTickPosY + (ce.posY - ce.lastTickPosY) * pt;
-		double camZ = ce.lastTickPosZ + (ce.posZ - ce.lastTickPosZ) * pt;
+		double camX = ce.lastTickPosX + (ce.posX - ce.lastTickPosX) * partialTicks;
+		double camY = ce.lastTickPosY + (ce.posY - ce.lastTickPosY) * partialTicks;
+		double camZ = ce.lastTickPosZ + (ce.posZ - ce.lastTickPosZ) * partialTicks;
 
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		GlStateManager.disableAlpha();
@@ -94,9 +93,9 @@ public class BoundingBoxHelper {
 
 			for (Entity e : Minecraft.getMinecraft().world.loadedEntityList) {
 				AxisAlignedBB aabb = e.getRenderBoundingBox();
-				double px = -(e.posX - e.lastTickPosX) * (1.0D - pt);
-				double py = -(e.posY - e.lastTickPosY) * (1.0D - pt);
-				double pz = -(e.posZ - e.lastTickPosZ) * (1.0D - pt);
+				double px = -(e.posX - e.lastTickPosX) * (1.0D - partialTicks);
+				double py = -(e.posY - e.lastTickPosY) * (1.0D - partialTicks);
+				double pz = -(e.posZ - e.lastTickPosZ) * (1.0D - partialTicks);
 				double sc = 0.5D;
 
 				GlStateManager.pushMatrix();
