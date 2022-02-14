@@ -33,9 +33,9 @@ public class EntityRendererOptifine extends EntityRenderer {
 	private boolean isShaders = false;
 
 	@Override
-	public void setup(ICamera camera, double camX, double camY, double camZ) {
+	public void setup(ICamera camera, double camX, double camY, double camZ, double partialTicks) {
 		this.isShaders = IS_SHADERS.invoke(null);
-		super.setup(camera, camX, camY, camZ);
+		super.setup(camera, camX, camY, camZ, partialTicks);
 	}
 
 	@Override
@@ -45,14 +45,14 @@ public class EntityRendererOptifine extends EntityRenderer {
 	}
 
 	@Override
-	protected void fillEntityLists(ICamera camera, double camX, double camY, double camZ) {
+	protected void fillEntityLists(ICamera camera, double camX, double camY, double camZ, double partialTicks) {
 		if (IS_SHADOW_PASS.getBoolean(null) && !EntityCullingConfig.optifineShaderOptions.entityShadowsEnabled) {
 			return;
 		}
 		int r = this.renderedEntities;
 		int o = this.occludedEntities;
 		int t = this.totalEntities;
-		super.fillEntityLists(camera, camX, camY, camZ);
+		super.fillEntityLists(camera, camX, camY, camZ, partialTicks);
 		if (IS_SHADOW_PASS.getBoolean(null)) {
 			this.renderedEntities = r;
 			this.occludedEntities = o;
@@ -61,8 +61,8 @@ public class EntityRendererOptifine extends EntityRenderer {
 	}
 
 	@Override
-	protected <T extends Entity> boolean addToRenderLists(T entity, ICamera camera, double camX, double camY, double camZ) {
-		if (!super.addToRenderLists(entity, camera, camX, camY, camZ)) {
+	protected <T extends Entity> boolean addToRenderLists(T entity, ICamera camera, double camX, double camY, double camZ, double partialTicks) {
+		if (!super.addToRenderLists(entity, camera, camX, camY, camZ, partialTicks)) {
 			return false;
 		}
 		if (entity.shouldRenderInPass(1) && this.shouldRenderOutlines(entity)) {
@@ -72,11 +72,11 @@ public class EntityRendererOptifine extends EntityRenderer {
 	}
 
 	@Override
-	protected void drawBox(Entity entity, double camX, double camY, double camZ) {
+	protected void drawBox(Entity entity, double camX, double camY, double camZ, double partialTicks) {
 		if (IS_SHADOW_PASS.getBoolean(null)) {
 			return;
 		}
-		super.drawBox(entity, camX, camY, camZ);
+		super.drawBox(entity, camX, camY, camZ, partialTicks);
 	}
 
 	@Override
@@ -94,11 +94,11 @@ public class EntityRendererOptifine extends EntityRenderer {
 	}
 
 	@Override
-	protected boolean isOcclusionCulled(Entity entity) {
+	protected boolean isOcclusionCulled(Entity entity, double partialTicks) {
 		if (IS_SHADOW_PASS.getBoolean(null)) {
 			return ((ICullable) entity).isShadowCulled();
 		}
-		return super.isOcclusionCulled(entity);
+		return super.isOcclusionCulled(entity, partialTicks);
 	}
 
 	@Override

@@ -19,20 +19,19 @@ public final class RenderGlobalHook {
 	public static TileEntityRenderer tileEntityRenderer = EntityCullingClassTransformer.OPTIFINE_DETECTED ? new TileEntityRendererOptifine()
 			: new TileEntityRenderer();
 
-	public static void setup(ICamera frustum) {
+	public static void setup(double partialTicks, ICamera frustum, int frame) {
 		if (!EntityCullingConfig.enabled) {
 			return;
 		}
 
 		Minecraft mc = Minecraft.getMinecraft();
 		Entity viewEntity = mc.getRenderViewEntity();
-		double partialTicks = mc.getRenderPartialTicks();
 		double x = viewEntity.lastTickPosX + (viewEntity.posX - viewEntity.lastTickPosX) * partialTicks;
 		double y = viewEntity.lastTickPosY + (viewEntity.posY - viewEntity.lastTickPosY) * partialTicks;
 		double z = viewEntity.lastTickPosZ + (viewEntity.posZ - viewEntity.lastTickPosZ) * partialTicks;
 
-		entityRenderer.setup(frustum, x, y, z);
-		tileEntityRenderer.setup(frustum, x, y, z);
+		entityRenderer.setup(frustum, x, y, z, partialTicks);
+		tileEntityRenderer.setup(frustum, x, y, z, partialTicks);
 	}
 
 	public static boolean renderEntities(float partialTicks) {

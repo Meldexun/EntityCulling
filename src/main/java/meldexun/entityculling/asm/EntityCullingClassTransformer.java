@@ -183,8 +183,10 @@ public class EntityCullingClassTransformer extends AbstractClassTransformer impl
 			}
 
 			methodNode.instructions.insert(ASMUtil.listOf(
+				new VarInsnNode(Opcodes.DLOAD, 2),
 				new VarInsnNode(Opcodes.ALOAD, 4),
-				new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/hook/RenderGlobalHook", "setup", "(Lnet/minecraft/client/renderer/culling/ICamera;)V", false)
+				new VarInsnNode(Opcodes.ILOAD, 5),
+				new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/hook/RenderGlobalHook", "setup", "(DLnet/minecraft/client/renderer/culling/ICamera;I)V", false)
 			));
 		});
 

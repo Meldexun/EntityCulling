@@ -16,20 +16,20 @@ public class TileEntityRendererOptifine extends TileEntityRenderer {
 	private boolean isShaders = false;
 
 	@Override
-	public void setup(ICamera camera, double camX, double camY, double camZ) {
+	public void setup(ICamera camera, double camX, double camY, double camZ, double partialTicks) {
 		this.isShaders = IS_SHADERS.invoke(null);
-		super.setup(camera, camX, camY, camZ);
+		super.setup(camera, camX, camY, camZ, partialTicks);
 	}
 
 	@Override
-	protected void fillTileEntityLists(ICamera camera, double camX, double camY, double camZ) {
+	protected void fillTileEntityLists(ICamera camera, double camX, double camY, double camZ, double partialTicks) {
 		if (IS_SHADOW_PASS.getBoolean(null) && !EntityCullingConfig.optifineShaderOptions.tileEntityShadowsEnabled) {
 			return;
 		}
 		int r = this.renderedTileEntities;
 		int o = this.occludedTileEntities;
 		int t = this.totalTileEntities;
-		super.fillTileEntityLists(camera, camX, camY, camZ);
+		super.fillTileEntityLists(camera, camX, camY, camZ, partialTicks);
 		if (IS_SHADOW_PASS.getBoolean(null)) {
 			this.renderedTileEntities = r;
 			this.occludedTileEntities = o;
@@ -38,30 +38,30 @@ public class TileEntityRendererOptifine extends TileEntityRenderer {
 	}
 
 	@Override
-	protected void addToRenderLists(TileEntity tileEntity, ICamera camera, double camX, double camY, double camZ) {
+	protected void addToRenderLists(TileEntity tileEntity, ICamera camera, double camX, double camY, double camZ, double partialTicks) {
 		if (IS_SHADOW_PASS.getBoolean(null) && EntityCullingConfig.optifineShaderOptions.tileEntityShadowsDistanceLimited) {
 			double d = EntityCullingConfig.optifineShaderOptions.tileEntityShadowsMaxDistance * 16.0D;
 			if (tileEntity.getDistanceSq(camX, camY, camZ) > d * d) {
 				return;
 			}
 		}
-		super.addToRenderLists(tileEntity, camera, camX, camY, camZ);
+		super.addToRenderLists(tileEntity, camera, camX, camY, camZ, partialTicks);
 	}
 
 	@Override
-	protected void drawBox(TileEntity tileEntity, double camX, double camY, double camZ) {
+	protected void drawBox(TileEntity tileEntity, double camX, double camY, double camZ, double partialTicks) {
 		if (IS_SHADOW_PASS.getBoolean(null)) {
 			return;
 		}
-		super.drawBox(tileEntity, camX, camY, camZ);
+		super.drawBox(tileEntity, camX, camY, camZ, partialTicks);
 	}
 
 	@Override
-	protected boolean isOcclusionCulled(TileEntity tileEntity) {
+	protected boolean isOcclusionCulled(TileEntity tileEntity, double partialTicks) {
 		if (IS_SHADOW_PASS.getBoolean(null)) {
 			return ((ICullable) tileEntity).isShadowCulled();
 		}
-		return super.isOcclusionCulled(tileEntity);
+		return super.isOcclusionCulled(tileEntity, partialTicks);
 	}
 
 	@Override

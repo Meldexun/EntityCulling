@@ -35,12 +35,12 @@ public class EntityRenderer {
 	public int occludedEntities;
 	public int totalEntities;
 
-	public void setup(ICamera camera, double camX, double camY, double camZ) {
+	public void setup(ICamera camera, double camX, double camY, double camZ, double partialTicks) {
 		this.renderedEntities = 0;
 		this.occludedEntities = 0;
 		this.totalEntities = 0;
 		this.clearEntityLists();
-		this.fillEntityLists(camera, camX, camY, camZ);
+		this.fillEntityLists(camera, camX, camY, camZ, partialTicks);
 	}
 
 	protected void clearEntityLists() {
@@ -51,14 +51,14 @@ public class EntityRenderer {
 		this.entityListMultipassPass1.clear();
 	}
 
-	protected void fillEntityLists(ICamera camera, double camX, double camY, double camZ) {
+	protected void fillEntityLists(ICamera camera, double camX, double camY, double camZ, double partialTicks) {
 		Minecraft mc = Minecraft.getMinecraft();
-		mc.world.loadedEntityList.forEach(entity -> this.addToRenderLists(entity, camera, camX, camY, camZ));
+		mc.world.loadedEntityList.forEach(entity -> this.addToRenderLists(entity, camera, camX, camY, camZ, partialTicks));
 	}
 
-	protected <T extends Entity> boolean addToRenderLists(T entity, ICamera camera, double camX, double camY, double camZ) {
+	protected <T extends Entity> boolean addToRenderLists(T entity, ICamera camera, double camX, double camY, double camZ, double partialTicks) {
 		if (EntityCullingConfig.debugRenderBoxes) {
-			this.drawBox(entity, camX, camY, camZ);
+			this.drawBox(entity, camX, camY, camZ, partialTicks);
 		}
 
 		this.totalEntities++;
@@ -86,7 +86,7 @@ public class EntityRenderer {
 		boolean rendered = false;
 
 		if (entity.shouldRenderInPass(0)) {
-			if (!this.isOcclusionCulled(entity)) {
+			if (!this.isOcclusionCulled(entity, partialTicks)) {
 				this.entityListStaticPass0.add(entity);
 				if (renderer.isMultipass()) {
 					this.entityListMultipassPass0.add(entity);
@@ -98,7 +98,7 @@ public class EntityRenderer {
 			}
 		}
 		if (entity.shouldRenderInPass(1)) {
-			if (!this.isOcclusionCulled(entity)) {
+			if (!this.isOcclusionCulled(entity, partialTicks)) {
 				this.entityListStaticPass1.add(entity);
 				if (renderer.isMultipass()) {
 					this.entityListMultipassPass1.add(entity);
@@ -118,14 +118,14 @@ public class EntityRenderer {
 			Arrays.stream(entity.getParts()).filter(part -> {
 				return renderManager.getEntityRenderObject(part).getClass() != RenderEntity.class;
 			}).forEach(part -> {
-				this.addToRenderLists(part, camera, camX, camY, camZ);
+				this.addToRenderLists(part, camera, camX, camY, camZ, partialTicks);
 			});
 		}
 
 		return true;
 	}
 
-	protected void drawBox(Entity entity, double camX, double camY, double camZ) {
+	protected void drawBox(Entity entity, double camX, double camY, double camZ, double partialTicks) {
 		if (entity == Minecraft.getMinecraft().getRenderViewEntity()) {
 			return;
 		}
@@ -136,7 +136,7 @@ public class EntityRenderer {
 		BoundingBoxHelper.drawBox(aabb, camX, camY, camZ);
 	}
 
-	protected boolean isOcclusionCulled(Entity entity) {
+	protected boolean isOcclusionCulled(Entity entity, double partialTicks) {
 		return ((ICullable) entity).isCulled();
 	}
 

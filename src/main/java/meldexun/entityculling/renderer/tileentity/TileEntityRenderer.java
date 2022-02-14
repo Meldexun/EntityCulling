@@ -23,12 +23,12 @@ public class TileEntityRenderer {
 	public int occludedTileEntities;
 	public int totalTileEntities;
 
-	public void setup(ICamera camera, double camX, double camY, double camZ) {
+	public void setup(ICamera camera, double camX, double camY, double camZ, double partialTicks) {
 		this.renderedTileEntities = 0;
 		this.occludedTileEntities = 0;
 		this.totalTileEntities = 0;
 		this.clearTileEntityLists();
-		this.fillTileEntityLists(camera, camX, camY, camZ);
+		this.fillTileEntityLists(camera, camX, camY, camZ, partialTicks);
 	}
 
 	protected void clearTileEntityLists() {
@@ -36,14 +36,14 @@ public class TileEntityRenderer {
 		this.tileEntityListPass1.clear();
 	}
 
-	protected void fillTileEntityLists(ICamera camera, double camX, double camY, double camZ) {
+	protected void fillTileEntityLists(ICamera camera, double camX, double camY, double camZ, double partialTicks) {
 		Minecraft mc = Minecraft.getMinecraft();
-		mc.world.loadedTileEntityList.forEach(tileEntity -> this.addToRenderLists(tileEntity, camera, camX, camY, camZ));
+		mc.world.loadedTileEntityList.forEach(tileEntity -> this.addToRenderLists(tileEntity, camera, camX, camY, camZ, partialTicks));
 	}
 
-	protected void addToRenderLists(TileEntity tileEntity, ICamera camera, double camX, double camY, double camZ) {
+	protected void addToRenderLists(TileEntity tileEntity, ICamera camera, double camX, double camY, double camZ, double partialTicks) {
 		if (EntityCullingConfig.debugRenderBoxes) {
-			this.drawBox(tileEntity, camX, camY, camZ);
+			this.drawBox(tileEntity, camX, camY, camZ, partialTicks);
 		}
 
 		this.totalTileEntities++;
@@ -57,7 +57,7 @@ public class TileEntityRenderer {
 		if (tileEntity.getDistanceSq(camX, camY, camZ) >= tileEntity.getMaxRenderDistanceSquared()) {
 			return;
 		}
-		if (this.isOcclusionCulled(tileEntity)) {
+		if (this.isOcclusionCulled(tileEntity, partialTicks)) {
 			this.occludedTileEntities++;
 			return;
 		}
@@ -72,7 +72,7 @@ public class TileEntityRenderer {
 		}
 	}
 
-	protected void drawBox(TileEntity tileEntity, double camX, double camY, double camZ) {
+	protected void drawBox(TileEntity tileEntity, double camX, double camY, double camZ, double partialTicks) {
 		AxisAlignedBB aabb = ((IBoundingBoxCache) tileEntity).getOrCacheBoundingBox();
 		if (aabb.hasNaN()) {
 			BlockPos pos = tileEntity.getPos();
@@ -81,7 +81,7 @@ public class TileEntityRenderer {
 		BoundingBoxHelper.drawBox(aabb, camX, camY, camZ);
 	}
 
-	protected boolean isOcclusionCulled(TileEntity tileEntity) {
+	protected boolean isOcclusionCulled(TileEntity tileEntity, double partialTicks) {
 		return ((ICullable) tileEntity).isCulled();
 	}
 
