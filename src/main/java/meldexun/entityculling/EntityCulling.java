@@ -34,8 +34,7 @@ public class EntityCulling {
 	@EventHandler
 	public void onFMLConstructionEvent(FMLConstructionEvent event) {
 		ConfigManager.sync(MOD_ID, Config.Type.INSTANCE);
-		CullingThread.updateBlacklists();
-		IBoundingBoxCache.updateBlacklist();
+		EntityCullingConfig.onConfigChanged();
 
 		MinecraftForge.EVENT_BUS.register(this);
 
@@ -53,8 +52,7 @@ public class EntityCulling {
 	public void onConfigChangedEvent(ConfigChangedEvent.OnConfigChangedEvent event) {
 		if (event.getModID().equals(MOD_ID)) {
 			ConfigManager.sync(MOD_ID, Config.Type.INSTANCE);
-			CullingThread.updateBlacklists();
-			IBoundingBoxCache.updateBlacklist();
+			EntityCullingConfig.onConfigChanged();
 		}
 	}
 

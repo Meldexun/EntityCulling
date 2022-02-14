@@ -1,13 +1,9 @@
 package meldexun.entityculling.util;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
 
 import meldexun.entityculling.config.EntityCullingConfig;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 
 public interface IBoundingBoxCache {
@@ -30,12 +26,6 @@ public interface IBoundingBoxCache {
 			return (int) (this.seed >>> (48 - bits));
 		}
 	};
-	Set<String> BLACKLIST = new HashSet<>();
-
-	static void updateBlacklist() {
-		BLACKLIST.clear();
-		Arrays.stream(EntityCullingConfig.tileEntityCachedBoundingBoxBlacklist).forEach(BLACKLIST::add);
-	}
 
 	/**
 	 * 0 = needs update<br>
@@ -60,8 +50,7 @@ public interface IBoundingBoxCache {
 			return ((TileEntity) this).getRenderBoundingBox();
 		}
 		if (this.isCacheable() == 0) {
-			ResourceLocation registryName = TileEntity.REGISTRY.getNameForObject(((TileEntity) this).getClass());
-			if (BLACKLIST.contains(registryName.getNamespace()) || BLACKLIST.contains(registryName.toString())) {
+			if (EntityCullingConfig.tileEntityCachedBoundingBoxBlacklistImpl.contains((TileEntity) this)) {
 				this.setCacheable(2);
 			} else {
 				this.setCachedBoundingBox(((TileEntity) this).getRenderBoundingBox());

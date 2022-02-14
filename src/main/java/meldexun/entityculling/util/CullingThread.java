@@ -2,11 +2,9 @@ package meldexun.entityculling.util;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
 import meldexun.entityculling.asm.EntityCullingClassTransformer;
 import meldexun.entityculling.config.EntityCullingConfig;
@@ -19,10 +17,8 @@ import net.minecraft.client.renderer.culling.ClippingHelperImpl;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
@@ -31,9 +27,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public class CullingThread extends Thread {
-
-	private static final Set<Class<? extends Entity>> ENTITY_BLACKLIST = new HashSet<>();
-	private static final Set<Class<? extends TileEntity>> TILE_ENTITY_BLACKLIST = new HashSet<>();
 
 	private final CachedBlockAccess cachedBlockAccess = new CachedBlockAccess();
 	private final MutableBlockPos mutablePos = new MutableBlockPos();
@@ -69,25 +62,6 @@ public class CullingThread extends Thread {
 		super();
 		this.setName("Culling Thread");
 		this.setDaemon(true);
-	}
-
-	public static void updateBlacklists() {
-		ENTITY_BLACKLIST.clear();
-		TILE_ENTITY_BLACKLIST.clear();
-
-		for (String s : EntityCullingConfig.entity.skipHiddenEntityRenderingBlacklist) {
-			Class<? extends Entity> entityClass = EntityList.getClassFromName(s);
-			if (entityClass != null) {
-				ENTITY_BLACKLIST.add(entityClass);
-			}
-		}
-
-		for (String s : EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingBlacklist) {
-			Class<? extends TileEntity> tileEntityClass = TileEntity.REGISTRY.getObject(new ResourceLocation(s));
-			if (tileEntityClass != null) {
-				TILE_ENTITY_BLACKLIST.add(tileEntityClass);
-			}
-		}
 	}
 
 	@Override
@@ -218,7 +192,7 @@ public class CullingThread extends Thread {
 		if (EntityCullingConfig.entity.alwaysRenderViewEntity && entity == Minecraft.getMinecraft().getRenderViewEntity()) {
 			return true;
 		}
-		if (!ENTITY_BLACKLIST.isEmpty() && ENTITY_BLACKLIST.contains(entity.getClass())) {
+		if (EntityCullingConfig.entity.skipHiddenEntityRenderingBlacklistImpl.contains(entity)) {
 			return true;
 		}
 
@@ -268,7 +242,7 @@ public class CullingThread extends Thread {
 		if (!EntityCullingConfig.tileEntity.skipHiddenTileEntityRendering) {
 			return true;
 		}
-		if (!TILE_ENTITY_BLACKLIST.isEmpty() && TILE_ENTITY_BLACKLIST.contains(tileEntity.getClass())) {
+		if (EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingBlacklistImpl.contains(tileEntity)) {
 			return true;
 		}
 
