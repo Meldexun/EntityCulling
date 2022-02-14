@@ -17,7 +17,7 @@ public class EntityCullingPlugin implements IFMLLoadingPlugin {
 
 	@Override
 	public String getModContainerClass() {
-		return EntityCulling.class.getName();
+		return null;
 	}
 
 	@Override

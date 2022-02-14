@@ -3,9 +3,6 @@ package meldexun.entityculling;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 
-import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
-
 import meldexun.entityculling.asm.hook.RenderGlobalHook;
 import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.util.CullingThread;
@@ -18,39 +15,23 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
-import net.minecraftforge.fml.common.DummyModContainer;
-import net.minecraftforge.fml.common.LoadController;
 import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.ModMetadata;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-public class EntityCulling extends DummyModContainer {
+@Mod(modid = EntityCulling.MOD_ID)
+public class EntityCulling {
 
-	public static final String MOD_ID = "entity_culling";
+	public static final String MOD_ID = "entityculling";
 	private static CullingThread cullingThread;
 	private static final DecimalFormat FORMAT = new DecimalFormat("#.#");
 	public static boolean isCubicChunksInstalled;
 	public static boolean isFairyLightsInstalled;
 
-	public EntityCulling() {
-		super(new ModMetadata());
-		ModMetadata meta = this.getMetadata();
-		meta.name = "Entity Culling";
-		meta.version = "4.2.5";
-		meta.modId = MOD_ID;
-		meta.authorList = Arrays.asList("Meldexun");
-		meta.url = "https://github.com/Meldexun/EntityCulling";
-	}
-
-	@Override
-	public boolean registerBus(EventBus bus, LoadController controller) {
-		bus.register(this);
-		return true;
-	}
-
-	@Subscribe
+	@EventHandler
 	public void onFMLConstructionEvent(FMLConstructionEvent event) {
 		ConfigManager.sync(MOD_ID, Config.Type.INSTANCE);
 		CullingThread.updateBlacklists();
@@ -62,7 +43,7 @@ public class EntityCulling extends DummyModContainer {
 		cullingThread.start();
 	}
 
-	@Subscribe
+	@EventHandler
 	public void onFMLPostInitializationEvent(FMLPostInitializationEvent event) {
 		isCubicChunksInstalled = Loader.isModLoaded("cubicchunks");
 		isFairyLightsInstalled = Loader.isModLoaded("fairylights");
