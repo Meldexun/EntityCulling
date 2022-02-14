@@ -196,10 +196,8 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		AxisAlignedBB aabb;
-		try {
-			aabb = entity.getRenderBoundingBox();
-		} catch (Exception e) {
+		AxisAlignedBB aabb = ((IBoundingBoxCache) entity).getCachedBoundingBoxUnsafe();
+		if (aabb == null) {
 			return !((ICullable) entity).isCulled();
 		}
 		double minX = aabb.minX - 0.5D;
@@ -246,10 +244,8 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		AxisAlignedBB aabb;
-		try {
-			aabb = ((IBoundingBoxCache) tileEntity).getOrCacheBoundingBox();
-		} catch (Exception e) {
+		AxisAlignedBB aabb = ((IBoundingBoxCache) tileEntity).getCachedBoundingBoxUnsafe();
+		if (aabb == null) {
 			return !((ICullable) tileEntity).isCulled();
 		}
 		if (aabb.maxX - aabb.minX > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize

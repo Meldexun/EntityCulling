@@ -92,7 +92,7 @@ public class BoundingBoxHelper {
 			GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
 
 			for (Entity e : Minecraft.getMinecraft().world.loadedEntityList) {
-				AxisAlignedBB aabb = e.getRenderBoundingBox();
+				AxisAlignedBB aabb = ((IBoundingBoxCache) e).getCachedBoundingBox();
 				double px = -(e.posX - e.lastTickPosX) * (1.0D - partialTicks);
 				double py = -(e.posY - e.lastTickPosY) * (1.0D - partialTicks);
 				double pz = -(e.posZ - e.lastTickPosZ) * (1.0D - partialTicks);
@@ -108,7 +108,7 @@ public class BoundingBoxHelper {
 			}
 
 			for (TileEntity te : Minecraft.getMinecraft().world.loadedTileEntityList) {
-				AxisAlignedBB aabb = ((IBoundingBoxCache) te).getOrCacheBoundingBox();
+				AxisAlignedBB aabb = ((IBoundingBoxCache) te).getCachedBoundingBox();
 
 				GlStateManager.pushMatrix();
 				GlStateManager.translate(aabb.minX, aabb.minY, aabb.minZ);

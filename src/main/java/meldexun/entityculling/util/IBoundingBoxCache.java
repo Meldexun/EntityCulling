@@ -1,69 +1,16 @@
 package meldexun.entityculling.util;
 
-import java.util.Random;
+import javax.annotation.Nullable;
 
-import meldexun.entityculling.config.EntityCullingConfig;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 
 public interface IBoundingBoxCache {
 
-	@SuppressWarnings("serial")
-	Random RAND = new Random() {
-		private static final long MULTIPLIER = 0x5_DEEC_E66DL;
-		private static final long ADDEND = 0xBL;
-		private static final long MASK = (1L << 48) - 1;
-		private long seed = 0L;
-
-		@Override
-		public void setSeed(long seed) {
-			this.seed = (seed ^ MULTIPLIER) & MASK;
-		}
-
-		@Override
-		protected int next(int bits) {
-			this.seed = (this.seed * MULTIPLIER + ADDEND) & MASK;
-			return (int) (this.seed >>> (48 - bits));
-		}
-	};
-
-	/**
-	 * 0 = needs update<br>
-	 * 1 = cacheable<br>
-	 * 2 = not cacheable
-	 */
-	int isCacheable();
-
-	/**
-	 * 0 = needs update<br>
-	 * 1 = cacheable<br>
-	 * 2 = not cacheable
-	 */
-	void setCacheable(int cacheable);
+	void updateCachedBoundingBox();
 
 	AxisAlignedBB getCachedBoundingBox();
 
-	void setCachedBoundingBox(AxisAlignedBB aabb);
-
-	default AxisAlignedBB getOrCacheBoundingBox() {
-		if (!EntityCullingConfig.tileEntityCachedBoundingBoxEnabled) {
-			return ((TileEntity) this).getRenderBoundingBox();
-		}
-		if (this.isCacheable() == 0) {
-			if (EntityCullingConfig.tileEntityCachedBoundingBoxBlacklistImpl.contains((TileEntity) this)) {
-				this.setCacheable(2);
-			} else {
-				this.setCachedBoundingBox(((TileEntity) this).getRenderBoundingBox());
-				this.setCacheable(1);
-			}
-		}
-		if (this.isCacheable() == 2) {
-			return ((TileEntity) this).getRenderBoundingBox();
-		}
-		if (RAND.nextInt(EntityCullingConfig.tileEntityCachedBoundingBoxUpdateInterval) == 0) {
-			this.setCachedBoundingBox(((TileEntity) this).getRenderBoundingBox());
-		}
-		return this.getCachedBoundingBox();
-	}
+	@Nullable
+	AxisAlignedBB getCachedBoundingBoxUnsafe();
 
 }

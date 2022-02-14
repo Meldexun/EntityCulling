@@ -7,7 +7,9 @@
   "mixins": [
   ],
   "client": [
-    "MixinCullable"
+    "MixinCullable",
+    "MixinEntity",
+    "MixinTileEntity"
   ],
   "injectors": {
     "defaultRequire": 1

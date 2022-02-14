@@ -44,7 +44,7 @@ public class TileEntityRenderer {
 		if (!tileEntity.shouldRenderInPass(0) && !tileEntity.shouldRenderInPass(1)) {
 			return;
 		}
-		if (!camera.isBoundingBoxInFrustum(((IBoundingBoxCache) tileEntity).getOrCacheBoundingBox())) {
+		if (!camera.isBoundingBoxInFrustum(((IBoundingBoxCache) tileEntity).getCachedBoundingBox())) {
 			return;
 		}
 		if (tileEntity.getDistanceSq(camX, camY, camZ) >= tileEntity.getMaxRenderDistanceSquared()) {

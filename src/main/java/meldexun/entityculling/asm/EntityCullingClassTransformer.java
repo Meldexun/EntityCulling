@@ -5,12 +5,10 @@ import java.util.Collection;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.FieldInsnNode;
-import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
 import meldexun.asmutil.ASMUtil;
@@ -54,45 +52,6 @@ public class EntityCullingClassTransformer extends AbstractClassTransformer impl
 	@Override
 	protected void registerTransformers() {
 		// @formatter:off
-		this.registerClassTransformer("avj", "net/minecraft/tileentity/TileEntity", classNode -> {
-			ASMUtil.LOGGER.info("Transforming class: TileEntity");
-
-			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "isCacheable", "I", null, 0));
-			classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "cachedBoundingBox", "Lnet/minecraft/util/math/AxisAlignedBB;", null, null));
-
-			classNode.interfaces.add("meldexun/entityculling/util/IBoundingBoxCache");
-
-			MethodNode methodIsCacheable = new MethodNode(Opcodes.ACC_PUBLIC, "isCacheable", "()I", null, null);
-			methodIsCacheable.instructions.clear();
-			methodIsCacheable.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-			methodIsCacheable.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/tileentity/TileEntity", "isCacheable", "I"));
-			methodIsCacheable.instructions.add(new InsnNode(Opcodes.IRETURN));
-			classNode.methods.add(methodIsCacheable);
-
-			MethodNode methodSetCacheable = new MethodNode(Opcodes.ACC_PUBLIC, "setCacheable", "(I)V", null, null);
-			methodSetCacheable.instructions.clear();
-			methodSetCacheable.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-			methodSetCacheable.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
-			methodSetCacheable.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/tileentity/TileEntity", "isCacheable", "I"));
-			methodSetCacheable.instructions.add(new InsnNode(Opcodes.RETURN));
-			classNode.methods.add(methodSetCacheable);
-
-			MethodNode methodGetCachedBoundingBox = new MethodNode(Opcodes.ACC_PUBLIC, "getCachedBoundingBox", "()Lnet/minecraft/util/math/AxisAlignedBB;", null, null);
-			methodGetCachedBoundingBox.instructions.clear();
-			methodGetCachedBoundingBox.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-			methodGetCachedBoundingBox.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/tileentity/TileEntity", "cachedBoundingBox", "Lnet/minecraft/util/math/AxisAlignedBB;"));
-			methodGetCachedBoundingBox.instructions.add(new InsnNode(Opcodes.ARETURN));
-			classNode.methods.add(methodGetCachedBoundingBox);
-
-			MethodNode methodSetCachedBoundingBox = new MethodNode(Opcodes.ACC_PUBLIC, "setCachedBoundingBox", "(Lnet/minecraft/util/math/AxisAlignedBB;)V", null, null);
-			methodSetCachedBoundingBox.instructions.clear();
-			methodSetCachedBoundingBox.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-			methodSetCachedBoundingBox.instructions.add(new VarInsnNode(Opcodes.ALOAD, 1));
-			methodSetCachedBoundingBox.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/tileentity/TileEntity", "cachedBoundingBox", "Lnet/minecraft/util/math/AxisAlignedBB;"));
-			methodSetCachedBoundingBox.instructions.add(new InsnNode(Opcodes.RETURN));
-			classNode.methods.add(methodSetCachedBoundingBox);
-		});
-
 		this.registerMethodTransformer("buy", "a", "(Lvg;DLbxy;IZ)V", "net/minecraft/client/renderer/RenderGlobal", "setupTerrain", "(Lnet/minecraft/entity/Entity;DLnet/minecraft/client/renderer/culling/ICamera;IZ)V", methodNode -> {
 			ASMUtil.LOGGER.info("Transforming method: RenderGlobal#setupTerrain(Entity, double, ICamera, int, boolean)");
 

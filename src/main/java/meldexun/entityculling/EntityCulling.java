@@ -9,6 +9,8 @@ import meldexun.entityculling.util.CullingThread;
 import meldexun.entityculling.util.IBoundingBoxCache;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.entity.Entity;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.common.MinecraftForge;
@@ -21,6 +23,8 @@ import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 
 @Mod(modid = EntityCulling.MOD_ID)
 public class EntityCulling {
@@ -53,6 +57,22 @@ public class EntityCulling {
 		if (event.getModID().equals(MOD_ID)) {
 			ConfigManager.sync(MOD_ID, Config.Type.INSTANCE);
 			EntityCullingConfig.onConfigChanged();
+		}
+	}
+
+	@SubscribeEvent
+	public void onRenderGameOverlayEvent(TickEvent.RenderTickEvent event) {
+		if (event.phase == Phase.END) {
+			return;
+		}
+		Minecraft mc = Minecraft.getMinecraft();
+		if (mc.world != null) {
+			for (Entity e : mc.world.loadedEntityList) {
+				((IBoundingBoxCache) e).updateCachedBoundingBox();
+			}
+			for (TileEntity te : mc.world.loadedTileEntityList) {
+				((IBoundingBoxCache) te).updateCachedBoundingBox();
+			}
 		}
 	}
 

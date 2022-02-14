@@ -1,5 +1,6 @@
 package meldexun.entityculling.asm.hook;
 
+import meldexun.entityculling.util.IBoundingBoxCache;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.client.renderer.entity.Render;
@@ -17,7 +18,7 @@ public class RenderHook {
 			return true;
 		}
 
-		AxisAlignedBB aabb = entity.getRenderBoundingBox();
+		AxisAlignedBB aabb = ((IBoundingBoxCache) entity).getCachedBoundingBox();
 
 		if (aabb.hasNaN()) {
 			if (camera instanceof Frustum) {
