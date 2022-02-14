@@ -133,6 +133,10 @@ public class EntityRenderer {
 		if (aabb.hasNaN()) {
 			aabb = new AxisAlignedBB(entity.posX - 2.0D, entity.posY - 2.0D, entity.posZ - 2.0D, entity.posX + 2.0D, entity.posY + 2.0D, entity.posZ + 2.0D);
 		}
+		double x = -(entity.posX - entity.lastTickPosX) * (1.0D - partialTicks);
+		double y = -(entity.posY - entity.lastTickPosY) * (1.0D - partialTicks);
+		double z = -(entity.posZ - entity.lastTickPosZ) * (1.0D - partialTicks);
+		aabb = aabb.offset(x, y, z);
 		BoundingBoxHelper.drawBox(aabb, camX, camY, camZ);
 	}
 
