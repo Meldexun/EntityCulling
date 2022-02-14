@@ -5,11 +5,13 @@ buildscript {
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+        classpath 'org.spongepowered:mixingradle:0.7.+'
     }
 }
 apply plugin: 'net.minecraftforge.gradle'
 // Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 apply plugin: 'eclipse'
+apply plugin: 'org.spongepowered.mixin'
 
 version = '1.12.2-4.2.5'
 group = 'meldexun.entity_culling'
@@ -68,11 +70,25 @@ dependencies {
     includedDependencies 'meldexun:RaytraceUtil:1.0.4@jar'
     buildDependencies 'curse.maven:CubicChunks-292243:3546640'
     buildDependencies 'curse.maven:FairyLights-233342:3068499'
+
+    includedDependencies('org.spongepowered:mixin:0.8.5') {
+        exclude module: 'guava'
+        exclude module: 'commons-io'
+        exclude module: 'gson'
+    }
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+}
+
+mixin {
+    add sourceSets.main, 'mixins.entityculling.refmap.json'
+    config 'mixins.entityculling.json'
 }
 
 jar {
     from {
         configurations.includedDependencies.collect { it.isDirectory() ? it : zipTree(it) }
+    } {
+        exclude 'LICENSE.txt', 'META-INF/*.RSA'
     }
 
     manifest {
@@ -80,6 +96,9 @@ jar {
         attributes 'FMLCorePlugin': 'meldexun.entityculling.asm.EntityCullingPlugin'
         attributes 'FMLCorePluginContainsFMLMod': 'true'
         attributes 'FMLAT': 'accesstransformer.cfg'
+        attributes 'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker'
+        attributes 'TweakOrder': '0'
+        attributes 'MixinConfigs': 'mixins.entityculling.json'
     }
 }
 
