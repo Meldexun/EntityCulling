@@ -27,7 +27,7 @@ public class BoundingBoxHelper {
 		if (!EntityCullingConfig.debugRenderBoxes) {
 			return;
 		}
-		if (EntityCulling.isOpenGL44Supported) {
+		if (EntityCulling.useOpenGlBasedCulling()) {
 			return;
 		}
 

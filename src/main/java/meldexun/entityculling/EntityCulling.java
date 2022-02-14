@@ -36,7 +36,11 @@ public class EntityCulling {
 	private static final DecimalFormat FORMAT = new DecimalFormat("#.#");
 	public static boolean isCubicChunksInstalled;
 	public static boolean isFairyLightsInstalled;
-	public static boolean isOpenGL44Supported;
+	private static boolean isOpenGL44Supported;
+
+	public static boolean useOpenGlBasedCulling() {
+		return isOpenGL44Supported && EntityCullingConfig.openglBasedCulling;
+	}
 
 	@EventHandler
 	public void onFMLConstructionEvent(FMLConstructionEvent event) {

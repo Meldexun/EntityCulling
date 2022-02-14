@@ -122,7 +122,7 @@ public class EntityRenderer {
 	}
 
 	protected boolean isOcclusionCulled(Entity entity, double partialTicks) {
-		if (EntityCulling.isOpenGL44Supported) {
+		if (EntityCulling.useOpenGlBasedCulling()) {
 			// TODO handle shadows
 			boolean culled = !CullingInstance.getInstance().isVisible((ICullable) entity);
 

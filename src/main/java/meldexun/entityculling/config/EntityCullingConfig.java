@@ -25,6 +25,9 @@ public class EntityCullingConfig {
 	@Config.Comment("Disable all changes from this mod.")
 	public static boolean enabled = true;
 
+	@Config.Comment("When enabled and OpenGl 4.4 is supported OpenGl based culling is used which is a lot faster and more accurate.")
+	public static boolean openglBasedCulling = true;
+
 	@Config.Comment("If you feel the need to increase this value because of entities being culled falsely then another modder probably messed up his render bounding boxes and he should fix them instead.")
 	@Config.RangeDouble(min = 0.0009765625D, max = 1024.0D)
 	public static double raytraceThreshold = 1.0D;

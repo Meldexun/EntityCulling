@@ -158,7 +158,7 @@ public class CullingThread extends Thread {
 	}
 
 	private void updateEntityCullingState(Entity entity) {
-		if (!EntityCulling.isOpenGL44Supported) {
+		if (!EntityCulling.useOpenGlBasedCulling()) {
 			((ICullable) entity).setCulled(!this.checkEntityVisibility(entity));
 		}
 		if (EntityCullingClassTransformer.OPTIFINE_DETECTED) {
@@ -167,7 +167,7 @@ public class CullingThread extends Thread {
 	}
 
 	private void updateTileEntityCullingState(TileEntity tileEntity) {
-		if (!EntityCulling.isOpenGL44Supported) {
+		if (!EntityCulling.useOpenGlBasedCulling()) {
 			((ICullable) tileEntity).setCulled(!this.checkTileEntityVisibility(tileEntity));
 		}
 		if (EntityCullingClassTransformer.OPTIFINE_DETECTED) {

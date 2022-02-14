@@ -76,7 +76,7 @@ public class TileEntityRenderer {
 	}
 
 	protected boolean isOcclusionCulled(TileEntity tileEntity, double partialTicks) {
-		if (EntityCulling.isOpenGL44Supported) {
+		if (EntityCulling.useOpenGlBasedCulling()) {
 			// TODO handle shadows
 			boolean culled = !CullingInstance.getInstance().isVisible((ICullable) tileEntity);
 
