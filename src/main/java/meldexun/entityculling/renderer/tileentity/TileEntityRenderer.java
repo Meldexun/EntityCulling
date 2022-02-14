@@ -1,19 +1,29 @@
 package meldexun.entityculling.renderer.tileentity;
 
+import java.nio.FloatBuffer;
 import java.util.ArrayDeque;
 import java.util.Queue;
 
+import org.lwjgl.opengl.GL11;
+
+import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.util.BoundingBoxHelper;
 import meldexun.entityculling.util.IBoundingBoxCache;
 import meldexun.entityculling.util.ICullable;
+import meldexun.entityculling.util.culling.CullingInstance;
+import meldexun.entityculling.util.matrix.Matrix4f;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.client.MinecraftForgeClient;
 
 public class TileEntityRenderer {
 
+	private static final FloatBuffer MATRIX_BUFFER = GLAllocation.createDirectFloatBuffer(16);
 	protected final Queue<TileEntity> tileEntityListPass0 = new ArrayDeque<>();
 	protected final Queue<TileEntity> tileEntityListPass1 = new ArrayDeque<>();
 	public int renderedTileEntities;
@@ -66,6 +76,18 @@ public class TileEntityRenderer {
 	}
 
 	protected boolean isOcclusionCulled(TileEntity tileEntity, double partialTicks) {
+		if (EntityCulling.isOpenGL44Supported) {
+			// TODO handle shadows
+			boolean culled = !CullingInstance.getInstance().isVisible((ICullable) tileEntity);
+
+			AxisAlignedBB aabb = ((IBoundingBoxCache) tileEntity).getCachedBoundingBox();
+			CullingInstance.getInstance().addBox((ICullable) tileEntity,
+					aabb.minX, aabb.minY, aabb.minZ,
+					aabb.maxX, aabb.maxY, aabb.maxZ);
+
+			return culled;
+		}
+
 		return ((ICullable) tileEntity).isCulled();
 	}
 
@@ -98,7 +120,25 @@ public class TileEntityRenderer {
 	}
 
 	protected void drawPoints(double partialTicks) {
+		Minecraft mc = Minecraft.getMinecraft();
+		Entity e = mc.getRenderViewEntity();
+		double x = e.lastTickPosX + (e.posX - e.lastTickPosX) * partialTicks;
+		double y = e.lastTickPosY + (e.posY - e.lastTickPosY) * partialTicks;
+		double z = e.lastTickPosZ + (e.posZ - e.lastTickPosZ) * partialTicks;
+		Matrix4f matrix = getMatrix(GL11.GL_PROJECTION_MATRIX);
+		matrix.multiply(getMatrix(GL11.GL_MODELVIEW_MATRIX));
+		matrix.multiply(Matrix4f.translateMatrix(-(float) x, -(float) y, -(float) z));
+		CullingInstance.getInstance().updateResults(matrix);
+
+		// debug
 		BoundingBoxHelper.drawPoints(partialTicks);
+	}
+
+	private static Matrix4f getMatrix(int matrix) {
+		GL11.glGetFloat(matrix, MATRIX_BUFFER);
+		Matrix4f m = new Matrix4f();
+		m.load(MATRIX_BUFFER);
+		return m;
 	}
 
 }

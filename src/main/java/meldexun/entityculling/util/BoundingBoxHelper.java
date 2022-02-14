@@ -7,6 +7,7 @@ import java.util.List;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
+import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.config.EntityCullingConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -24,6 +25,9 @@ public class BoundingBoxHelper {
 
 	public static void drawPoints(double partialTicks) {
 		if (!EntityCullingConfig.debugRenderBoxes) {
+			return;
+		}
+		if (EntityCulling.isOpenGL44Supported) {
 			return;
 		}
 

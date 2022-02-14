@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.asm.EntityCullingClassTransformer;
 import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.raytraceutil.RayTracingCache;
@@ -157,14 +158,18 @@ public class CullingThread extends Thread {
 	}
 
 	private void updateEntityCullingState(Entity entity) {
-		((ICullable) entity).setCulled(!this.checkEntityVisibility(entity));
+		if (!EntityCulling.isOpenGL44Supported) {
+			((ICullable) entity).setCulled(!this.checkEntityVisibility(entity));
+		}
 		if (EntityCullingClassTransformer.OPTIFINE_DETECTED) {
 			((ICullable) entity).setShadowCulled(!this.checkEntityShadowVisibility(entity));
 		}
 	}
 
 	private void updateTileEntityCullingState(TileEntity tileEntity) {
-		((ICullable) tileEntity).setCulled(!this.checkTileEntityVisibility(tileEntity));
+		if (!EntityCulling.isOpenGL44Supported) {
+			((ICullable) tileEntity).setCulled(!this.checkTileEntityVisibility(tileEntity));
+		}
 		if (EntityCullingClassTransformer.OPTIFINE_DETECTED) {
 			((ICullable) tileEntity).setShadowCulled(!this.checkTileEntityShadowVisibility(tileEntity));
 		}

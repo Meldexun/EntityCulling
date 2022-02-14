@@ -8,7 +8,9 @@ import org.lwjgl.opengl.GL11;
 
 import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.integration.FairyLights;
+import meldexun.entityculling.util.IBoundingBoxCache;
 import meldexun.entityculling.util.ICullable;
+import meldexun.entityculling.util.culling.CullingInstance;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -19,6 +21,7 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.client.MinecraftForgeClient;
 
 public class EntityRenderer {
@@ -119,6 +122,21 @@ public class EntityRenderer {
 	}
 
 	protected boolean isOcclusionCulled(Entity entity, double partialTicks) {
+		if (EntityCulling.isOpenGL44Supported) {
+			// TODO handle shadows
+			boolean culled = !CullingInstance.getInstance().isVisible((ICullable) entity);
+
+			AxisAlignedBB aabb = ((IBoundingBoxCache) entity).getCachedBoundingBox();
+			double x = (entity.posX - entity.lastTickPosX) * (1.0F - partialTicks);
+			double y = (entity.posY - entity.lastTickPosY) * (1.0F - partialTicks);
+			double z = (entity.posZ - entity.lastTickPosZ) * (1.0F - partialTicks);
+			CullingInstance.getInstance().addBox((ICullable) entity,
+					aabb.minX - x - 0.5D, aabb.minY - y - 0.5D, aabb.minZ - z - 0.5D,
+					aabb.maxX - x + 0.5D, aabb.maxY - y + 0.5D, aabb.maxZ - z + 0.5D);
+
+			return culled;
+		}
+
 		return ((ICullable) entity).isCulled();
 	}
 

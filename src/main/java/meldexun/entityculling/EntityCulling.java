@@ -3,6 +3,8 @@ package meldexun.entityculling;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 
+import org.lwjgl.opengl.GLContext;
+
 import meldexun.entityculling.asm.hook.RenderGlobalHook;
 import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.util.CullingThread;
@@ -34,9 +36,12 @@ public class EntityCulling {
 	private static final DecimalFormat FORMAT = new DecimalFormat("#.#");
 	public static boolean isCubicChunksInstalled;
 	public static boolean isFairyLightsInstalled;
+	public static boolean isOpenGL44Supported;
 
 	@EventHandler
 	public void onFMLConstructionEvent(FMLConstructionEvent event) {
+		isOpenGL44Supported = GLContext.getCapabilities().OpenGL44;
+
 		ConfigManager.sync(MOD_ID, Config.Type.INSTANCE);
 		EntityCullingConfig.onConfigChanged();
 
