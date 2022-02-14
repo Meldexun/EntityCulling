@@ -71,7 +71,8 @@ public class ResourceLocationSet<T> {
 		}
 		return class2containedMap.computeIfAbsent((Class<? extends T>) t.getClass(), k -> {
 			ResourceLocation resourceLocation = resourceLocationFunc.apply(k);
-			return namespace2pathsMap.get(resourceLocation.getNamespace()).contains(resourceLocation.getPath());
+			IStringSet set = namespace2pathsMap.get(resourceLocation.getNamespace());
+			return set != null && set.contains(resourceLocation.getPath());
 		});
 	}
 
