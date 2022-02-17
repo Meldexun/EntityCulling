@@ -1,5 +1,6 @@
 package meldexun.entityculling.asm.hook;
 
+import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.asm.EntityCullingClassTransformer;
 import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.renderer.entity.EntityRenderer;
@@ -20,10 +21,10 @@ public final class RenderGlobalHook {
 	private static int lastFrameUpdated = -1;
 
 	public static void setup(double partialTicks, ICamera frustum, int frame) {
-		if (frame == lastFrameUpdated) {
+		if (EntityCulling.frame <= lastFrameUpdated) {
 			return;
 		}
-		lastFrameUpdated = frame;
+		lastFrameUpdated = EntityCulling.frame;
 
 		Minecraft mc = Minecraft.getMinecraft();
 		Entity viewEntity = mc.getRenderViewEntity();

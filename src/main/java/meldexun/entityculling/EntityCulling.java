@@ -27,6 +27,7 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
+import net.minecraftforge.fml.common.gameevent.TickEvent.RenderTickEvent;
 
 @Mod(modid = EntityCulling.MOD_ID)
 public class EntityCulling {
@@ -37,6 +38,7 @@ public class EntityCulling {
 	public static boolean isCubicChunksInstalled;
 	public static boolean isFairyLightsInstalled;
 	private static boolean isOpenGL44Supported;
+	public static int frame;
 
 	public static boolean useOpenGlBasedCulling() {
 		return isOpenGL44Supported && EntityCullingConfig.openglBasedCulling;
@@ -83,6 +85,14 @@ public class EntityCulling {
 				((IBoundingBoxCache) te).updateCachedBoundingBox();
 			}
 		}
+	}
+
+	@SubscribeEvent
+	public void onRenderTickEvent(RenderTickEvent event) {
+		if (event.phase == Phase.END) {
+			return;
+		}
+		frame++;
 	}
 
 	@SubscribeEvent
