@@ -284,11 +284,13 @@ public class CullingThread extends Thread {
 		if (!EntityCullingConfig.optifineShaderOptions.entityShadowsCulling) {
 			return true;
 		}
-		if (!((ICullable) entity).isCulled()) {
-			return true;
-		}
-		if (!EntityCullingConfig.optifineShaderOptions.entityShadowsCullingLessAggressiveMode) {
-			return false;
+		if (!EntityCulling.useOpenGlBasedCulling()) {
+			if (!((ICullable) entity).isCulled()) {
+				return true;
+			}
+			if (!EntityCullingConfig.optifineShaderOptions.entityShadowsCullingLessAggressiveMode) {
+				return false;
+			}
 		}
 		return this.checkPointUncached(this.camX, this.camY, this.camZ, entity.posX, entity.posY + entity.height * 0.5D, entity.posZ,
 				EntityCullingConfig.optifineShaderOptions.entityShadowsCullingLessAggressiveModeDiff);
@@ -301,11 +303,13 @@ public class CullingThread extends Thread {
 		if (!EntityCullingConfig.optifineShaderOptions.tileEntityShadowsCulling) {
 			return true;
 		}
-		if (!((ICullable) tileEntity).isCulled()) {
-			return true;
-		}
-		if (!EntityCullingConfig.optifineShaderOptions.tileEntityShadowsCullingLessAggressiveMode) {
-			return false;
+		if (!EntityCulling.useOpenGlBasedCulling()) {
+			if (!((ICullable) tileEntity).isCulled()) {
+				return true;
+			}
+			if (!EntityCullingConfig.optifineShaderOptions.tileEntityShadowsCullingLessAggressiveMode) {
+				return false;
+			}
 		}
 		BlockPos pos = tileEntity.getPos();
 		return this.checkPointUncached(this.camX, this.camY, this.camZ, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
