@@ -58,9 +58,9 @@ public class ResourceLocationSet<T> {
 
 	private final Map<String, IStringSet> namespace2pathsMap = new HashMap<>();
 	private final Object2BooleanMap<Class<? extends T>> class2containedMap = new Object2BooleanOpenHashMap<>();
-	private final Function<Class<? extends T>, ResourceLocation> resourceLocationFunc;
+	private final Function<Class<T>, ResourceLocation> resourceLocationFunc;
 
-	public ResourceLocationSet(Function<Class<? extends T>, ResourceLocation> func) {
+	public ResourceLocationSet(Function<Class<T>, ResourceLocation> func) {
 		this.resourceLocationFunc = func;
 	}
 
@@ -70,7 +70,7 @@ public class ResourceLocationSet<T> {
 			return false;
 		}
 		return class2containedMap.computeIfAbsent((Class<? extends T>) t.getClass(), k -> {
-			ResourceLocation resourceLocation = resourceLocationFunc.apply(k);
+			ResourceLocation resourceLocation = resourceLocationFunc.apply((Class<T>) k);
 			IStringSet set = namespace2pathsMap.get(resourceLocation.getNamespace());
 			return set != null && set.contains(resourceLocation.getPath());
 		});
