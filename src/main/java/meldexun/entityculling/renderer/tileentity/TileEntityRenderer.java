@@ -7,6 +7,7 @@ import java.util.Queue;
 import org.lwjgl.opengl.GL11;
 
 import meldexun.entityculling.EntityCulling;
+import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.util.BoundingBoxHelper;
 import meldexun.entityculling.util.IBoundingBoxCache;
 import meldexun.entityculling.util.ICullable;
@@ -77,6 +78,19 @@ public class TileEntityRenderer {
 
 	protected boolean isOcclusionCulled(TileEntity tileEntity, double partialTicks) {
 		if (EntityCulling.useOpenGlBasedCulling()) {
+			if (!EntityCullingConfig.enabled) {
+				return false;
+			}
+			if (EntityCullingConfig.disabledInSpectator && Minecraft.getMinecraft().player.isSpectator()) {
+				return false;
+			}
+			if (!EntityCullingConfig.tileEntity.skipHiddenTileEntityRendering) {
+				return false;
+			}
+			if (EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingBlacklistImpl.contains(tileEntity)) {
+				return false;
+			}
+
 			// TODO handle shadows
 			boolean culled = !CullingInstance.getInstance().isVisible((ICullable) tileEntity);
 

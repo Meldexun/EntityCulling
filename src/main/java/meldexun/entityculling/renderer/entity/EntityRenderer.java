@@ -7,6 +7,7 @@ import java.util.Queue;
 import org.lwjgl.opengl.GL11;
 
 import meldexun.entityculling.EntityCulling;
+import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.integration.FairyLights;
 import meldexun.entityculling.util.IBoundingBoxCache;
 import meldexun.entityculling.util.ICullable;
@@ -123,6 +124,31 @@ public class EntityRenderer {
 
 	protected boolean isOcclusionCulled(Entity entity, double partialTicks) {
 		if (EntityCulling.useOpenGlBasedCulling()) {
+			if (!EntityCullingConfig.enabled) {
+				return false;
+			}
+			if (EntityCullingConfig.disabledInSpectator && Minecraft.getMinecraft().player.isSpectator()) {
+				return false;
+			}
+			if (!EntityCullingConfig.entity.skipHiddenEntityRendering) {
+				return false;
+			}
+			if (EntityCullingConfig.entity.alwaysRenderBosses && !entity.isNonBoss()) {
+				return false;
+			}
+			if (EntityCullingConfig.entity.alwaysRenderEntitiesWithName && entity.getAlwaysRenderNameTagForRender()) {
+				return false;
+			}
+			if (EntityCullingConfig.entity.alwaysRenderPlayers && entity instanceof EntityPlayer) {
+				return false;
+			}
+			if (EntityCullingConfig.entity.alwaysRenderViewEntity && entity == Minecraft.getMinecraft().getRenderViewEntity()) {
+				return false;
+			}
+			if (EntityCullingConfig.entity.skipHiddenEntityRenderingBlacklistImpl.contains(entity)) {
+				return false;
+			}
+
 			// TODO handle shadows
 			boolean culled = !CullingInstance.getInstance().isVisible((ICullable) entity);
 
