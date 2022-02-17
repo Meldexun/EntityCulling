@@ -13,7 +13,7 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'org.spongepowered.mixin'
 
-version = '1.12.2-4.2.5'
+version = '1.12.2-5.0.0'
 group = 'meldexun.entity_culling'
 archivesBaseName = 'EntityCulling'
 
@@ -71,7 +71,7 @@ dependencies {
     buildDependencies 'curse.maven:CubicChunks-292243:3546640'
     buildDependencies 'curse.maven:FairyLights-233342:3068499'
 
-    includedDependencies('org.spongepowered:mixin:0.8.5') {
+    implementation('org.spongepowered:mixin:0.8.5') {
         exclude module: 'guava'
         exclude module: 'commons-io'
         exclude module: 'gson'
