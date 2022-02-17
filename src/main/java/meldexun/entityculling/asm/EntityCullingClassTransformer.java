@@ -68,13 +68,6 @@ public class EntityCullingClassTransformer extends AbstractClassTransformer impl
 					new JumpInsnNode(Opcodes.IFEQ, (LabelNode) popNode1)
 				));
 			}
-
-			methodNode.instructions.insert(ASMUtil.listOf(
-				new VarInsnNode(Opcodes.DLOAD, 2),
-				new VarInsnNode(Opcodes.ALOAD, 4),
-				new VarInsnNode(Opcodes.ILOAD, 5),
-				new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/hook/RenderGlobalHook", "setup", "(DLnet/minecraft/client/renderer/culling/ICamera;I)V", false)
-			));
 		});
 
 		this.registerMethodTransformer("buy", "a", "(Lvg;Lbxy;F)V", "net/minecraft/client/renderer/RenderGlobal", "renderEntities", "(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;F)V", methodNode -> {
@@ -111,110 +104,6 @@ public class EntityCullingClassTransformer extends AbstractClassTransformer impl
 				new VarInsnNode(Opcodes.FLOAD, 3),
 				new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/hook/RenderGlobalHook", "renderTileEntities", "(F)Z", false),
 				new JumpInsnNode(Opcodes.IFNE, (LabelNode) popNode2)
-			));
-		});
-
-		this.registerMethodTransformer("buy", "a", "(Ljava/util/Collection;Ljava/util/Collection;)V", "net/minecraft/client/renderer/RenderGlobal", "updateTileEntities", "(Ljava/util/Collection;Ljava/util/Collection;)V", methodNode -> {
-			ASMUtil.LOGGER.info("Transforming method: RenderGlobal#updateTileEntities(Collection, Collection)");
-
-			LabelNode popNode1 = new LabelNode();
-
-			methodNode.instructions.insert(ASMUtil.listOf(
-				new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/config/EntityCullingConfig", "enabled", "Z"),
-				new JumpInsnNode(Opcodes.IFEQ, popNode1),
-				new InsnNode(Opcodes.RETURN),
-				popNode1
-			));
-		});
-
-		this.registerMethodTransformer("bzg", "a", "(Lvg;Lbxy;DDD)Z", "net/minecraft/client/renderer/entity/Render", "shouldRender", "(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;DDD)Z", methodNode -> {
-			ASMUtil.LOGGER.info("Transforming method: Render#shouldRender(Entity, ICamera, double, double, double)");
-
-			LabelNode popNode1 = new LabelNode();
-
-			methodNode.instructions.insert(ASMUtil.listOf(
-				new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/config/EntityCullingConfig", "enabled", "Z"),
-				new JumpInsnNode(Opcodes.IFEQ, popNode1),
-				new VarInsnNode(Opcodes.ALOAD, 0),
-				new VarInsnNode(Opcodes.ALOAD, 1),
-				new VarInsnNode(Opcodes.ALOAD, 2),
-				new VarInsnNode(Opcodes.DLOAD, 3),
-				new VarInsnNode(Opcodes.DLOAD, 5),
-				new VarInsnNode(Opcodes.DLOAD, 7),
-				new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/hook/RenderHook", "shouldRender", "(Lnet/minecraft/client/renderer/entity/Render;Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;DDD)Z", false),
-				new InsnNode(Opcodes.IRETURN),
-				popNode1
-			));
-		});
-
-		this.registerMethodTransformer("bwx", "a", "(Lavj;FI)V", "net/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher", "render", "(Lnet/minecraft/tileentity/TileEntity;FI)V", methodNode -> {
-			ASMUtil.LOGGER.info("Transforming method: TileEntityRendererDispatcher#render(TileEntity, float, int)");
-
-			// TODO just skip unwanted checks instead of overwriting the complete method?
-			LabelNode popNode1 = new LabelNode();
-
-			methodNode.instructions.insert(ASMUtil.listOf(
-				new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/config/EntityCullingConfig", "enabled", "Z"),
-				new JumpInsnNode(Opcodes.IFEQ, popNode1),
-				new VarInsnNode(Opcodes.ALOAD, 1),
-				new VarInsnNode(Opcodes.ILOAD, 3),
-				new VarInsnNode(Opcodes.ALOAD, 0),
-				new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher", "drawingBatch", "Z"),
-				new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/hook/TileEntityRendererDispatcherHook", "render", "(Lnet/minecraft/tileentity/TileEntity;IZ)Z", false),
-				new InsnNode(Opcodes.RETURN),
-				popNode1
-			));
-		});
-
-		this.registerMethodTransformer("bib", "k", "()I", "net/minecraft/client/Minecraft", "getLimitFramerate", "()I", methodNode -> {
-			ASMUtil.LOGGER.info("Transforming method: Minecraft#getLimitFramerate()");
-
-			LabelNode popNode1 = new LabelNode();
-
-			methodNode.instructions.insert(ASMUtil.listOf(
-				new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/config/EntityCullingConfig", "enabled", "Z"),
-				new JumpInsnNode(Opcodes.IFEQ, popNode1),
-				new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/hook/MinecraftHook", "getLimitFramerate", "()I", false),
-				new InsnNode(Opcodes.IRETURN),
-				popNode1
-			));
-		});
-
-		this.registerMethodTransformer("byb", "b", "(DDDDDD)Z", "net/minecraft/client/renderer/culling/ClippingHelper", "isBoxInFrustum", "(DDDDDD)Z", methodNode -> {
-			ASMUtil.LOGGER.info("Transforming method: ClippingHelper#isBoxInFrustum(double, double, double, double, double, double)");
-
-			LabelNode popNode1 = new LabelNode();
-
-			methodNode.instructions.insert(ASMUtil.listOf(
-				new FieldInsnNode(Opcodes.GETSTATIC, "meldexun/entityculling/config/EntityCullingConfig", "enabled", "Z"),
-				new JumpInsnNode(Opcodes.IFEQ, popNode1),
-				new VarInsnNode(Opcodes.ALOAD, 0),
-				new VarInsnNode(Opcodes.DLOAD, 1),
-				new VarInsnNode(Opcodes.DLOAD, 3),
-				new VarInsnNode(Opcodes.DLOAD, 5),
-				new VarInsnNode(Opcodes.DLOAD, 7),
-				new VarInsnNode(Opcodes.DLOAD, 9),
-				new VarInsnNode(Opcodes.DLOAD, 11),
-				new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/hook/ClippingHelperHook", "isBoxInFrustum", "(Lnet/minecraft/client/renderer/culling/ClippingHelper;DDDDDD)Z", false),
-				new InsnNode(Opcodes.IRETURN),
-				popNode1
-			));
-		});
-
-		this.registerMethodTransformer("axw", "a", "(Let;Laxw$a;)Lavj;", "net/minecraft/world/chunk/Chunk", "getTileEntity", "(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/world/chunk/Chunk$EnumCreateEntityType;)Lnet/minecraft/tileentity/TileEntity;", methodNode -> {
-			ASMUtil.LOGGER.info("Transforming method: Chunk#getTileEntity(BlockPos, EnumCreateEntityType)");
-
-			LabelNode popNode1 = new LabelNode();
-
-			methodNode.instructions.insert(ASMUtil.listOf(
-				new VarInsnNode(Opcodes.ALOAD, 0),
-				new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/hook/ChunkHook", "checkAccess", "(Lnet/minecraft/world/chunk/Chunk;)Z", false),
-				new JumpInsnNode(Opcodes.IFNE, popNode1),
-				new VarInsnNode(Opcodes.ALOAD, 0),
-				new VarInsnNode(Opcodes.ALOAD, 1),
-				new MethodInsnNode(Opcodes.INVOKESTATIC, "meldexun/entityculling/asm/hook/ChunkHook", "getTileEntity", "(Lnet/minecraft/world/chunk/Chunk;Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/tileentity/TileEntity;", false),
-				new InsnNode(Opcodes.ARETURN),
-				popNode1
 			));
 		});
 		// @formatter:on

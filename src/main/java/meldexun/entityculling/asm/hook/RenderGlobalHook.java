@@ -16,14 +16,10 @@ import net.minecraft.util.math.BlockPos;
 public final class RenderGlobalHook {
 
 	public static EntityRenderer entityRenderer = EntityCullingClassTransformer.OPTIFINE_DETECTED ? new EntityRendererOptifine() : new EntityRenderer();
-	public static TileEntityRenderer tileEntityRenderer = EntityCullingClassTransformer.OPTIFINE_DETECTED ? new TileEntityRendererOptifine()
-			: new TileEntityRenderer();
+	public static TileEntityRenderer tileEntityRenderer = EntityCullingClassTransformer.OPTIFINE_DETECTED ? new TileEntityRendererOptifine() : new TileEntityRenderer();
 	private static int lastFrameUpdated = -1;
 
 	public static void setup(double partialTicks, ICamera frustum, int frame) {
-		if (!EntityCullingConfig.enabled) {
-			return;
-		}
 		if (frame == lastFrameUpdated) {
 			return;
 		}
