@@ -108,7 +108,7 @@ public class BoundingBoxHelper {
 
 				GlStateManager.pushMatrix();
 				GlStateManager.translate(aabb.minX + px - sc, aabb.minY + py - sc, aabb.minZ + pz - sc);
-				GlStateManager.scale(aabb.maxX - aabb.minX + sc, aabb.maxY - aabb.minY + sc, aabb.maxZ - aabb.minZ + sc);
+				GlStateManager.scale(aabb.maxX - aabb.minX + sc * 2.0D, aabb.maxY - aabb.minY + sc * 2.0D, aabb.maxZ - aabb.minZ + sc * 2.0D);
 
 				GL11.glDrawArrays(GL11.GL_LINES, 0, 24);
 
