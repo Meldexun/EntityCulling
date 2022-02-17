@@ -95,6 +95,7 @@ jar {
         attributes 'ModSide': 'CLIENT'
         attributes 'FMLCorePlugin': 'meldexun.entityculling.asm.EntityCullingPlugin'
         attributes 'FMLCorePluginContainsFMLMod': 'true'
+        attributes 'ForceLoadAsMod': 'true'
         attributes 'FMLAT': 'accesstransformer.cfg'
         attributes 'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker'
         attributes 'TweakOrder': '0'
