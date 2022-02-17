@@ -13,9 +13,6 @@ public class EntityCullingConfig {
 	@Config.Comment("Ideally should be set to equal the render distance. Ram usage (in Bytes) = 1063 * (2x + 1) ^ 3")
 	public static int cacheSize = 12;
 
-	@Config.Comment("Enabling this should give more FPS because (tile-) entities are culled more accuratly. Also this does only not need the cache but the cache still requires memory. This might cause (tile-) entity flickering and lags due to the higher CPU usage.")
-	public static boolean cachelessMode = false;
-
 	public static boolean debugCullInfo = false;
 	public static boolean debugRenderBoxes = false;
 
@@ -37,7 +34,6 @@ public class EntityCullingConfig {
 	@Config.Comment("Every frame there is a 1 in x chance to update the cached bounding box. Higher = better performance, Lower = tile entities with dynamic bounding boxes get updated faster.")
 	@Config.RangeInt(min = 1, max = 1_000_000)
 	public static int tileEntityCachedBoundingBoxUpdateInterval = 100;
-	@Config.RequiresWorldRestart
 	@Config.Comment("Tile entities whose bounding boxes won't be cached (Accepts 'modid' or 'modid:tileentity').")
 	public static String[] tileEntityCachedBoundingBoxBlacklist = new String[0];
 	@Config.Ignore
