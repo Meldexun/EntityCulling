@@ -145,7 +145,7 @@ public class TileEntityRenderer {
 		CullingInstance.getInstance().updateResults(matrix);
 
 		// debug
-		BoundingBoxHelper.drawPoints(partialTicks);
+		BoundingBoxHelper.getInstance().drawPoints(partialTicks);
 	}
 
 	private static Matrix4f getMatrix(int matrix) {
