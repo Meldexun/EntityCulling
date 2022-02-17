@@ -96,6 +96,10 @@ public class BoundingBoxHelper {
 			GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
 
 			for (Entity e : Minecraft.getMinecraft().world.loadedEntityList) {
+				if (e == ce) {
+					continue;
+				}
+
 				AxisAlignedBB aabb = ((IBoundingBoxCache) e).getCachedBoundingBox();
 				double px = -(e.posX - e.lastTickPosX) * (1.0D - partialTicks);
 				double py = -(e.posY - e.lastTickPosY) * (1.0D - partialTicks);
