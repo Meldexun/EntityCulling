@@ -127,36 +127,6 @@ public class BoundingBoxHelper {
 			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 		}
 
-		{
-			List<RaytraceInfo> copy;
-			synchronized (CullingThread.class) {
-				copy = new ArrayList<>(CullingThread.publicDebugRayList);
-			}
-			GL11.glPointSize(4.0F);
-
-			Tessellator tesselator = Tessellator.getInstance();
-			BufferBuilder bufferBuilder = tesselator.getBuffer();
-			ByteBuffer byteBuffer = bufferBuilder.getByteBuffer();
-			bufferBuilder.begin(GL11.GL_POINTS, DefaultVertexFormats.POSITION_COLOR);
-
-			for (int i = 0; i < copy.size(); i++) {
-				RaytraceInfo raytraceInfo = copy.get(i);
-				byteBuffer.putFloat(i * 16, (float) raytraceInfo.x);
-				byteBuffer.putFloat(i * 16 + 4, (float) raytraceInfo.y);
-				byteBuffer.putFloat(i * 16 + 8, (float) raytraceInfo.z);
-				byteBuffer.put(i * 16 + 12, (byte) 255);
-				byteBuffer.put(i * 16 + 13, (byte) 255);
-				byteBuffer.put(i * 16 + 14, (byte) 255);
-				byteBuffer.put(i * 16 + 15, (byte) 255);
-				bufferBuilder.endVertex();
-			}
-
-			tesselator.draw();
-			bufferBuilder.reset();
-
-			GL11.glPointSize(1.0F);
-		}
-
 		GlStateManager.popMatrix();
 
 		GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);

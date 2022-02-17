@@ -1,9 +1,7 @@
 package meldexun.entityculling.util;
 
-import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import meldexun.entityculling.EntityCulling;
@@ -43,8 +41,6 @@ public class CullingThread extends Thread {
 	/** debug */
 	private int counter = 0;
 	public long[] time = new long[100];
-	private static List<RaytraceInfo> privateDebugRayList = new ArrayList<>();
-	public static List<RaytraceInfo> publicDebugRayList = new ArrayList<>();
 
 	private boolean spectator;
 	private Frustum frustum;
@@ -71,8 +67,6 @@ public class CullingThread extends Thread {
 		while (true) {
 			long t = System.nanoTime();
 			try {
-				privateDebugRayList.clear();
-
 				World world = mc.world;
 				EntityPlayer player = mc.player;
 				Entity renderViewEntity = mc.getRenderViewEntity();
@@ -123,12 +117,6 @@ public class CullingThread extends Thread {
 						}
 						this.updateTileEntityCullingState(tileEntity);
 					}
-				}
-
-				synchronized (CullingThread.class) {
-					List<RaytraceInfo> temp = publicDebugRayList;
-					publicDebugRayList = privateDebugRayList;
-					privateDebugRayList = temp;
 				}
 			} catch (Throwable e) {
 				mc.crashed(new CrashReport("Culling Thread crashed!", e));
