@@ -1,12 +1,15 @@
 package meldexun.entityculling.util.culling;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL32;
+import org.lwjgl.opengl.GL33;
 import org.lwjgl.opengl.GL42;
 import org.lwjgl.opengl.GL43;
 import org.lwjgl.opengl.GL44;
@@ -35,6 +38,8 @@ public class CullingInstance {
 	private final int uniform_frame;
 	private final FloatBuffer matrixBuffer = GLAllocation.createDirectFloatBuffer(16);
 
+	private final int cubeVertexBuffer;
+	private final int cubeIndexBuffer;
 	private final Buffer vboBuffer;
 	private final int vao;
 	private final Buffer ssboBuffer;
@@ -45,25 +50,54 @@ public class CullingInstance {
 	private GLSync fence;
 
 	private CullingInstance() {
-		shader = new ShaderBuilder().addShader(GL20.GL_VERTEX_SHADER, new ResourceSupplier(new ResourceLocation(EntityCulling.MOD_ID, "shaders/vert.glsl")))
-				.addShader(GL32.GL_GEOMETRY_SHADER, new ResourceSupplier(new ResourceLocation(EntityCulling.MOD_ID, "shaders/geo.glsl")))
-				.addShader(GL20.GL_FRAGMENT_SHADER, new ResourceSupplier(new ResourceLocation(EntityCulling.MOD_ID, "shaders/frag.glsl"))).build();
+		shader = new ShaderBuilder()
+				.addShader(GL20.GL_VERTEX_SHADER, new ResourceSupplier(new ResourceLocation(EntityCulling.MOD_ID, "shaders/vert.glsl")))
+				.addShader(GL20.GL_FRAGMENT_SHADER, new ResourceSupplier(new ResourceLocation(EntityCulling.MOD_ID, "shaders/frag.glsl")))
+				.build();
 		uniform_projViewMat = GL20.glGetUniformLocation(shader, "projectionViewMatrix");
 		uniform_frame = GL20.glGetUniformLocation(shader, "frame");
 
 		vboBuffer = new Buffer(MAX_OBJ_COUNT * 7 * 4, GL30.GL_MAP_WRITE_BIT | GL44.GL_MAP_PERSISTENT_BIT, GL15.GL_DYNAMIC_DRAW);
 		ssboBuffer = new Buffer(MAX_OBJ_COUNT * 4, GL30.GL_MAP_READ_BIT | GL44.GL_MAP_PERSISTENT_BIT, GL15.GL_DYNAMIC_READ);
 
+		cubeVertexBuffer = GL15.glGenBuffers();
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, cubeVertexBuffer);
+		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, asByteBuffer(new byte[] {
+				0, 0, 0,
+				0, 0, 1,
+				0, 1, 0,
+				0, 1, 1,
+				1, 0, 0,
+				1, 0, 1,
+				1, 1, 0,
+				1, 1, 1
+		}), GL15.GL_STATIC_DRAW);
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+
+		cubeIndexBuffer = GL15.glGenBuffers();
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, cubeIndexBuffer);
+		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, asByteBuffer(new byte[] {
+				3, 7, 1, 5, 4, 7, 6, 3, 2, 1, 0, 4, 2, 6
+		}), GL15.GL_STATIC_DRAW);
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+
 		vao = GL30.glGenVertexArrays();
 		GL30.glBindVertexArray(vao);
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboBuffer.getBuffer());
-		GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, 28, 0);
-		GL20.glVertexAttribPointer(1, 3, GL11.GL_FLOAT, false, 28, 12);
-		GL30.glVertexAttribIPointer(2, 1, GL11.GL_INT, 28, 24);
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, cubeVertexBuffer);
+		GL20.glVertexAttribPointer(0, 3, GL11.GL_BYTE, false, 0, 0);
 		GL20.glEnableVertexAttribArray(0);
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboBuffer.getBuffer());
+		GL20.glVertexAttribPointer(1, 3, GL11.GL_FLOAT, false, 28, 0);
+		GL20.glVertexAttribPointer(2, 3, GL11.GL_FLOAT, false, 28, 12);
+		GL30.glVertexAttribIPointer(3, 1, GL11.GL_INT, 28, 24);
 		GL20.glEnableVertexAttribArray(1);
 		GL20.glEnableVertexAttribArray(2);
+		GL20.glEnableVertexAttribArray(3);
+		GL33.glVertexAttribDivisor(1, 1);
+		GL33.glVertexAttribDivisor(2, 1);
+		GL33.glVertexAttribDivisor(3, 1);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, cubeIndexBuffer);
 		GL30.glBindVertexArray(0);
 	}
 
@@ -72,6 +106,10 @@ public class CullingInstance {
 			instance = new CullingInstance();
 		}
 		return instance;
+	}
+
+	private static ByteBuffer asByteBuffer(byte[] data) {
+		return (ByteBuffer) GLAllocation.createDirectByteBuffer(data.length).put(data).flip();
 	}
 
 	private void sync() {
@@ -100,9 +138,9 @@ public class CullingInstance {
 		vboBuffer.getByteBuffer().putFloat(objCount * 28, (float) minX);
 		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 4, (float) minY);
 		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 8, (float) minZ);
-		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 12, (float) maxX);
-		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 16, (float) maxY);
-		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 20, (float) maxZ);
+		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 12, (float) (maxX - minX));
+		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 16, (float) (maxY - minY));
+		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 20, (float) (maxZ - minZ));
 		vboBuffer.getByteBuffer().putInt(objCount * 28 + 24, objCount);
 		obj.culling_setLastTimeUpdated(frame);
 		obj.culling_setId(objCount);
@@ -123,7 +161,7 @@ public class CullingInstance {
 
 		// render
 		GL30.glBindVertexArray(vao);
-		GL11.glDrawArrays(GL11.GL_POINTS, 0, objCount);
+		GL31.glDrawElementsInstanced(GL11.GL_TRIANGLE_STRIP, 14, GL11.GL_UNSIGNED_BYTE, 0, objCount);
 		GL42.glMemoryBarrier(GL44.GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
 		fence = GL32.glFenceSync(GL32.GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 		GL30.glBindVertexArray(0);

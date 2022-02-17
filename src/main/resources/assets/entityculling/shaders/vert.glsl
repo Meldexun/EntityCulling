@@ -1,17 +1,15 @@
-#version 460 core
+#version 440 core
 
-layout(location = 0) in vec3 bboxMin;
-layout(location = 1) in vec3 bboxMax;
-layout(location = 2) in int objid;
+layout(location = 0) in vec3 v_pos;
+layout(location = 1) in vec3 v_offset;
+layout(location = 2) in vec3 v_scale;
+layout(location = 3) in int v_objid;
 
-out VertexData {
-  vec3 bboxMin;
-  vec3 bboxMax;
-  flat int objid;
-} OUT;
+uniform mat4 projectionViewMatrix;
+
+flat out int f_objid;
 
 void main() {
-  OUT.bboxMin = bboxMin;
-  OUT.bboxMax = bboxMax;
-  OUT.objid = objid;
+  gl_Position = projectionViewMatrix * vec4((v_pos * v_scale) + v_offset, 1);
+  f_objid = v_objid;
 }
