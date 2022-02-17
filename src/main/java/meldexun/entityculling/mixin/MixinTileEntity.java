@@ -36,21 +36,18 @@ public class MixinTileEntity implements IBoundingBoxCache {
 	};
 
 	@Unique
-	private CachingState isCacheable = CachingState.UNKNOWN;
+	private Boolean blacklisted;
 	@Unique
 	private AxisAlignedBB cachedBoundingBox;
 
 	@Unique
 	@Override
 	public void updateCachedBoundingBox() {
-		if (isCacheable == CachingState.UNKNOWN) {
-			if (EntityCullingConfig.tileEntityCachedBoundingBoxBlacklistImpl.contains((TileEntity) (Object) this)) {
-				isCacheable = CachingState.BLACKLISTED;
-			} else {
-				cachedBoundingBox = ((TileEntity) (Object) this).getRenderBoundingBox();
-				isCacheable = CachingState.CACHEABLE;
-			}
-		} else if (isCacheable == CachingState.BLACKLISTED
+		if (blacklisted == null) {
+			blacklisted = EntityCullingConfig.tileEntityCachedBoundingBoxBlacklistImpl.contains((TileEntity) (Object) this);
+		}
+		if (!EntityCullingConfig.tileEntityCachedBoundingBoxEnabled
+				|| blacklisted
 				|| EntityCullingConfig.tileEntityCachedBoundingBoxUpdateInterval == 1
 				|| RAND.nextInt(EntityCullingConfig.tileEntityCachedBoundingBoxUpdateInterval) == 0) {
 			cachedBoundingBox = ((TileEntity) (Object) this).getRenderBoundingBox();
