@@ -138,10 +138,12 @@ public class EntityRendererOptifine extends EntityRenderer {
 			NEXT_ENTITY.invoke(null, entity);
 		}
 		RENDERED_ENTITY.set(Minecraft.getMinecraft().renderGlobal, entity);
+		super.preRenderEntity(entity);
 	}
 
 	@Override
 	protected void postRenderEntity() {
+		super.postRenderEntity();
 		RENDERED_ENTITY.set(Minecraft.getMinecraft().renderGlobal, null);
 	}
 
