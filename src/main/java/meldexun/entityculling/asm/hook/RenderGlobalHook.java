@@ -7,6 +7,7 @@ import meldexun.entityculling.renderer.entity.EntityRenderer;
 import meldexun.entityculling.renderer.entity.EntityRendererOptifine;
 import meldexun.entityculling.renderer.tileentity.TileEntityRenderer;
 import meldexun.entityculling.renderer.tileentity.TileEntityRendererOptifine;
+import meldexun.reflectionutil.ReflectionField;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderGlobal.ContainerLocalRenderInformation;
 import net.minecraft.client.renderer.chunk.RenderChunk;
@@ -18,13 +19,22 @@ public final class RenderGlobalHook {
 
 	public static EntityRenderer entityRenderer = EntityCullingClassTransformer.OPTIFINE_DETECTED ? new EntityRendererOptifine() : new EntityRenderer();
 	public static TileEntityRenderer tileEntityRenderer = EntityCullingClassTransformer.OPTIFINE_DETECTED ? new TileEntityRendererOptifine() : new TileEntityRenderer();
+	private static final ReflectionField<Boolean> IS_SHADOW_PASS = new ReflectionField<>("net.optifine.shaders.Shaders", "isShadowPass", "isShadowPass");
 	private static int lastFrameUpdated = -1;
+	private static int lastFrameUpdatedShadows = -1;
 
 	public static void setup(double partialTicks, ICamera frustum, int frame) {
-		if (EntityCulling.frame <= lastFrameUpdated) {
-			return;
+		if (EntityCullingClassTransformer.OPTIFINE_DETECTED && IS_SHADOW_PASS.getBoolean(null)) {
+			if (EntityCulling.frame <= lastFrameUpdatedShadows) {
+				return;
+			}
+			lastFrameUpdatedShadows = EntityCulling.frame;
+		} else {
+			if (EntityCulling.frame <= lastFrameUpdated) {
+				return;
+			}
+			lastFrameUpdated = EntityCulling.frame;
 		}
-		lastFrameUpdated = EntityCulling.frame;
 
 		Minecraft mc = Minecraft.getMinecraft();
 		Entity viewEntity = mc.getRenderViewEntity();
