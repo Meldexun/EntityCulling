@@ -48,7 +48,6 @@ public class EntityCulling {
 	public void onFMLConstructionEvent(FMLConstructionEvent event) {
 		isOpenGL44Supported = GLContext.getCapabilities().OpenGL44;
 
-		ConfigManager.sync(MOD_ID, Config.Type.INSTANCE);
 		EntityCullingConfig.onConfigChanged();
 
 		MinecraftForge.EVENT_BUS.register(this);
