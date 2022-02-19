@@ -25,7 +25,6 @@ import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.RenderTickEvent;
 
@@ -49,7 +48,6 @@ public class EntityCulling {
 		isOpenGL44Supported = GLContext.getCapabilities().OpenGL44;
 
 		EntityCullingConfig.onConfigChanged();
-
 		MinecraftForge.EVENT_BUS.register(this);
 
 		cullingThread = new CullingThread();
@@ -71,10 +69,11 @@ public class EntityCulling {
 	}
 
 	@SubscribeEvent
-	public void onRenderGameOverlayEvent(TickEvent.RenderTickEvent event) {
+	public void onRenderTickEvent(RenderTickEvent event) {
 		if (event.phase == Phase.END) {
 			return;
 		}
+		frame++;
 		Minecraft mc = Minecraft.getMinecraft();
 		if (mc.world != null) {
 			for (Entity e : mc.world.loadedEntityList) {
@@ -84,14 +83,6 @@ public class EntityCulling {
 				((IBoundingBoxCache) te).updateCachedBoundingBox();
 			}
 		}
-	}
-
-	@SubscribeEvent
-	public void onRenderTickEvent(RenderTickEvent event) {
-		if (event.phase == Phase.END) {
-			return;
-		}
-		frame++;
 	}
 
 	@SubscribeEvent
