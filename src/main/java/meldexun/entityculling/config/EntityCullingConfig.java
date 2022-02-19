@@ -4,6 +4,7 @@ import meldexun.entityculling.EntityCulling;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.common.config.Config;
 
 @Config(modid = EntityCulling.MOD_ID)
@@ -37,7 +38,7 @@ public class EntityCullingConfig {
 	@Config.Comment("Tile entities whose bounding boxes won't be cached (Accepts 'modid' or 'modid:tileentity').")
 	public static String[] tileEntityCachedBoundingBoxBlacklist = new String[0];
 	@Config.Ignore
-	public static ResourceLocationSet<TileEntity> tileEntityCachedBoundingBoxBlacklistImpl = new ResourceLocationSet<>(TileEntity.REGISTRY::getNameForObject);
+	public static ResourceLocationMap<TileEntity, Boolean> tileEntityCachedBoundingBoxBlacklistImpl = new ResourceLocationMap<>(TileEntity.REGISTRY::getNameForObject, false, s -> true);
 
 	public static EntityOptions entity = new EntityOptions();
 	public static TileEntityOptions tileEntity = new TileEntityOptions();
@@ -49,6 +50,8 @@ public class EntityCullingConfig {
 
 	public static void onConfigChanged() {
 		tileEntityCachedBoundingBoxBlacklistImpl.load(tileEntityCachedBoundingBoxBlacklist);
+		entity.entityBoundingBoxGrowthListImpl.load(entity.entityBoundingBoxGrowthList);
+		tileEntity.tileEntityBoundingBoxGrowthListImpl.load(tileEntity.tileEntityBoundingBoxGrowthList);
 		entity.skipHiddenEntityRenderingBlacklistImpl.load(entity.skipHiddenEntityRenderingBlacklist);
 		tileEntity.skipHiddenTileEntityRenderingBlacklistImpl.load(tileEntity.skipHiddenTileEntityRenderingBlacklist);
 	}
@@ -67,7 +70,16 @@ public class EntityCullingConfig {
 		@Config.Comment("Tile entities which will always be rendered. (Accepts 'modid' or 'modid:entity_name')")
 		public String[] skipHiddenEntityRenderingBlacklist = new String[0];
 		@Config.Ignore
-		public ResourceLocationSet<Entity> skipHiddenEntityRenderingBlacklistImpl = new ResourceLocationSet<>(EntityList::getKey);
+		public ResourceLocationMap<Entity, Boolean> skipHiddenEntityRenderingBlacklistImpl = new ResourceLocationMap<>(EntityList::getKey, false, s -> true);
+		@Config.Comment("Allows you to increase the render bounding boxes of entities (or all entities of a mod). Width increases the size on the X and Z axis. Top increases the size in the positive Y direction. Bottom increases the size in the negative Y direction. (Accepts 'modid=width,top,bottom' or 'modid:entity=width,top,bottom').")
+		public String[] entityBoundingBoxGrowthList = new String[0];
+		@Config.Ignore
+		public ResourceLocationMap<Entity, Vec3d> entityBoundingBoxGrowthListImpl = new ResourceLocationMap<>(EntityList::getKey, null, s -> {
+			double x = s.length >= 1 ? Double.parseDouble(s[0]) : 0.0D;
+			double y = s.length >= 2 ? Double.parseDouble(s[1]) : 0.0D;
+			double z = s.length >= 3 ? Double.parseDouble(s[2]) : 0.0D;
+			return x != 0.0D || y != 0.0D || z != 0.0D ? new Vec3d(x, y, z) : null;
+		});
 
 	}
 
@@ -81,7 +93,16 @@ public class EntityCullingConfig {
 		@Config.Comment("Tile entities which will always be rendered. (Accepts 'modid' or 'modid:tile_entity_name')")
 		public String[] skipHiddenTileEntityRenderingBlacklist = new String[0];
 		@Config.Ignore
-		public ResourceLocationSet<TileEntity> skipHiddenTileEntityRenderingBlacklistImpl = new ResourceLocationSet<>(TileEntity.REGISTRY::getNameForObject);
+		public ResourceLocationMap<TileEntity, Boolean> skipHiddenTileEntityRenderingBlacklistImpl = new ResourceLocationMap<>(TileEntity.REGISTRY::getNameForObject, false, s -> true);
+		@Config.Comment("Allows you to increase the render bounding boxes of tile entities (or all entities of a mod). Width increases the size on the X and Z axis. Top increases the size in the positive Y direction. Bottom increases the size in the negative Y direction. (Accepts 'modid=width,top,bottom' or 'modid:tileentity=width,top,bottom').")
+		public String[] tileEntityBoundingBoxGrowthList = new String[0];
+		@Config.Ignore
+		public ResourceLocationMap<TileEntity, Vec3d> tileEntityBoundingBoxGrowthListImpl = new ResourceLocationMap<>(TileEntity.REGISTRY::getNameForObject, null, s -> {
+			double x = s.length >= 1 ? Double.parseDouble(s[0]) : 0.0D;
+			double y = s.length >= 2 ? Double.parseDouble(s[1]) : 0.0D;
+			double z = s.length >= 3 ? Double.parseDouble(s[2]) : 0.0D;
+			return x != 0.0D || y != 0.0D || z != 0.0D ? new Vec3d(x, y, z) : null;
+		});
 
 	}
 

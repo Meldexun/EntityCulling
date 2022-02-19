@@ -90,7 +90,7 @@ public class TileEntityRenderer {
 			if (!EntityCullingConfig.tileEntity.skipHiddenTileEntityRendering) {
 				return false;
 			}
-			if (EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingBlacklistImpl.contains(tileEntity)) {
+			if (EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingBlacklistImpl.get(tileEntity)) {
 				return false;
 			}
 

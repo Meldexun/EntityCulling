@@ -11,6 +11,7 @@ import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.util.IBoundingBoxCache;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.Vec3d;
 
 @Mixin(TileEntity.class)
 public class MixinTileEntity implements IBoundingBoxCache {
@@ -42,10 +43,16 @@ public class MixinTileEntity implements IBoundingBoxCache {
 	@Override
 	public void updateCachedBoundingBox() {
 		if (!EntityCullingConfig.tileEntityCachedBoundingBoxEnabled
-				|| EntityCullingConfig.tileEntityCachedBoundingBoxBlacklistImpl.contains((TileEntity) (Object) this)
+				|| EntityCullingConfig.tileEntityCachedBoundingBoxBlacklistImpl.get((TileEntity) (Object) this)
 				|| EntityCullingConfig.tileEntityCachedBoundingBoxUpdateInterval == 1
 				|| RAND.nextInt(EntityCullingConfig.tileEntityCachedBoundingBoxUpdateInterval) == 0) {
 			cachedBoundingBox = ((TileEntity) (Object) this).getRenderBoundingBox();
+			Vec3d v = EntityCullingConfig.tileEntity.tileEntityBoundingBoxGrowthListImpl.get((TileEntity) (Object) this);
+			if (v != null) {
+				cachedBoundingBox = new AxisAlignedBB(
+						cachedBoundingBox.minX - v.x, cachedBoundingBox.minY - v.z, cachedBoundingBox.minZ - v.x,
+						cachedBoundingBox.maxX + v.x, cachedBoundingBox.maxY + v.y, cachedBoundingBox.maxZ + v.x);
+			}
 		}
 	}
 

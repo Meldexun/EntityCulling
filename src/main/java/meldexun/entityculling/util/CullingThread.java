@@ -185,7 +185,7 @@ public class CullingThread extends Thread {
 		if (EntityCullingConfig.entity.alwaysRenderViewEntity && entity == Minecraft.getMinecraft().getRenderViewEntity()) {
 			return true;
 		}
-		if (EntityCullingConfig.entity.skipHiddenEntityRenderingBlacklistImpl.contains(entity)) {
+		if (EntityCullingConfig.entity.skipHiddenEntityRenderingBlacklistImpl.get(entity)) {
 			return true;
 		}
 
@@ -227,7 +227,7 @@ public class CullingThread extends Thread {
 		if (!EntityCullingConfig.tileEntity.skipHiddenTileEntityRendering) {
 			return true;
 		}
-		if (EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingBlacklistImpl.contains(tileEntity)) {
+		if (EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingBlacklistImpl.get(tileEntity)) {
 			return true;
 		}
 
@@ -292,7 +292,7 @@ public class CullingThread extends Thread {
 			if (EntityCullingConfig.entity.alwaysRenderViewEntity && entity == Minecraft.getMinecraft().getRenderViewEntity()) {
 				return true;
 			}
-			if (EntityCullingConfig.entity.skipHiddenEntityRenderingBlacklistImpl.contains(entity)) {
+			if (EntityCullingConfig.entity.skipHiddenEntityRenderingBlacklistImpl.get(entity)) {
 				return true;
 			}
 
@@ -344,7 +344,7 @@ public class CullingThread extends Thread {
 			if (!EntityCullingConfig.tileEntity.skipHiddenTileEntityRendering) {
 				return true;
 			}
-			if (EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingBlacklistImpl.contains(tileEntity)) {
+			if (EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingBlacklistImpl.get(tileEntity)) {
 				return true;
 			}
 
