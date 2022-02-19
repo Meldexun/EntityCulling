@@ -29,7 +29,7 @@ public class MixinRender {
 		}
 
 		if (entity.ignoreFrustumCheck) {
-			info.setReturnValue(false);
+			info.setReturnValue(true);
 			return;
 		}
 
