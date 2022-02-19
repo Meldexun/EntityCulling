@@ -55,6 +55,9 @@ public class TileEntityRenderer {
 		if (!tileEntity.shouldRenderInPass(0) && !tileEntity.shouldRenderInPass(1)) {
 			return;
 		}
+		if (TileEntityRendererDispatcher.instance.getRenderer(tileEntity) == null) {
+			return;
+		}
 		if (!camera.isBoundingBoxInFrustum(((IBoundingBoxCache) tileEntity).getCachedBoundingBox())) {
 			return;
 		}

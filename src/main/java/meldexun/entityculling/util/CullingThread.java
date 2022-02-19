@@ -14,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.culling.ClippingHelperImpl;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -237,6 +238,9 @@ public class CullingThread extends Thread {
 		if (aabb.maxX - aabb.minX > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize
 				|| aabb.maxY - aabb.minY > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize
 				|| aabb.maxZ - aabb.minZ > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize) {
+			return true;
+		}
+		if (TileEntityRendererDispatcher.instance.getRenderer(tileEntity) == null) {
 			return true;
 		}
 		if (tileEntity.getDistanceSq(this.x, this.y, this.z) >= tileEntity.getMaxRenderDistanceSquared()) {
