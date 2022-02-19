@@ -98,9 +98,10 @@ public class TileEntityRenderer {
 			boolean culled = !CullingInstance.getInstance().isVisible((ICullable) tileEntity);
 
 			AxisAlignedBB aabb = ((IBoundingBoxCache) tileEntity).getCachedBoundingBox();
+			double d = 1.0D / 8.0D;
 			CullingInstance.getInstance().addBox((ICullable) tileEntity,
-					aabb.minX, aabb.minY, aabb.minZ,
-					aabb.maxX, aabb.maxY, aabb.maxZ);
+					aabb.minX - d, aabb.minY - d, aabb.minZ - d,
+					aabb.maxX + d, aabb.maxY + d, aabb.maxZ + d);
 
 			return culled;
 		}
