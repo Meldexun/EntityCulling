@@ -270,6 +270,51 @@ public class CullingThread extends Thread {
 			if (!EntityCullingConfig.optifineShaderOptions.entityShadowsCullingLessAggressiveMode) {
 				return false;
 			}
+		} else {
+			if (!EntityCullingConfig.enabled) {
+				return true;
+			}
+			if (EntityCullingConfig.disabledInSpectator && this.spectator) {
+				return true;
+			}
+			if (!EntityCullingConfig.entity.skipHiddenEntityRendering) {
+				return true;
+			}
+			if (EntityCullingConfig.entity.alwaysRenderBosses && !entity.isNonBoss()) {
+				return true;
+			}
+			if (EntityCullingConfig.entity.alwaysRenderEntitiesWithName && entity.getAlwaysRenderNameTagForRender()) {
+				return true;
+			}
+			if (EntityCullingConfig.entity.alwaysRenderPlayers && entity instanceof EntityPlayer) {
+				return true;
+			}
+			if (EntityCullingConfig.entity.alwaysRenderViewEntity && entity == Minecraft.getMinecraft().getRenderViewEntity()) {
+				return true;
+			}
+			if (EntityCullingConfig.entity.skipHiddenEntityRenderingBlacklistImpl.contains(entity)) {
+				return true;
+			}
+
+			AxisAlignedBB aabb = ((IBoundingBoxCache) entity).getCachedBoundingBoxUnsafe();
+			if (aabb == null) {
+				return true;
+			}
+			double minX = aabb.minX - 0.5D;
+			double minY = aabb.minY - 0.5D;
+			double minZ = aabb.minZ - 0.5D;
+			double maxX = aabb.maxX + 0.5D;
+			double maxY = aabb.maxY + 0.5D;
+			double maxZ = aabb.maxZ + 0.5D;
+			if (!entity.isInRangeToRender3d(this.x, this.y, this.z)) {
+				return true;
+			}
+			if (!this.frustum.isBoxInFrustum(minX, minY, minZ, maxX, maxY, maxZ)) {
+				// Assume that entities outside of the fov don't get rendered and thus there is no need to ray trace if they are
+				// visible.
+				// But return true because there might be special entities which are always rendered.
+				return true;
+			}
 		}
 		return this.checkPointUncached(entity.posX, entity.posY + entity.height * 0.5D, entity.posZ,
 				EntityCullingConfig.optifineShaderOptions.entityShadowsCullingLessAggressiveModeDiff);
@@ -288,6 +333,36 @@ public class CullingThread extends Thread {
 			}
 			if (!EntityCullingConfig.optifineShaderOptions.tileEntityShadowsCullingLessAggressiveMode) {
 				return false;
+			}
+		} else {
+			if (!EntityCullingConfig.enabled) {
+				return true;
+			}
+			if (EntityCullingConfig.disabledInSpectator && this.spectator) {
+				return true;
+			}
+			if (!EntityCullingConfig.tileEntity.skipHiddenTileEntityRendering) {
+				return true;
+			}
+			if (EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingBlacklistImpl.contains(tileEntity)) {
+				return true;
+			}
+
+			AxisAlignedBB aabb = ((IBoundingBoxCache) tileEntity).getCachedBoundingBoxUnsafe();
+			if (aabb == null) {
+				return true;
+			}
+			if (TileEntityRendererDispatcher.instance.getRenderer(tileEntity) == null) {
+				return true;
+			}
+			if (tileEntity.getDistanceSq(this.x, this.y, this.z) >= tileEntity.getMaxRenderDistanceSquared()) {
+				return true;
+			}
+			if (!this.frustum.isBoxInFrustum(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ)) {
+				// Assume that tile entities outside of the fov don't get rendered and thus there is no need to ray trace if they are
+				// visible.
+				// But return true because there might be special entities which are always rendered.
+				return true;
 			}
 		}
 		BlockPos pos = tileEntity.getPos();
