@@ -36,18 +36,13 @@ public class MixinTileEntity implements IBoundingBoxCache {
 	};
 
 	@Unique
-	private Boolean blacklisted;
-	@Unique
 	private AxisAlignedBB cachedBoundingBox;
 
 	@Unique
 	@Override
 	public void updateCachedBoundingBox() {
-		if (blacklisted == null) {
-			blacklisted = EntityCullingConfig.tileEntityCachedBoundingBoxBlacklistImpl.contains((TileEntity) (Object) this);
-		}
 		if (!EntityCullingConfig.tileEntityCachedBoundingBoxEnabled
-				|| blacklisted
+				|| EntityCullingConfig.tileEntityCachedBoundingBoxBlacklistImpl.contains((TileEntity) (Object) this)
 				|| EntityCullingConfig.tileEntityCachedBoundingBoxUpdateInterval == 1
 				|| RAND.nextInt(EntityCullingConfig.tileEntityCachedBoundingBoxUpdateInterval) == 0) {
 			cachedBoundingBox = ((TileEntity) (Object) this).getRenderBoundingBox();
