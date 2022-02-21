@@ -138,15 +138,17 @@ public class TileEntityRenderer {
 	}
 
 	protected void drawPoints(double partialTicks) {
-		Minecraft mc = Minecraft.getMinecraft();
-		Entity e = mc.getRenderViewEntity();
-		double x = e.lastTickPosX + (e.posX - e.lastTickPosX) * partialTicks;
-		double y = e.lastTickPosY + (e.posY - e.lastTickPosY) * partialTicks;
-		double z = e.lastTickPosZ + (e.posZ - e.lastTickPosZ) * partialTicks;
-		Matrix4f matrix = getMatrix(GL11.GL_PROJECTION_MATRIX);
-		matrix.multiply(getMatrix(GL11.GL_MODELVIEW_MATRIX));
-		matrix.multiply(Matrix4f.translateMatrix(-(float) x, -(float) y, -(float) z));
-		CullingInstance.getInstance().updateResults(matrix);
+		if (EntityCulling.useOpenGlBasedCulling()) {
+			Minecraft mc = Minecraft.getMinecraft();
+			Entity e = mc.getRenderViewEntity();
+			double x = e.lastTickPosX + (e.posX - e.lastTickPosX) * partialTicks;
+			double y = e.lastTickPosY + (e.posY - e.lastTickPosY) * partialTicks;
+			double z = e.lastTickPosZ + (e.posZ - e.lastTickPosZ) * partialTicks;
+			Matrix4f matrix = getMatrix(GL11.GL_PROJECTION_MATRIX);
+			matrix.multiply(getMatrix(GL11.GL_MODELVIEW_MATRIX));
+			matrix.multiply(Matrix4f.translateMatrix(-(float) x, -(float) y, -(float) z));
+			CullingInstance.getInstance().updateResults(matrix);
+		}
 
 		// debug
 		BoundingBoxHelper.getInstance().drawPoints(partialTicks);
