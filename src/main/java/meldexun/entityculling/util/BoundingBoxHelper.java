@@ -5,7 +5,6 @@ import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
 
 import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.config.EntityCullingConfig;
@@ -22,7 +21,6 @@ public class BoundingBoxHelper {
 	private static BoundingBoxHelper instance;
 	private final int cubeVertexBuffer;
 	private final int cubeIndexBuffer;
-	private final int vao;
 
 	public BoundingBoxHelper() {
 		cubeVertexBuffer = GL15.glGenBuffers();
@@ -45,15 +43,6 @@ public class BoundingBoxHelper {
 				3, 7, 1, 5, 4, 7, 6, 3, 2, 1, 0, 4, 2, 6
 		}), GL15.GL_STATIC_DRAW);
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
-
-		vao = GL30.glGenVertexArrays();
-		GL30.glBindVertexArray(vao);
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, cubeVertexBuffer);
-		GL20.glVertexAttribPointer(0, 3, GL11.GL_BYTE, false, 0, 0);
-		GL20.glEnableVertexAttribArray(0);
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, cubeIndexBuffer);
-		GL30.glBindVertexArray(0);
 	}
 
 	public static BoundingBoxHelper getInstance() {
@@ -91,7 +80,10 @@ public class BoundingBoxHelper {
 		GlStateManager.disableTexture2D();
 		GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
 
-		GL30.glBindVertexArray(this.vao);
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, cubeVertexBuffer);
+		GL20.glVertexAttribPointer(0, 3, GL11.GL_BYTE, false, 0, 0);
+		GL20.glEnableVertexAttribArray(0);
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, cubeIndexBuffer);
 
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(-camX, -camY, -camZ);
@@ -130,7 +122,8 @@ public class BoundingBoxHelper {
 
 		GlStateManager.popMatrix();
 
-		GL30.glBindVertexArray(0);
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
 
 		GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
 		GlStateManager.enableTexture2D();
