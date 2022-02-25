@@ -1,47 +1,38 @@
 package meldexun.entityculling.mixin;
 
-import javax.annotation.Nullable;
-
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.util.IBoundingBoxCache;
+import meldexun.entityculling.util.MutableAABB;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
 
 @Mixin(Entity.class)
 public class MixinEntity implements IBoundingBoxCache {
 
 	@Unique
-	private AxisAlignedBB cachedBoundingBox;
+	private final MutableAABB cachedBoundingBox = new MutableAABB();
 
 	@Unique
 	@Override
-	public void updateCachedBoundingBox() {
-		cachedBoundingBox = ((Entity) (Object) this).getRenderBoundingBox();
+	public void updateCachedBoundingBox(double partialTicks) {
+		cachedBoundingBox.set(((Entity) (Object) this).getRenderBoundingBox());
+		cachedBoundingBox.grow(0.5D);
+		cachedBoundingBox.offset(
+				-(((Entity) (Object) this).posX - ((Entity) (Object) this).lastTickPosX) * (1.0D - partialTicks),
+				-(((Entity) (Object) this).posY - ((Entity) (Object) this).lastTickPosY) * (1.0D - partialTicks),
+				-(((Entity) (Object) this).posZ - ((Entity) (Object) this).lastTickPosZ) * (1.0D - partialTicks));
 		Vec3d v = EntityCullingConfig.entity.entityBoundingBoxGrowthListImpl.get((Entity) (Object) this);
 		if (v != null) {
-			cachedBoundingBox = new AxisAlignedBB(
-					cachedBoundingBox.minX - v.x, cachedBoundingBox.minY - v.z, cachedBoundingBox.minZ - v.x,
-					cachedBoundingBox.maxX + v.x, cachedBoundingBox.maxY + v.y, cachedBoundingBox.maxZ + v.x);
+			cachedBoundingBox.grow(v);
 		}
 	}
 
 	@Unique
 	@Override
-	public AxisAlignedBB getCachedBoundingBox() {
-		if (this.cachedBoundingBox != null) {
-			return this.cachedBoundingBox;
-		}
-		return ((Entity) (Object) this).getRenderBoundingBox();
-	}
-
-	@Unique
-	@Override
-	@Nullable
-	public AxisAlignedBB getCachedBoundingBoxUnsafe() {
+	public MutableAABB getCachedBoundingBox() {
 		return this.cachedBoundingBox;
 	}
 

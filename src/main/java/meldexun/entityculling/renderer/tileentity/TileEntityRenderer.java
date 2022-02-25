@@ -6,19 +6,20 @@ import java.util.Queue;
 import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.util.BoundingBoxHelper;
+import meldexun.entityculling.util.CameraUtil;
 import meldexun.entityculling.util.IBoundingBoxCache;
 import meldexun.entityculling.util.ICullable;
+import meldexun.entityculling.util.MutableAABB;
 import meldexun.entityculling.util.culling.CullingInstance;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
-import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.client.MinecraftForgeClient;
 
 public class TileEntityRenderer {
 
+	protected final MutableAABB aabb = new MutableAABB();
 	protected final Queue<TileEntity> tileEntityListPass0 = new ArrayDeque<>();
 	protected final Queue<TileEntity> tileEntityListPass1 = new ArrayDeque<>();
 	public int renderedTileEntities;
@@ -52,7 +53,7 @@ public class TileEntityRenderer {
 		if (TileEntityRendererDispatcher.instance.getRenderer(tileEntity) == null) {
 			return;
 		}
-		if (!camera.isBoundingBoxInFrustum(((IBoundingBoxCache) tileEntity).getCachedBoundingBox())) {
+		if (!((IBoundingBoxCache) tileEntity).getCachedBoundingBox().isVisible(camera)) {
 			return;
 		}
 		if (tileEntity.getDistanceSq(camX, camY, camZ) >= tileEntity.getMaxRenderDistanceSquared()) {
@@ -91,15 +92,9 @@ public class TileEntityRenderer {
 			// TODO handle shadows
 			boolean culled = !CullingInstance.getInstance().isVisible((ICullable) tileEntity);
 
-			Minecraft mc = Minecraft.getMinecraft();
-			Entity e = mc.getRenderViewEntity();
-			AxisAlignedBB aabb = ((IBoundingBoxCache) tileEntity).getCachedBoundingBox()
-					.expand((e.posX - e.lastTickPosX) * EntityCulling.frameTime,
-							(e.posY - e.lastTickPosY) * EntityCulling.frameTime,
-							(e.posZ - e.lastTickPosZ) * EntityCulling.frameTime);
-			CullingInstance.getInstance().addBox((ICullable) tileEntity,
-					aabb.minX, aabb.minY, aabb.minZ,
-					aabb.maxX, aabb.maxY, aabb.maxZ);
+			aabb.set(((IBoundingBoxCache) tileEntity).getCachedBoundingBox());
+			aabb.expand(CameraUtil.getDeltaCamera(), CameraUtil.getDeltaFrameTickTime());
+			CullingInstance.getInstance().addBox((ICullable) tileEntity, aabb.minX(), aabb.minY(), aabb.minZ(), aabb.maxX(), aabb.maxY(), aabb.maxZ());
 
 			return culled;
 		}

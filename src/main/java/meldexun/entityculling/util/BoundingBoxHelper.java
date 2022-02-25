@@ -14,7 +14,6 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.AxisAlignedBB;
 
 public class BoundingBoxHelper {
 
@@ -93,15 +92,11 @@ public class BoundingBoxHelper {
 				continue;
 			}
 
-			AxisAlignedBB aabb = ((IBoundingBoxCache) e).getCachedBoundingBox();
-			double px = -(e.posX - e.lastTickPosX) * (1.0D - partialTicks);
-			double py = -(e.posY - e.lastTickPosY) * (1.0D - partialTicks);
-			double pz = -(e.posZ - e.lastTickPosZ) * (1.0D - partialTicks);
-			double sc = 0.5D;
+			MutableAABB aabb = ((IBoundingBoxCache) e).getCachedBoundingBox();
 
 			GlStateManager.pushMatrix();
-			GlStateManager.translate(aabb.minX + px - sc, aabb.minY + py - sc, aabb.minZ + pz - sc);
-			GlStateManager.scale(aabb.maxX - aabb.minX + sc * 2.0D, aabb.maxY - aabb.minY + sc * 2.0D, aabb.maxZ - aabb.minZ + sc * 2.0D);
+			GlStateManager.translate(aabb.minX(), aabb.minY(), aabb.minZ());
+			GlStateManager.scale(aabb.maxX() - aabb.minX(), aabb.maxY() - aabb.minY(), aabb.maxZ() - aabb.minZ());
 
 			GL11.glDrawElements(GL11.GL_TRIANGLE_STRIP, 14, GL11.GL_UNSIGNED_BYTE, 0);
 
@@ -109,11 +104,11 @@ public class BoundingBoxHelper {
 		}
 
 		for (TileEntity te : Minecraft.getMinecraft().world.loadedTileEntityList) {
-			AxisAlignedBB aabb = ((IBoundingBoxCache) te).getCachedBoundingBox();
+			MutableAABB aabb = ((IBoundingBoxCache) te).getCachedBoundingBox();
 
 			GlStateManager.pushMatrix();
-			GlStateManager.translate(aabb.minX, aabb.minY, aabb.minZ);
-			GlStateManager.scale(aabb.maxX - aabb.minX, aabb.maxY - aabb.minY, aabb.maxZ - aabb.minZ);
+			GlStateManager.translate(aabb.minX(), aabb.minY(), aabb.minZ());
+			GlStateManager.scale(aabb.maxX() - aabb.minX(), aabb.maxY() - aabb.minY(), aabb.maxZ() - aabb.minZ());
 
 			GL11.glDrawElements(GL11.GL_TRIANGLE_STRIP, 14, GL11.GL_UNSIGNED_BYTE, 0);
 

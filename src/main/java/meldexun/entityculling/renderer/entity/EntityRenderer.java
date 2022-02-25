@@ -9,8 +9,10 @@ import org.lwjgl.opengl.GL11;
 import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.integration.FairyLights;
+import meldexun.entityculling.util.CameraUtil;
 import meldexun.entityculling.util.IBoundingBoxCache;
 import meldexun.entityculling.util.ICullable;
+import meldexun.entityculling.util.MutableAABB;
 import meldexun.entityculling.util.culling.CullingInstance;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -22,11 +24,11 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.client.MinecraftForgeClient;
 
 public class EntityRenderer {
 
+	protected final MutableAABB aabb = new MutableAABB();
 	protected final Queue<Entity> entityListStaticPass0 = new ArrayDeque<>();
 	protected final Queue<Entity> entityListMultipassPass0 = new ArrayDeque<>();
 	protected final Queue<Entity> entityListOutlinePass0 = new ArrayDeque<>();
@@ -152,13 +154,10 @@ public class EntityRenderer {
 			// TODO handle shadows
 			boolean culled = !CullingInstance.getInstance().isVisible((ICullable) entity);
 
-			AxisAlignedBB aabb = ((IBoundingBoxCache) entity).getCachedBoundingBox();
-			double x = (entity.posX - entity.lastTickPosX) * (1.0F - partialTicks);
-			double y = (entity.posY - entity.lastTickPosY) * (1.0F - partialTicks);
-			double z = (entity.posZ - entity.lastTickPosZ) * (1.0F - partialTicks);
-			CullingInstance.getInstance().addBox((ICullable) entity,
-					aabb.minX - x - 0.5D, aabb.minY - y - 0.5D, aabb.minZ - z - 0.5D,
-					aabb.maxX - x + 0.5D, aabb.maxY - y + 0.5D, aabb.maxZ - z + 0.5D);
+			aabb.set(((IBoundingBoxCache) entity).getCachedBoundingBox());
+			aabb.expand(entity.posX - entity.lastTickPosX, entity.posY - entity.lastTickPosY, entity.posZ - entity.lastTickPosZ, CameraUtil.getDeltaFrameTickTime());
+			aabb.expand(CameraUtil.getDeltaCamera(), CameraUtil.getDeltaFrameTickTime());
+			CullingInstance.getInstance().addBox((ICullable) entity, aabb.minX(), aabb.minY(), aabb.minZ(), aabb.maxX(), aabb.maxY(), aabb.maxZ());
 
 			return culled;
 		}

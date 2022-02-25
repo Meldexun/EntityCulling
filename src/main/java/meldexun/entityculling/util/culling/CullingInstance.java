@@ -23,7 +23,6 @@ import meldexun.entityculling.opengl.ShaderBuilder;
 import meldexun.entityculling.util.CameraUtil;
 import meldexun.entityculling.util.ICullable;
 import meldexun.entityculling.util.ResourceSupplier;
-import meldexun.entityculling.util.matrix.Matrix4f;
 import meldexun.reflectionutil.ReflectionMethod;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
@@ -132,7 +131,7 @@ public class CullingInstance {
 		if (obj.culling_getLastTimeUpdated() == frame) {
 			return;
 		}
-		Vec3d pos = CameraUtil.getCamera(frame);
+		Vec3d pos = CameraUtil.getCamera();
 		if (pos.x >= minX && pos.x <= maxX && pos.y >= minY && pos.y <= maxY && pos.z >= minZ && pos.z <= maxZ) {
 			return;
 		}

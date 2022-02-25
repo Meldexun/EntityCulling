@@ -19,7 +19,6 @@ import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -189,32 +188,23 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		AxisAlignedBB aabb = ((IBoundingBoxCache) entity).getCachedBoundingBoxUnsafe();
-		if (aabb == null) {
-			return !((ICullable) entity).isCulled();
-		}
-		double minX = aabb.minX - 0.5D;
-		double minY = aabb.minY - 0.5D;
-		double minZ = aabb.minZ - 0.5D;
-		double maxX = aabb.maxX + 0.5D;
-		double maxY = aabb.maxY + 0.5D;
-		double maxZ = aabb.maxZ + 0.5D;
-		if (maxX - minX > EntityCullingConfig.entity.skipHiddenEntityRenderingSize
-				|| maxY - minY > EntityCullingConfig.entity.skipHiddenEntityRenderingSize
-				|| maxZ - minZ > EntityCullingConfig.entity.skipHiddenEntityRenderingSize) {
+		MutableAABB aabb = ((IBoundingBoxCache) entity).getCachedBoundingBox();
+		if (aabb.sizeX() > EntityCullingConfig.entity.skipHiddenEntityRenderingSize
+				|| aabb.sizeY() > EntityCullingConfig.entity.skipHiddenEntityRenderingSize
+				|| aabb.sizeZ() > EntityCullingConfig.entity.skipHiddenEntityRenderingSize) {
 			return true;
 		}
 		if (!entity.isInRangeToRender3d(this.x, this.y, this.z)) {
 			return true;
 		}
-		if (!this.frustum.isBoxInFrustum(minX, minY, minZ, maxX, maxY, maxZ)) {
+		if (!aabb.isVisible(frustum)) {
 			// Assume that entities outside of the fov don't get rendered and thus there is no need to ray trace if they are
 			// visible.
 			// But return true because there might be special entities which are always rendered.
 			return true;
 		}
 
-		return this.checkBoxCached(minX, minY, minZ, maxX, maxY, maxZ);
+		return this.checkBoxCached(aabb.minX(), aabb.minY(), aabb.minZ(), aabb.maxX(), aabb.maxY(), aabb.maxZ());
 	}
 
 	private boolean checkTileEntityVisibility(TileEntity tileEntity) {
@@ -231,13 +221,10 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		AxisAlignedBB aabb = ((IBoundingBoxCache) tileEntity).getCachedBoundingBoxUnsafe();
-		if (aabb == null) {
-			return !((ICullable) tileEntity).isCulled();
-		}
-		if (aabb.maxX - aabb.minX > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize
-				|| aabb.maxY - aabb.minY > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize
-				|| aabb.maxZ - aabb.minZ > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize) {
+		MutableAABB aabb = ((IBoundingBoxCache) tileEntity).getCachedBoundingBox();
+		if (aabb.sizeX() > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize
+				|| aabb.sizeY() > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize
+				|| aabb.sizeZ() > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize) {
 			return true;
 		}
 		if (TileEntityRendererDispatcher.instance.getRenderer(tileEntity) == null) {
@@ -246,14 +233,14 @@ public class CullingThread extends Thread {
 		if (tileEntity.getDistanceSq(this.x, this.y, this.z) >= tileEntity.getMaxRenderDistanceSquared()) {
 			return true;
 		}
-		if (!this.frustum.isBoxInFrustum(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ)) {
+		if (!aabb.isVisible(frustum)) {
 			// Assume that tile entities outside of the fov don't get rendered and thus there is no need to ray trace if they are
 			// visible.
 			// But return true because there might be special entities which are always rendered.
 			return true;
 		}
 
-		return this.checkBoxCached(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ);
+		return this.checkBoxCached(aabb.minX(), aabb.minY(), aabb.minZ(), aabb.maxX(), aabb.maxY(), aabb.maxZ());
 	}
 
 	private boolean checkEntityShadowVisibility(Entity entity) {
@@ -296,20 +283,11 @@ public class CullingThread extends Thread {
 				return true;
 			}
 
-			AxisAlignedBB aabb = ((IBoundingBoxCache) entity).getCachedBoundingBoxUnsafe();
-			if (aabb == null) {
-				return true;
-			}
-			double minX = aabb.minX - 0.5D;
-			double minY = aabb.minY - 0.5D;
-			double minZ = aabb.minZ - 0.5D;
-			double maxX = aabb.maxX + 0.5D;
-			double maxY = aabb.maxY + 0.5D;
-			double maxZ = aabb.maxZ + 0.5D;
 			if (!entity.isInRangeToRender3d(this.x, this.y, this.z)) {
 				return true;
 			}
-			if (!this.frustum.isBoxInFrustum(minX, minY, minZ, maxX, maxY, maxZ)) {
+			MutableAABB aabb = ((IBoundingBoxCache) entity).getCachedBoundingBox();
+			if (!aabb.isVisible(frustum)) {
 				// Assume that entities outside of the fov don't get rendered and thus there is no need to ray trace if they are
 				// visible.
 				// But return true because there might be special entities which are always rendered.
@@ -348,17 +326,14 @@ public class CullingThread extends Thread {
 				return true;
 			}
 
-			AxisAlignedBB aabb = ((IBoundingBoxCache) tileEntity).getCachedBoundingBoxUnsafe();
-			if (aabb == null) {
-				return true;
-			}
 			if (TileEntityRendererDispatcher.instance.getRenderer(tileEntity) == null) {
 				return true;
 			}
 			if (tileEntity.getDistanceSq(this.x, this.y, this.z) >= tileEntity.getMaxRenderDistanceSquared()) {
 				return true;
 			}
-			if (!this.frustum.isBoxInFrustum(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ)) {
+			MutableAABB aabb = ((IBoundingBoxCache) tileEntity).getCachedBoundingBox();
+			if (!aabb.isVisible(frustum)) {
 				// Assume that tile entities outside of the fov don't get rendered and thus there is no need to ray trace if they are
 				// visible.
 				// But return true because there might be special entities which are always rendered.

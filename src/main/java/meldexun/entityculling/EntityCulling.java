@@ -7,6 +7,7 @@ import org.lwjgl.opengl.GLContext;
 
 import meldexun.entityculling.asm.hook.RenderGlobalHook;
 import meldexun.entityculling.config.EntityCullingConfig;
+import meldexun.entityculling.util.CameraUtil;
 import meldexun.entityculling.util.CullingThread;
 import meldexun.entityculling.util.IBoundingBoxCache;
 import net.minecraft.client.Minecraft;
@@ -74,13 +75,15 @@ public class EntityCulling {
 			return;
 		}
 		frame++;
+		CameraUtil.update();
 		Minecraft mc = Minecraft.getMinecraft();
+		double partialTicks = mc.getRenderPartialTicks();
 		if (mc.world != null) {
 			for (Entity e : mc.world.loadedEntityList) {
-				((IBoundingBoxCache) e).updateCachedBoundingBox();
+				((IBoundingBoxCache) e).updateCachedBoundingBox(partialTicks);
 			}
 			for (TileEntity te : mc.world.loadedTileEntityList) {
-				((IBoundingBoxCache) te).updateCachedBoundingBox();
+				((IBoundingBoxCache) te).updateCachedBoundingBox(partialTicks);
 			}
 		}
 	}
