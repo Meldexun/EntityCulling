@@ -116,6 +116,7 @@ public class CullingInstance {
 	private void sync() {
 		if (fence != null) {
 			GL32.glClientWaitSync(fence, 0, 1_000_000_000);
+			GL32.glDeleteSync(fence);
 			fence = null;
 		}
 	}
