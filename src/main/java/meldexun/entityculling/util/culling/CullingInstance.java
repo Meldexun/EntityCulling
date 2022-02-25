@@ -16,6 +16,7 @@ import org.lwjgl.opengl.GL44;
 import org.lwjgl.opengl.GLSync;
 
 import meldexun.entityculling.EntityCulling;
+import meldexun.entityculling.asm.EntityCullingClassTransformer;
 import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.opengl.Buffer;
 import meldexun.entityculling.opengl.ShaderBuilder;
@@ -23,6 +24,7 @@ import meldexun.entityculling.util.CameraUtil;
 import meldexun.entityculling.util.ICullable;
 import meldexun.entityculling.util.ResourceSupplier;
 import meldexun.entityculling.util.matrix.Matrix4f;
+import meldexun.reflectionutil.ReflectionMethod;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
@@ -30,6 +32,7 @@ import net.minecraft.util.math.Vec3d;
 
 public class CullingInstance {
 
+	private static final ReflectionMethod<Boolean> IS_SHADERS = new ReflectionMethod<>("Config", "isShaders", "isShaders");
 	private static final int MAX_OBJ_COUNT = 1 << 16;
 	private static CullingInstance instance;
 
@@ -148,7 +151,7 @@ public class CullingInstance {
 	public void updateResults() {
 		frame++;
 
-		int prevShaderProgram = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
+		int prevShaderProgram = EntityCullingClassTransformer.OPTIFINE_DETECTED && IS_SHADERS.invoke(null) ? GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM) : 0;
 		GL20.glUseProgram(shader);
 		GL20.glUniform1i(uniform_frame, frame);
 		GL30.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 1, ssboBuffer.getBuffer());
