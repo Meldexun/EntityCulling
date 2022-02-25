@@ -78,7 +78,7 @@ public class CullingInstance {
 		cubeIndexBuffer = GL15.glGenBuffers();
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, cubeIndexBuffer);
 		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, asByteBuffer(new byte[] {
-				3, 7, 1, 5, 4, 7, 6, 3, 2, 1, 0, 4, 2, 6
+				7, 3, 5, 1, 0, 3, 2, 7, 6, 5, 4, 0, 6, 2
 		}), GL15.GL_STATIC_DRAW);
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
 
@@ -189,7 +189,6 @@ public class CullingInstance {
 		GlStateManager.disableColorMaterial();
 		GlStateManager.depthMask(false);
 		GlStateManager.disableFog();
-		GlStateManager.disableCull();
 		GlStateManager.disableTexture2D();
 		GlStateManager.setActiveTexture(GL13.GL_TEXTURE1);
 		GlStateManager.disableTexture2D();
@@ -209,7 +208,6 @@ public class CullingInstance {
 		GlStateManager.enableColorMaterial();
 		GlStateManager.depthMask(true);
 		GlStateManager.enableFog();
-		GlStateManager.enableCull();
 		GlStateManager.enableTexture2D();
 		GlStateManager.setActiveTexture(GL13.GL_TEXTURE1);
 		GlStateManager.enableTexture2D();
