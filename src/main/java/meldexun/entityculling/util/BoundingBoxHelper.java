@@ -39,7 +39,7 @@ public class BoundingBoxHelper {
 		cubeIndexBuffer = GL15.glGenBuffers();
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, cubeIndexBuffer);
 		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, asByteBuffer(new byte[] {
-				3, 7, 1, 5, 4, 7, 6, 3, 2, 1, 0, 4, 2, 6
+				7, 3, 5, 1, 0, 3, 2, 7, 6, 5, 4, 0, 6, 2
 		}), GL15.GL_STATIC_DRAW);
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
@@ -71,7 +71,6 @@ public class BoundingBoxHelper {
 
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 0.5F);
 		GlStateManager.disableAlpha();
-		GlStateManager.depthMask(false);
 		GlStateManager.disableFog();
 		GlStateManager.disableLighting();
 		GlStateManager.disableTexture2D();
@@ -80,8 +79,8 @@ public class BoundingBoxHelper {
 		GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
 
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, cubeVertexBuffer);
-		GL20.glVertexAttribPointer(0, 3, GL11.GL_BYTE, false, 0, 0);
-		GL20.glEnableVertexAttribArray(0);
+		GL11.glVertexPointer(3, GL11.GL_BYTE, 0, 0);
+		GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, cubeIndexBuffer);
 
 		GlStateManager.pushMatrix();
@@ -118,6 +117,7 @@ public class BoundingBoxHelper {
 		GlStateManager.popMatrix();
 
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+		GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
 
 		GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
@@ -126,7 +126,6 @@ public class BoundingBoxHelper {
 		GlStateManager.enableTexture2D();
 		GlStateManager.enableLighting();
 		GlStateManager.enableFog();
-		GlStateManager.depthMask(true);
 		GlStateManager.enableAlpha();
 	}
 
