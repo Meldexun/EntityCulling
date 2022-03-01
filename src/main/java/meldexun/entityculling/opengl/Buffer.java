@@ -15,7 +15,7 @@ public class Buffer {
 	private final int flags;
 	private final int usage;
 
-	private boolean mapped;
+	// private boolean mapped;
 	private ByteBuffer byteBuffer;
 	private FloatBuffer floatBuffer;
 	private IntBuffer intBuffer;
