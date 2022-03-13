@@ -36,11 +36,13 @@ public class MixinTileEntity implements IBoundingBoxCache {
 
 	@Unique
 	private final MutableAABB cachedBoundingBox = new MutableAABB();
+	private boolean initialized;
 
 	@Unique
 	@Override
 	public void updateCachedBoundingBox(double partialTicks) {
-		if (!EntityCullingConfig.tileEntityCachedBoundingBoxEnabled
+		if (!initialized
+				|| !EntityCullingConfig.tileEntityCachedBoundingBoxEnabled
 				|| EntityCullingConfig.tileEntityCachedBoundingBoxBlacklistImpl.get((TileEntity) (Object) this)
 				|| EntityCullingConfig.tileEntityCachedBoundingBoxUpdateInterval == 1
 				|| RAND.nextInt(EntityCullingConfig.tileEntityCachedBoundingBoxUpdateInterval) == 0) {
@@ -49,6 +51,7 @@ public class MixinTileEntity implements IBoundingBoxCache {
 			if (v != null) {
 				cachedBoundingBox.grow(v);
 			}
+			initialized = true;
 		}
 	}
 
