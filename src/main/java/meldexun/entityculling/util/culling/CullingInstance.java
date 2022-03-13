@@ -1,6 +1,7 @@
 package meldexun.entityculling.util.culling;
 
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
@@ -23,6 +24,7 @@ import meldexun.entityculling.opengl.ShaderBuilder;
 import meldexun.entityculling.util.CameraUtil;
 import meldexun.entityculling.util.ICullable;
 import meldexun.entityculling.util.ResourceSupplier;
+import meldexun.entityculling.util.matrix.Matrix4f;
 import meldexun.reflectionutil.ReflectionMethod;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
@@ -36,7 +38,9 @@ public class CullingInstance {
 	private static CullingInstance instance;
 
 	private final int shader;
+	private final int uniform_projViewMat;
 	private final int uniform_frame;
+	private final FloatBuffer matrixBuffer = GLAllocation.createDirectFloatBuffer(16);
 
 	private final int cubeVertexBuffer;
 	private final int cubeIndexBuffer;
@@ -54,6 +58,7 @@ public class CullingInstance {
 				.addShader(GL20.GL_VERTEX_SHADER, new ResourceSupplier(new ResourceLocation(EntityCulling.MOD_ID, "shaders/vert.glsl")))
 				.addShader(GL20.GL_FRAGMENT_SHADER, new ResourceSupplier(new ResourceLocation(EntityCulling.MOD_ID, "shaders/frag.glsl")))
 				.build();
+		uniform_projViewMat = GL20.glGetUniformLocation(shader, "projectionViewMatrix");
 		uniform_frame = GL20.glGetUniformLocation(shader, "frame");
 
 		vboBuffer = new Buffer(MAX_OBJ_COUNT * 7 * 4, GL30.GL_MAP_WRITE_BIT | GL44.GL_MAP_PERSISTENT_BIT, GL15.GL_DYNAMIC_DRAW);
@@ -147,11 +152,13 @@ public class CullingInstance {
 		objCount++;
 	}
 
-	public void updateResults() {
+	public void updateResults(Matrix4f projViewMat) {
 		frame++;
 
 		int prevShaderProgram = EntityCullingClassTransformer.OPTIFINE_DETECTED && IS_SHADERS.invoke(null) ? GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM) : 0;
 		GL20.glUseProgram(shader);
+		projViewMat.store(matrixBuffer);
+		GL20.glUniformMatrix4(uniform_projViewMat, false, matrixBuffer);
 		GL20.glUniform1i(uniform_frame, frame);
 		GL30.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 1, ssboBuffer.getBuffer());
 
