@@ -17,7 +17,7 @@ Steps to reproduce the behavior:
 4. ...
 
 **Screenshots/Videos**
-If applicable, add screenshots or videos to help explain your problem.
+If applicable, add screenshots or videos to help explain your problem. If you are reporting invisible entities or tile entities then please enable the `debugRenderBoxes` config option when making screenshots/videos!
 
 **Versions**
 Entity Culling: 
