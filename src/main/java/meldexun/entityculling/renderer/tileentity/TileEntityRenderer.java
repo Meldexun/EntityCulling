@@ -54,11 +54,14 @@ public class TileEntityRenderer {
 			return;
 		}
 		if (!((IBoundingBoxCache) tileEntity).getCachedBoundingBox().isVisible(camera)) {
+			((ICullable) tileEntity).setCanBeOcclusionCulled(false);
 			return;
 		}
 		if (tileEntity.getDistanceSq(camX, camY, camZ) >= tileEntity.getMaxRenderDistanceSquared()) {
+			((ICullable) tileEntity).setCanBeOcclusionCulled(false);
 			return;
 		}
+		((ICullable) tileEntity).setCanBeOcclusionCulled(true);
 		if (this.isOcclusionCulled(tileEntity, partialTicks)) {
 			this.occludedTileEntities++;
 			return;

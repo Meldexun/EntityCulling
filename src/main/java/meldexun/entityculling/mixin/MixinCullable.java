@@ -18,6 +18,8 @@ public class MixinCullable implements ICullable {
 	private boolean culled;
 	@Unique
 	private boolean shadowCulled;
+	@Unique
+	private boolean canBeOcclusionCulled;
 
 	@Unique
 	@Override
@@ -65,6 +67,18 @@ public class MixinCullable implements ICullable {
 	@Override
 	public void setShadowCulled(boolean shadowCulled) {
 		this.shadowCulled = shadowCulled;
+	}
+
+	@Unique
+	@Override
+	public boolean canBeOcclusionCulled() {
+		return canBeOcclusionCulled;
+	}
+
+	@Unique
+	@Override
+	public void setCanBeOcclusionCulled(boolean canBeOcclusionCulled) {
+		this.canBeOcclusionCulled = canBeOcclusionCulled;
 	}
 
 }

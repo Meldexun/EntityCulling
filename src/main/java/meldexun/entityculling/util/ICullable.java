@@ -18,4 +18,8 @@ public interface ICullable {
 
 	void setShadowCulled(boolean shadowCulled);
 
+	boolean canBeOcclusionCulled();
+
+	void setCanBeOcclusionCulled(boolean canBeOcclusionCulled);
+
 }

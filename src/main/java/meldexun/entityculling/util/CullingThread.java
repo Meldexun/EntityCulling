@@ -225,16 +225,7 @@ public class CullingThread extends Thread {
 				|| aabb.sizeZ() > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize) {
 			return true;
 		}
-		if (TileEntityRendererDispatcher.instance.getRenderer(tileEntity) == null) {
-			return true;
-		}
-		if (tileEntity.getDistanceSq(this.x, this.y, this.z) >= tileEntity.getMaxRenderDistanceSquared()) {
-			return true;
-		}
-		if (!aabb.isVisible(frustum)) {
-			// Assume that tile entities outside of the fov don't get rendered and thus there is no need to ray trace if they are
-			// visible.
-			// But return true because there might be special entities which are always rendered.
+		if (!((ICullable) tileEntity).canBeOcclusionCulled()) {
 			return true;
 		}
 
