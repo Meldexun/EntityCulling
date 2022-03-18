@@ -2,7 +2,7 @@
 {
   "modid": "entityculling",
   "name": "Entity Culling",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "url": "https://github.com/Meldexun/EntityCulling",
   "authorList": ["Meldexun"]
 }
