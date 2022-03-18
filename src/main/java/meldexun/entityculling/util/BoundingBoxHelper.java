@@ -58,9 +58,9 @@ public class BoundingBoxHelper {
 		if (!EntityCullingConfig.debugRenderBoxes) {
 			return;
 		}
-		if (EntityCulling.useOpenGlBasedCulling()) {
+		/*if (EntityCulling.useOpenGlBasedCulling()) {
 			return;
-		}
+		}*/
 
 		Minecraft mc = Minecraft.getMinecraft();
 		Entity ce = mc.getRenderViewEntity();

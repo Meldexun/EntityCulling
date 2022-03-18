@@ -179,12 +179,13 @@ public class CullingInstance {
 	}
 
 	private void setupRenderState() {
-		if (!EntityCullingConfig.debugRenderBoxes) {
+		/*if (!EntityCullingConfig.debugRenderBoxes) {
 			GlStateManager.colorMask(false, false, false, false);
 		} else {
 			GlStateManager.enableBlend();
 			GlStateManager.tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
-		}
+		}*/
+		GlStateManager.colorMask(false, false, false, false);
 		GlStateManager.disableAlpha();
 		GlStateManager.disableLighting();
 		GlStateManager.disableLight(0);
@@ -199,11 +200,12 @@ public class CullingInstance {
 	}
 
 	private void clearRenderState() {
-		if (!EntityCullingConfig.debugRenderBoxes) {
+		/*if (!EntityCullingConfig.debugRenderBoxes) {
 			GlStateManager.colorMask(true, true, true, true);
 		} else {
 			GlStateManager.disableBlend();
-		}
+		}*/
+		GlStateManager.colorMask(true, true, true, true);
 		GlStateManager.enableAlpha();
 		GlStateManager.enableLighting();
 		GlStateManager.enableLight(0);
