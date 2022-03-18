@@ -126,7 +126,8 @@ public class TileEntityRenderer {
 	}
 
 	protected void preRenderTileEntity(TileEntity tileEntity) {
-
+		// workaround for stupid mods
+		tileEntity.shouldRenderInPass(MinecraftForgeClient.getRenderPass());
 	}
 
 	protected void postRenderTileEntity() {

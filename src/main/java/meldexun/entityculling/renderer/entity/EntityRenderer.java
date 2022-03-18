@@ -259,7 +259,8 @@ public class EntityRenderer {
 	}
 
 	protected void preRenderEntity(Entity entity) {
-
+		// workaround for stupid mods
+		entity.shouldRenderInPass(MinecraftForgeClient.getRenderPass());
 	}
 
 	protected void postRenderEntity() {
