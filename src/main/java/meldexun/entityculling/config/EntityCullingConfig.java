@@ -30,6 +30,9 @@ public class EntityCullingConfig {
 	@Config.RangeDouble(min = 0.0009765625D, max = 1024.0D)
 	public static double raytraceThreshold = 1.0D;
 
+	@Config.Comment("When enabled tile entity bounding boxes are increased slightly to avoid issues when other mods don't correctly set their bounding boxes (requires opengl based culling). If you still have culling or flickering issues you can use the 'debugBoundingBoxes', 'entityBoundingBoxGrowthList' and 'tileEntityBoundingBoxGrowthList' config options to try to fix the bounding box of that entity or tile entity.")
+	public static boolean tileEntityAABBGrowth = true;
+
 	@Config.Comment("Most tile entities have static bounding boxes and thus they can be cached. Tile entities whose bounding boxes are likely to change every frame or so should be added to the blacklist. Tile entities whose bounding only change every once in a while should be covered by cache updates (update speed adjustable through tileEntityCachedBoundingBoxUpdateInterval)")
 	public static boolean tileEntityCachedBoundingBoxEnabled = true;
 	@Config.Comment("Every frame there is a 1 in x chance to update the cached bounding box. Higher = better performance, Lower = tile entities with dynamic bounding boxes get updated faster.")

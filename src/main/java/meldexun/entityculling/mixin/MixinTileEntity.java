@@ -5,6 +5,7 @@ import java.util.Random;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
+import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.util.IBoundingBoxCache;
 import meldexun.entityculling.util.MutableAABB;
@@ -36,6 +37,7 @@ public class MixinTileEntity implements IBoundingBoxCache {
 
 	@Unique
 	private final MutableAABB cachedBoundingBox = new MutableAABB();
+	@Unique
 	private boolean initialized;
 
 	@Unique
@@ -50,6 +52,9 @@ public class MixinTileEntity implements IBoundingBoxCache {
 			Vec3d v = EntityCullingConfig.tileEntity.tileEntityBoundingBoxGrowthListImpl.get((TileEntity) (Object) this);
 			if (v != null) {
 				cachedBoundingBox.grow(v);
+			}
+			if (EntityCulling.useOpenGlBasedCulling() && EntityCullingConfig.tileEntityAABBGrowth) {
+				cachedBoundingBox.grow(0.0625D);
 			}
 			initialized = true;
 		}
