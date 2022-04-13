@@ -44,7 +44,7 @@ public class TileEntityRenderer {
 		mc.world.loadedTileEntityList.forEach(tileEntity -> this.addToRenderLists(tileEntity, camera, camX, camY, camZ, partialTicks));
 	}
 
-	protected void addToRenderLists(TileEntity tileEntity, ICamera camera, double camX, double camY, double camZ, double partialTicks) {
+	protected <T extends TileEntity> void addToRenderLists(T tileEntity, ICamera camera, double camX, double camY, double camZ, double partialTicks) {
 		this.totalTileEntities++;
 
 		if (!tileEntity.shouldRenderInPass(0) && !tileEntity.shouldRenderInPass(1)) {

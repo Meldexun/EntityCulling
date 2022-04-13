@@ -5,7 +5,6 @@ import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
-import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.asm.hook.RenderGlobalHook;
 import meldexun.entityculling.config.EntityCullingConfig;
 import net.minecraft.client.Minecraft;
@@ -64,7 +63,6 @@ public class BoundingBoxHelper {
 		}*/
 
 		Minecraft mc = Minecraft.getMinecraft();
-		Entity ce = mc.getRenderViewEntity();
 
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 0.5F);
 		GlStateManager.disableAlpha();
@@ -80,8 +78,8 @@ public class BoundingBoxHelper {
 		GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, cubeIndexBuffer);
 
-		for (Entity e : Minecraft.getMinecraft().world.loadedEntityList) {
-			if (e == ce) {
+		for (Entity e : mc.world.loadedEntityList) {
+			if (e == mc.getRenderViewEntity()) {
 				continue;
 			}
 
@@ -96,7 +94,7 @@ public class BoundingBoxHelper {
 			GlStateManager.popMatrix();
 		}
 
-		for (TileEntity te : Minecraft.getMinecraft().world.loadedTileEntityList) {
+		for (TileEntity te : mc.world.loadedTileEntityList) {
 			MutableAABB aabb = ((IBoundingBoxCache) te).getCachedBoundingBox();
 
 			GlStateManager.pushMatrix();

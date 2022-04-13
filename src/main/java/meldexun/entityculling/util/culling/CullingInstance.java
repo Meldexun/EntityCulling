@@ -18,7 +18,6 @@ import org.lwjgl.opengl.GLSync;
 
 import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.asm.EntityCullingClassTransformer;
-import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.asm.hook.RenderGlobalHook;
 import meldexun.entityculling.opengl.Buffer;
 import meldexun.entityculling.opengl.ShaderBuilder;

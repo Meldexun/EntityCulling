@@ -38,7 +38,7 @@ public class TileEntityRendererOptifine extends TileEntityRenderer {
 	}
 
 	@Override
-	protected void addToRenderLists(TileEntity tileEntity, ICamera camera, double camX, double camY, double camZ, double partialTicks) {
+	protected <T extends TileEntity> void addToRenderLists(T tileEntity, ICamera camera, double camX, double camY, double camZ, double partialTicks) {
 		if (IS_SHADOW_PASS.getBoolean(null) && EntityCullingConfig.optifineShaderOptions.tileEntityShadowsDistanceLimited) {
 			double d = EntityCullingConfig.optifineShaderOptions.tileEntityShadowsMaxDistance * 16.0D;
 			if (tileEntity.getDistanceSq(camX, camY, camZ) > d * d) {
