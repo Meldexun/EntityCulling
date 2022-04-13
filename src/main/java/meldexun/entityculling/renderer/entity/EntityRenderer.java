@@ -12,6 +12,7 @@ import meldexun.entityculling.integration.FairyLights;
 import meldexun.entityculling.util.CameraUtil;
 import meldexun.entityculling.util.IBoundingBoxCache;
 import meldexun.entityculling.util.ICullable;
+import meldexun.entityculling.util.ILoadable;
 import meldexun.entityculling.util.MutableAABB;
 import meldexun.entityculling.util.culling.CullingInstance;
 import net.minecraft.client.Minecraft;
@@ -62,6 +63,9 @@ public class EntityRenderer {
 	protected <T extends Entity> boolean addToRenderLists(T entity, ICamera camera, double camX, double camY, double camZ, double partialTicks) {
 		this.totalEntities++;
 
+		if (!((ILoadable) entity).isChunkLoaded()) {
+			return false;
+		}
 		if (!entity.shouldRenderInPass(0) && !entity.shouldRenderInPass(1)) {
 			return false;
 		}

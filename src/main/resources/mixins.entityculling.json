@@ -11,11 +11,13 @@
     "MixinClippingHelper",
     "MixinCullable",
     "MixinEntity",
+    "MixinLoadable",
     "MixinMinecraft",
     "MixinRender",
     "MixinRenderGlobal",
     "MixinTileEntity",
-    "MixinTileEntityRendererDispatcher"
+    "MixinTileEntityRendererDispatcher",
+    "MixinWorld"
   ],
   "injectors": {
     "defaultRequire": 1
