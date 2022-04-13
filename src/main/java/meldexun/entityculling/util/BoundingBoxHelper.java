@@ -6,6 +6,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
 import meldexun.entityculling.EntityCulling;
+import meldexun.entityculling.asm.hook.RenderGlobalHook;
 import meldexun.entityculling.config.EntityCullingConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
@@ -64,9 +65,6 @@ public class BoundingBoxHelper {
 
 		Minecraft mc = Minecraft.getMinecraft();
 		Entity ce = mc.getRenderViewEntity();
-		double camX = ce.lastTickPosX + (ce.posX - ce.lastTickPosX) * partialTicks;
-		double camY = ce.lastTickPosY + (ce.posY - ce.lastTickPosY) * partialTicks;
-		double camZ = ce.lastTickPosZ + (ce.posZ - ce.lastTickPosZ) * partialTicks;
 
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 0.5F);
 		GlStateManager.disableAlpha();
@@ -82,9 +80,6 @@ public class BoundingBoxHelper {
 		GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, cubeIndexBuffer);
 
-		GlStateManager.pushMatrix();
-		GlStateManager.translate(-camX, -camY, -camZ);
-
 		for (Entity e : Minecraft.getMinecraft().world.loadedEntityList) {
 			if (e == ce) {
 				continue;
@@ -93,7 +88,7 @@ public class BoundingBoxHelper {
 			MutableAABB aabb = ((IBoundingBoxCache) e).getCachedBoundingBox();
 
 			GlStateManager.pushMatrix();
-			GlStateManager.translate(aabb.minX(), aabb.minY(), aabb.minZ());
+			GlStateManager.translate(aabb.minX() - RenderGlobalHook.cameraEntityX, aabb.minY() - RenderGlobalHook.cameraEntityY, aabb.minZ() - RenderGlobalHook.cameraEntityZ);
 			GlStateManager.scale(aabb.maxX() - aabb.minX(), aabb.maxY() - aabb.minY(), aabb.maxZ() - aabb.minZ());
 
 			GL11.glDrawElements(GL11.GL_TRIANGLE_STRIP, 14, GL11.GL_UNSIGNED_BYTE, 0);
@@ -105,15 +100,13 @@ public class BoundingBoxHelper {
 			MutableAABB aabb = ((IBoundingBoxCache) te).getCachedBoundingBox();
 
 			GlStateManager.pushMatrix();
-			GlStateManager.translate(aabb.minX(), aabb.minY(), aabb.minZ());
+			GlStateManager.translate(aabb.minX() - RenderGlobalHook.cameraEntityX, aabb.minY() - RenderGlobalHook.cameraEntityY, aabb.minZ() - RenderGlobalHook.cameraEntityZ);
 			GlStateManager.scale(aabb.maxX() - aabb.minX(), aabb.maxY() - aabb.minY(), aabb.maxZ() - aabb.minZ());
 
 			GL11.glDrawElements(GL11.GL_TRIANGLE_STRIP, 14, GL11.GL_UNSIGNED_BYTE, 0);
 
 			GlStateManager.popMatrix();
 		}
-
-		GlStateManager.popMatrix();
 
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 		GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);

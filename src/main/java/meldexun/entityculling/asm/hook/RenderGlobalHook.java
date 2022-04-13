@@ -31,6 +31,9 @@ public final class RenderGlobalHook {
 	private static final FloatBuffer MATRIX_BUFFER = GLAllocation.createDirectFloatBuffer(16);
 	private static int lastFrameUpdated = -1;
 	private static int lastFrameUpdatedShadows = -1;
+	public static double cameraEntityX;
+	public static double cameraEntityY;
+	public static double cameraEntityZ;
 
 	public static void setup(double partialTicks, ICamera frustum, int frame) {
 		if (EntityCullingClassTransformer.OPTIFINE_DETECTED && IS_SHADOW_PASS.getBoolean(null)) {
@@ -47,12 +50,12 @@ public final class RenderGlobalHook {
 
 		Minecraft mc = Minecraft.getMinecraft();
 		Entity viewEntity = mc.getRenderViewEntity();
-		double x = viewEntity.lastTickPosX + (viewEntity.posX - viewEntity.lastTickPosX) * partialTicks;
-		double y = viewEntity.lastTickPosY + (viewEntity.posY - viewEntity.lastTickPosY) * partialTicks;
-		double z = viewEntity.lastTickPosZ + (viewEntity.posZ - viewEntity.lastTickPosZ) * partialTicks;
+		cameraEntityX = viewEntity.lastTickPosX + (viewEntity.posX - viewEntity.lastTickPosX) * partialTicks;
+		cameraEntityY = viewEntity.lastTickPosY + (viewEntity.posY - viewEntity.lastTickPosY) * partialTicks;
+		cameraEntityZ = viewEntity.lastTickPosZ + (viewEntity.posZ - viewEntity.lastTickPosZ) * partialTicks;
 
-		entityRenderer.setup(frustum, x, y, z, partialTicks);
-		tileEntityRenderer.setup(frustum, x, y, z, partialTicks);
+		entityRenderer.setup(frustum, cameraEntityX, cameraEntityY, cameraEntityZ, partialTicks);
+		tileEntityRenderer.setup(frustum, cameraEntityX, cameraEntityY, cameraEntityZ, partialTicks);
 	}
 
 	public static boolean renderEntities(float partialTicks) {
@@ -63,14 +66,8 @@ public final class RenderGlobalHook {
 		if (EntityCulling.useOpenGlBasedCulling()
 				&& MinecraftForgeClient.getRenderPass() == 0
 				&& (!EntityCullingClassTransformer.OPTIFINE_DETECTED || !IS_SHADOW_PASS.getBoolean(null))) {
-			Minecraft mc = Minecraft.getMinecraft();
-			Entity e = mc.getRenderViewEntity();
-			double x = e.lastTickPosX + (e.posX - e.lastTickPosX) * partialTicks;
-			double y = e.lastTickPosY + (e.posY - e.lastTickPosY) * partialTicks;
-			double z = e.lastTickPosZ + (e.posZ - e.lastTickPosZ) * partialTicks;
 			Matrix4f matrix = getMatrix(GL11.GL_PROJECTION_MATRIX);
 			matrix.multiply(getMatrix(GL11.GL_MODELVIEW_MATRIX));
-			matrix.multiply(Matrix4f.translateMatrix(-(float) x, -(float) y, -(float) z));
 			CullingInstance.getInstance().updateResults(matrix);
 		}
 

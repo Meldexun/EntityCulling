@@ -19,6 +19,7 @@ import org.lwjgl.opengl.GLSync;
 import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.asm.EntityCullingClassTransformer;
 import meldexun.entityculling.config.EntityCullingConfig;
+import meldexun.entityculling.asm.hook.RenderGlobalHook;
 import meldexun.entityculling.opengl.Buffer;
 import meldexun.entityculling.opengl.ShaderBuilder;
 import meldexun.entityculling.util.CameraUtil;
@@ -140,9 +141,9 @@ public class CullingInstance {
 		if (pos.x >= minX && pos.x <= maxX && pos.y >= minY && pos.y <= maxY && pos.z >= minZ && pos.z <= maxZ) {
 			return;
 		}
-		vboBuffer.getByteBuffer().putFloat(objCount * 28, (float) minX);
-		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 4, (float) minY);
-		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 8, (float) minZ);
+		vboBuffer.getByteBuffer().putFloat(objCount * 28, (float) (minX - RenderGlobalHook.cameraEntityX));
+		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 4, (float) (minY - RenderGlobalHook.cameraEntityY));
+		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 8, (float) (minZ - RenderGlobalHook.cameraEntityZ));
 		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 12, (float) (maxX - minX));
 		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 16, (float) (maxY - minY));
 		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 20, (float) (maxZ - minZ));
