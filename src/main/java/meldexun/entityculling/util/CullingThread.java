@@ -11,7 +11,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.culling.ClippingHelperImpl;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -315,17 +314,7 @@ public class CullingThread extends Thread {
 				return true;
 			}
 
-			if (TileEntityRendererDispatcher.instance.getRenderer(tileEntity) == null) {
-				return true;
-			}
-			if (tileEntity.getDistanceSq(this.x, this.y, this.z) >= tileEntity.getMaxRenderDistanceSquared()) {
-				return true;
-			}
-			MutableAABB aabb = ((IBoundingBoxCache) tileEntity).getCachedBoundingBox();
-			if (!aabb.isVisible(frustum)) {
-				// Assume that tile entities outside of the fov don't get rendered and thus there is no need to ray trace if they are
-				// visible.
-				// But return true because there might be special entities which are always rendered.
+			if (!((ICullable) tileEntity).canBeOcclusionCulled()) {
 				return true;
 			}
 		}
