@@ -37,6 +37,7 @@ public class EntityCulling {
 	private static final DecimalFormat FORMAT = new DecimalFormat("#.#");
 	public static boolean isCubicChunksInstalled;
 	public static boolean isFairyLightsInstalled;
+	public static boolean isValkyrienSkiesInstalled;
 	private static boolean isOpenGL44Supported;
 	public static int frame;
 
@@ -59,6 +60,7 @@ public class EntityCulling {
 	public void onFMLPostInitializationEvent(FMLPostInitializationEvent event) {
 		isCubicChunksInstalled = Loader.isModLoaded("cubicchunks");
 		isFairyLightsInstalled = Loader.isModLoaded("fairylights");
+		isValkyrienSkiesInstalled = Loader.isModLoaded("valkyrienskies");
 	}
 
 	@SubscribeEvent

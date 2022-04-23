@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.Unique;
 
 import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.config.EntityCullingConfig;
+import meldexun.entityculling.integration.ValkyrienSkies;
 import meldexun.entityculling.util.IBoundingBoxCache;
 import meldexun.entityculling.util.MutableAABB;
 import net.minecraft.tileentity.TileEntity;
@@ -48,7 +49,7 @@ public class MixinTileEntity implements IBoundingBoxCache {
 				|| EntityCullingConfig.tileEntityCachedBoundingBoxBlacklistImpl.get((TileEntity) (Object) this)
 				|| EntityCullingConfig.tileEntityCachedBoundingBoxUpdateInterval == 1
 				|| RAND.nextInt(EntityCullingConfig.tileEntityCachedBoundingBoxUpdateInterval) == 0) {
-			cachedBoundingBox.set(((TileEntity) (Object) this).getRenderBoundingBox());
+			cachedBoundingBox.set(EntityCulling.isValkyrienSkiesInstalled ? ValkyrienSkies.getAABB((TileEntity) (Object) this) : ((TileEntity) (Object) this).getRenderBoundingBox());
 			Vec3d v = EntityCullingConfig.tileEntity.tileEntityBoundingBoxGrowthListImpl.get((TileEntity) (Object) this);
 			if (v != null) {
 				cachedBoundingBox.grow(v);
