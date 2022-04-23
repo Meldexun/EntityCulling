@@ -2,19 +2,27 @@ package meldexun.entityculling.mixin;
 
 import java.util.Random;
 
+import javax.annotation.Nullable;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.integration.ValkyrienSkies;
 import meldexun.entityculling.util.IBoundingBoxCache;
+import meldexun.entityculling.util.ITileEntityRendererCache;
 import meldexun.entityculling.util.MutableAABB;
+import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 
 @Mixin(TileEntity.class)
-public class MixinTileEntity implements IBoundingBoxCache {
+public class MixinTileEntity implements IBoundingBoxCache, ITileEntityRendererCache {
 
 	@SuppressWarnings("serial")
 	@Unique
@@ -40,6 +48,8 @@ public class MixinTileEntity implements IBoundingBoxCache {
 	private final MutableAABB cachedBoundingBox = new MutableAABB();
 	@Unique
 	private boolean initialized;
+	@Unique
+	private TileEntitySpecialRenderer<TileEntity> renderer;
 
 	@Unique
 	@Override
@@ -65,6 +75,21 @@ public class MixinTileEntity implements IBoundingBoxCache {
 	@Override
 	public MutableAABB getCachedBoundingBox() {
 		return this.cachedBoundingBox;
+	}
+
+	@Inject(method = "setWorld", at = @At("HEAD"))
+	public void setWorld(World world, CallbackInfo info) {
+		if (!world.isRemote)
+			return;
+		renderer = loadRenderer((TileEntity) (Object) this);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Unique
+	@Override
+	@Nullable
+	public <T extends TileEntity> TileEntitySpecialRenderer<T> getRenderer() {
+		return (TileEntitySpecialRenderer<T>) renderer;
 	}
 
 }

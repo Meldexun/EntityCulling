@@ -1,19 +1,28 @@
 package meldexun.entityculling.mixin;
 
+import javax.annotation.Nullable;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.util.IBoundingBoxCache;
+import meldexun.entityculling.util.IEntityRendererCache;
 import meldexun.entityculling.util.MutableAABB;
+import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 
 @Mixin(Entity.class)
-public class MixinEntity implements IBoundingBoxCache {
+public class MixinEntity implements IBoundingBoxCache, IEntityRendererCache {
 
 	@Unique
 	private final MutableAABB cachedBoundingBox = new MutableAABB();
+	@Unique
+	private Render<Entity> renderer;
 
 	@Unique
 	@Override
@@ -34,6 +43,21 @@ public class MixinEntity implements IBoundingBoxCache {
 	@Override
 	public MutableAABB getCachedBoundingBox() {
 		return this.cachedBoundingBox;
+	}
+
+	@Inject(method = "onAddedToWorld", at = @At("HEAD"), remap = false)
+	public void onAddedToWorld(CallbackInfo info) {
+		if (!((Entity) (Object) this).world.isRemote)
+			return;
+		renderer = loadRenderer((Entity) (Object) this);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Unique
+	@Override
+	@Nullable
+	public <T extends Entity> Render<T> getRenderer() {
+		return (Render<T>) renderer;
 	}
 
 }

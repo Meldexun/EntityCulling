@@ -10,6 +10,7 @@ import meldexun.entityculling.util.CameraUtil;
 import meldexun.entityculling.util.IBoundingBoxCache;
 import meldexun.entityculling.util.ICullable;
 import meldexun.entityculling.util.ILoadable;
+import meldexun.entityculling.util.ITileEntityRendererCache;
 import meldexun.entityculling.util.MutableAABB;
 import meldexun.entityculling.util.culling.CullingInstance;
 import net.minecraft.client.Minecraft;
@@ -48,13 +49,10 @@ public class TileEntityRenderer {
 	protected <T extends TileEntity> void addToRenderLists(T tileEntity, ICamera camera, double camX, double camY, double camZ, double partialTicks) {
 		this.totalTileEntities++;
 
+		if (!((ITileEntityRendererCache) tileEntity).hasRenderer()) {
+			return;
+		}
 		if (!((ILoadable) tileEntity).isChunkLoaded()) {
-			return;
-		}
-		if (!tileEntity.shouldRenderInPass(0) && !tileEntity.shouldRenderInPass(1)) {
-			return;
-		}
-		if (TileEntityRendererDispatcher.instance.getRenderer(tileEntity) == null) {
 			return;
 		}
 		if (!((IBoundingBoxCache) tileEntity).getCachedBoundingBox().isVisible(camera)) {

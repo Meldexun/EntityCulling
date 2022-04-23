@@ -10,6 +10,9 @@ import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.util.CameraUtil;
 import meldexun.entityculling.util.CullingThread;
 import meldexun.entityculling.util.IBoundingBoxCache;
+import meldexun.entityculling.util.IEntityRendererCache;
+import meldexun.entityculling.util.ILoadable;
+import meldexun.entityculling.util.ITileEntityRendererCache;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.entity.Entity;
@@ -82,10 +85,12 @@ public class EntityCulling {
 		double partialTicks = mc.getRenderPartialTicks();
 		if (mc.world != null) {
 			for (Entity e : mc.world.loadedEntityList) {
-				((IBoundingBoxCache) e).updateCachedBoundingBox(partialTicks);
+				if (((IEntityRendererCache) e).hasRenderer() && ((ILoadable) e).isChunkLoaded())
+					((IBoundingBoxCache) e).updateCachedBoundingBox(partialTicks);
 			}
 			for (TileEntity te : mc.world.loadedTileEntityList) {
-				((IBoundingBoxCache) te).updateCachedBoundingBox(partialTicks);
+				if (((ITileEntityRendererCache) te).hasRenderer() && ((ILoadable) te).isChunkLoaded())
+					((IBoundingBoxCache) te).updateCachedBoundingBox(partialTicks);
 			}
 		}
 	}

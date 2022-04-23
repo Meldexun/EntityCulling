@@ -185,6 +185,12 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
+		if (!((IEntityRendererCache) entity).hasRenderer()) {
+			return true;
+		}
+		if (!((ILoadable) entity).isChunkLoaded()) {
+			return true;
+		}
 		MutableAABB aabb = ((IBoundingBoxCache) entity).getCachedBoundingBox();
 		if (aabb.sizeX() > EntityCullingConfig.entity.skipHiddenEntityRenderingSize
 				|| aabb.sizeY() > EntityCullingConfig.entity.skipHiddenEntityRenderingSize
@@ -218,6 +224,12 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
+		if (!((ITileEntityRendererCache) tileEntity).hasRenderer()) {
+			return true;
+		}
+		if (!((ILoadable) tileEntity).isChunkLoaded()) {
+			return true;
+		}
 		MutableAABB aabb = ((IBoundingBoxCache) tileEntity).getCachedBoundingBox();
 		if (aabb.sizeX() > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize
 				|| aabb.sizeY() > EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingSize
@@ -271,6 +283,12 @@ public class CullingThread extends Thread {
 				return true;
 			}
 
+			if (!((IEntityRendererCache) entity).hasRenderer()) {
+				return true;
+			}
+			if (!((ILoadable) entity).isChunkLoaded()) {
+				return true;
+			}
 			if (!entity.isInRangeToRender3d(this.x, this.y, this.z)) {
 				return true;
 			}
@@ -314,6 +332,12 @@ public class CullingThread extends Thread {
 				return true;
 			}
 
+			if (!((ITileEntityRendererCache) tileEntity).hasRenderer()) {
+				return true;
+			}
+			if (!((ILoadable) tileEntity).isChunkLoaded()) {
+				return true;
+			}
 			if (!((ICullable) tileEntity).canBeOcclusionCulled()) {
 				return true;
 			}

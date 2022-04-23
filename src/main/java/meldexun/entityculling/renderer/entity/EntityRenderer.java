@@ -1,7 +1,6 @@
 package meldexun.entityculling.renderer.entity;
 
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Queue;
 
 import org.lwjgl.opengl.GL11;
@@ -12,6 +11,7 @@ import meldexun.entityculling.integration.FairyLights;
 import meldexun.entityculling.util.CameraUtil;
 import meldexun.entityculling.util.IBoundingBoxCache;
 import meldexun.entityculling.util.ICullable;
+import meldexun.entityculling.util.IEntityRendererCache;
 import meldexun.entityculling.util.ILoadable;
 import meldexun.entityculling.util.MutableAABB;
 import meldexun.entityculling.util.culling.CullingInstance;
@@ -20,7 +20,6 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.client.renderer.entity.Render;
-import net.minecraft.client.renderer.entity.RenderEntity;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -63,20 +62,16 @@ public class EntityRenderer {
 	protected <T extends Entity> boolean addToRenderLists(T entity, ICamera camera, double camX, double camY, double camZ, double partialTicks) {
 		this.totalEntities++;
 
-		if (!((ILoadable) entity).isChunkLoaded()) {
+		if (!((IEntityRendererCache) entity).hasRenderer()) {
 			return false;
 		}
-		if (!entity.shouldRenderInPass(0) && !entity.shouldRenderInPass(1)) {
+		if (!((ILoadable) entity).isChunkLoaded()) {
 			return false;
 		}
 
 		Minecraft mc = Minecraft.getMinecraft();
-		RenderManager renderManager = mc.getRenderManager();
-		Render<T> renderer = renderManager.getEntityRenderObject(entity);
+		Render<T> renderer = ((IEntityRendererCache) entity).getRenderer();
 
-		if (renderer == null) {
-			return false;
-		}
 		if (!renderer.shouldRender(entity, camera, camX, camY, camZ)
 				&& !entity.isRidingOrBeingRiddenBy(mc.player)
 				&& (!EntityCulling.isFairyLightsInstalled || !FairyLights.isFairyLightEntity(entity))) {
@@ -118,11 +113,9 @@ public class EntityRenderer {
 
 		Entity[] parts = entity.getParts();
 		if (parts != null) {
-			Arrays.stream(entity.getParts()).filter(part -> {
-				return renderManager.getEntityRenderObject(part).getClass() != RenderEntity.class;
-			}).forEach(part -> {
+			for (Entity part : parts) {
 				this.addToRenderLists(part, camera, camX, camY, camZ, partialTicks);
-			});
+			}
 		}
 
 		return true;

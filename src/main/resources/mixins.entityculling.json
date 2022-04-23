@@ -15,6 +15,7 @@
     "MixinMinecraft",
     "MixinRender",
     "MixinRenderGlobal",
+    "MixinRenderManager",
     "MixinTileEntity",
     "MixinTileEntityRendererDispatcher",
     "MixinWorld"
