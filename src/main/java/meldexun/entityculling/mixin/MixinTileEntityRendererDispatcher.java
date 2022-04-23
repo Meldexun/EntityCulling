@@ -13,7 +13,7 @@ import net.minecraft.world.World;
 public class MixinTileEntityRendererDispatcher {
 
 	@Redirect(method = "render(Lnet/minecraft/tileentity/TileEntity;FI)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;isBlockLoaded(Lnet/minecraft/util/math/BlockPos;Z)Z"))
-	public boolean render(World world, BlockPos pos, boolean allowEmpty) {
+	public boolean isBlockLoaded(World world, BlockPos pos, boolean allowEmpty) {
 		if (!EntityCullingConfig.enabled) {
 			return world.isBlockLoaded(pos, allowEmpty);
 		}
