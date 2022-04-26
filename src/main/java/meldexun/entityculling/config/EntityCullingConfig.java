@@ -20,20 +20,20 @@ public class EntityCullingConfig {
 	public static boolean disabledInSpectator = true;
 
 	@Config.RequiresWorldRestart
-	@Config.Comment("Disable all changes from this mod.")
+	@Config.Comment("Disable all changes from this mod (This is not equal to removing the mod!).")
 	public static boolean enabled = true;
 
-	@Config.Comment("When enabled and OpenGl 4.4 is supported OpenGl based culling is used which is a lot faster and more accurate.")
 	@Config.Comment("If you have a weak CPU enabling this option might help reducing the CPU usage.")
 	public static boolean enableRaytraceCache = false;
 
+	@Config.Comment("If enabled and OpenGl 4.4 is supported OpenGl based culling is used which is a lot faster and more accurate. If you have a weak GPU you might want to disable this.")
 	public static boolean openglBasedCulling = true;
 
-	@Config.Comment("If you feel the need to increase this value because of entities being culled falsely then another modder probably messed up his render bounding boxes and he should fix them instead.")
-	@Config.RangeDouble(min = 0.0009765625D, max = 1024.0D)
+	@Config.Comment("If you feel the need to increase this value because of entities being culled falsely then another modder probably messed up their render bounding boxes and you should report the issue to them. Alternatively you can use the (tile-)entityBoundingBoxGrowthList settings to fix bounding boxes on your own.")
+	@Config.RangeDouble(min = 0.0D, max = 1024.0D)
 	public static double raytraceThreshold = 1.0D;
 
-	@Config.Comment("When enabled tile entity bounding boxes are increased slightly to avoid issues when other mods don't correctly set their bounding boxes (requires opengl based culling). If you still have culling or flickering issues you can use the 'debugRenderBoxes', 'entityBoundingBoxGrowthList' and 'tileEntityBoundingBoxGrowthList' config options to try to fix the bounding box of that entity or tile entity.")
+	@Config.Comment("If enabled tile entity bounding boxes are increased slightly to avoid issues when other mods don't correctly set their bounding boxes (requires opengl based culling). If you still have culling or flickering issues you can use the 'debugRenderBoxes', 'entityBoundingBoxGrowthList' and 'tileEntityBoundingBoxGrowthList' config options to try to fix the bounding box of that entity or tile entity.")
 	public static boolean tileEntityAABBGrowth = true;
 
 	@Config.Comment("Most tile entities have static bounding boxes and thus they can be cached. Tile entities whose bounding boxes are likely to change every frame or so should be added to the blacklist. Tile entities whose bounding only change every once in a while should be covered by cache updates (update speed adjustable through tileEntityCachedBoundingBoxUpdateInterval)")
@@ -71,7 +71,7 @@ public class EntityCullingConfig {
 		@Config.Comment("Skip rendering of entities that are not visible (hidden behind blocks). This might cause issues where an entity is partly behind a block and thus does not get rendered but it's usually not really noticable.")
 		public boolean skipHiddenEntityRendering = true;
 		@Config.Comment("Entities with a width or height greater than this value will always get rendered.")
-		@Config.RangeDouble(min = 0.0D, max = 256.0D)
+		@Config.RangeDouble(min = 0.0D, max = 1024.0D)
 		public double skipHiddenEntityRenderingSize = 16.0D;
 		@Config.Comment("Tile entities which will always be rendered. (Accepts 'modid' or 'modid:entity_name')")
 		public String[] skipHiddenEntityRenderingBlacklist = new String[0];
@@ -94,7 +94,7 @@ public class EntityCullingConfig {
 		@Config.Comment("Skip rendering of entities that are not visible (hidden behind blocks). This might cause issues where a tile entity is partly behind a block and thus does not get rendered but it's usually not really noticable.")
 		public boolean skipHiddenTileEntityRendering = true;
 		@Config.Comment("Tile entities with a width or height greater than this value will always get rendered.")
-		@Config.RangeDouble(min = 0.0D, max = 256.0D)
+		@Config.RangeDouble(min = 0.0D, max = 1024.0D)
 		public double skipHiddenTileEntityRenderingSize = 16.0D;
 		@Config.Comment("Tile entities which will always be rendered. (Accepts 'modid' or 'modid:tile_entity_name')")
 		public String[] skipHiddenTileEntityRenderingBlacklist = new String[0];
@@ -116,27 +116,27 @@ public class EntityCullingConfig {
 
 		public boolean entityShadowsCulling = true;
 		public boolean entityShadowsCullingLessAggressiveMode = true;
-		@Config.RangeDouble(min = 0.0D, max = 64.0D)
+		@Config.RangeDouble(min = 0.0D, max = 1024.0D)
 		public double entityShadowsCullingLessAggressiveModeDiff = 4.0D;
 		public boolean entityShadowsEnabled = true;
 		public boolean entityShadowsDistanceLimited = true;
-		@Config.RangeDouble(min = 0.0D, max = 64.0D)
+		@Config.RangeDouble(min = 0.0D, max = 1024.0D)
 		public double entityShadowsMaxDistance = 4.0D;
 
 		public boolean terrainShadowsEnabled = true;
 		public boolean terrainShadowsDistanceLimited = true;
-		@Config.RangeDouble(min = 0.0D, max = 64.0D)
+		@Config.RangeDouble(min = 0.0D, max = 1024.0D)
 		public double terrainShadowsMaxHorizontalDistance = 8.0D;
-		@Config.RangeDouble(min = 0.0D, max = 64.0D)
+		@Config.RangeDouble(min = 0.0D, max = 1024.0D)
 		public double terrainShadowsMaxVerticalDistance = 4.0D;
 
 		public boolean tileEntityShadowsCulling = true;
 		public boolean tileEntityShadowsCullingLessAggressiveMode = true;
-		@Config.RangeDouble(min = 0.0D, max = 64.0D)
+		@Config.RangeDouble(min = 0.0D, max = 1024.0D)
 		public double tileEntityShadowsCullingLessAggressiveModeDiff = 4.0D;
 		public boolean tileEntityShadowsEnabled = true;
 		public boolean tileEntityShadowsDistanceLimited = true;
-		@Config.RangeDouble(min = 0.0D, max = 64.0D)
+		@Config.RangeDouble(min = 0.0D, max = 1024.0D)
 		public double tileEntityShadowsMaxDistance = 4.0D;
 
 	}
