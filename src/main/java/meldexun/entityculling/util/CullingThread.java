@@ -198,7 +198,7 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		return this.checkBoxCached(aabb.minX(), aabb.minY(), aabb.minZ(), aabb.maxX(), aabb.maxY(), aabb.maxZ());
+		return this.checkBox(aabb.minX(), aabb.minY(), aabb.minZ(), aabb.maxX(), aabb.maxY(), aabb.maxZ());
 	}
 
 	private boolean checkTileEntityVisibility(TileEntity tileEntity) {
@@ -231,7 +231,7 @@ public class CullingThread extends Thread {
 			return true;
 		}
 
-		return this.checkBoxCached(aabb.minX(), aabb.minY(), aabb.minZ(), aabb.maxX(), aabb.maxY(), aabb.maxZ());
+		return this.checkBox(aabb.minX(), aabb.minY(), aabb.minZ(), aabb.maxX(), aabb.maxY(), aabb.maxZ());
 	}
 
 	private boolean checkEntityShadowVisibility(Entity entity) {
@@ -338,6 +338,14 @@ public class CullingThread extends Thread {
 				EntityCullingConfig.optifineShaderOptions.tileEntityShadowsCullingLessAggressiveModeDiff);
 	}
 
+	private boolean checkBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
+		if (EntityCullingConfig.enableRaytraceCache) {
+			return checkBoxCached(minX, minY, minZ, maxX, maxY, maxZ);
+		} else {
+			return checkBoxUncached(minX, minY, minZ, maxX, maxY, maxZ);
+		}
+	}
+
 	private boolean checkBoxCached(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
 		int startX = MathHelper.floor(minX);
 		int startY = MathHelper.floor(minY);
@@ -400,5 +408,70 @@ public class CullingThread extends Thread {
 		return false;
 	}
 
+	private boolean checkBoxUncached(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
+		if (this.camX >= minX && this.camX <= maxX
+				&& this.camY >= minY && this.camY <= maxY
+				&& this.camZ >= minZ && this.camZ <= maxZ) {
+			return true;
+		}
+
+		double deltaX = maxX - minX;
+		double deltaY = maxY - minY;
+		double deltaZ = maxZ - minZ;
+		int stepsX = MathHelper.ceil(deltaX);
+		int stepsY = MathHelper.ceil(deltaY);
+		int stepsZ = MathHelper.ceil(deltaZ);
+		double dx = deltaX / stepsX;
+		double dy = deltaY / stepsY;
+		double dz = deltaZ / stepsZ;
+
+		if (this.camX < minX) {
+			if (IntUtil.anyMatch(
+					0, stepsY,
+					0, stepsZ,
+					(y, z) -> engine.raytraceUncachedThreshold(minX, minY + y * dy, minZ + z * dz, EntityCullingConfig.raytraceThreshold))) {
+				return true;
+			}
+		} else if (this.camX > maxX) {
+			if (IntUtil.anyMatch(
+					0, stepsY,
+					0, stepsZ,
+					(y, z) -> engine.raytraceUncachedThreshold(minX, minY + y * dy, minZ + z * dz, EntityCullingConfig.raytraceThreshold))) {
+				return true;
+			}
+		}
+		if (this.camY < minY) {
+			if (IntUtil.anyMatch(
+					this.camX < minX ? 1 : 0, this.camX > maxX ? stepsX - 1 : stepsX,
+					0, stepsZ,
+					(x, z) -> engine.raytraceUncachedThreshold(minX + x * dx, minY, minZ + z * dz, EntityCullingConfig.raytraceThreshold))) {
+				return true;
+			}
+		} else if (this.camY > maxY) {
+			if (IntUtil.anyMatch(
+					this.camX < minX ? 1 : 0, this.camX > maxX ? stepsX - 1 : stepsX,
+					0, stepsZ,
+					(x, z) -> engine.raytraceUncachedThreshold(minX + x * dx, minY, minZ + z * dz, EntityCullingConfig.raytraceThreshold))) {
+				return true;
+			}
+		}
+		if (this.camZ < minZ) {
+			if (IntUtil.anyMatch(
+					this.camX < minX ? 1 : 0, this.camX > maxX ? stepsX - 1 : stepsX,
+					this.camY < minY ? 1 : 0, this.camY > maxX ? stepsY - 1 : stepsY,
+					(x, y) -> engine.raytraceUncachedThreshold(minX + x * dx, minY + y * dy, minZ, EntityCullingConfig.raytraceThreshold))) {
+				return true;
+			}
+		} else if (this.camZ > maxZ) {
+			if (IntUtil.anyMatch(
+					this.camX < minX ? 1 : 0, this.camX > maxX ? stepsX - 1 : stepsX,
+					this.camY < minY ? 1 : 0, this.camY > maxX ? stepsY - 1 : stepsY,
+					(x, y) -> engine.raytraceUncachedThreshold(minX + x * dx, minY + y * dy, minZ, EntityCullingConfig.raytraceThreshold))) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 }
