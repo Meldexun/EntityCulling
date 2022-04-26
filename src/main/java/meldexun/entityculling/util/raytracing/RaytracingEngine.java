@@ -1,5 +1,7 @@
 package meldexun.entityculling.util.raytracing;
 
+import java.util.function.IntSupplier;
+
 import meldexun.entityculling.util.MathUtil;
 
 public class RaytracingEngine {
@@ -13,11 +15,13 @@ public class RaytracingEngine {
 	private final IRaytracingCache resultCache;
 	private final IRaytracingCache opacityCache;
 	private final Int2BoolTriFunction isOpaqueFunction;
+	private final IntSupplier renderDistSupplier;
 
-	public RaytracingEngine(int cacheSize, Int2BoolTriFunction isOpaqueFunction) {
+	public RaytracingEngine(int cacheSize, Int2BoolTriFunction isOpaqueFunction, IntSupplier renderDistSupplier) {
 		this.resultCache = new RaytracingMapCache();
 		this.opacityCache = new RaytracingArrayCache(cacheSize);
 		this.isOpaqueFunction = isOpaqueFunction;
+		this.renderDistSupplier = renderDistSupplier;
 	}
 
 	public void setup(double x, double y, double z) {
@@ -35,19 +39,32 @@ public class RaytracingEngine {
 	}
 
 	public boolean raytraceCachedThreshold(int endX, int endY, int endZ, double threshold) {
+		if (isTooFarAway(endX, endY, endZ))
+			return true;
 		return resultCache.getOrSetCachedValue(endX - camBlockX, endY - camBlockY, endZ - camBlockZ, () -> raytraceUncachedThreshold(endX, endY, endZ, threshold));
 	}
 
 	public boolean raytraceCached(int endX, int endY, int endZ) {
+		if (isTooFarAway(endX, endY, endZ))
+			return true;
 		return resultCache.getOrSetCachedValue(endX - camBlockX, endY - camBlockY, endZ - camBlockZ, () -> raytraceUncached(endX, endY, endZ));
 	}
 
 	public boolean raytraceUncachedThreshold(double endX, double endY, double endZ, double threshold) {
+		if (isTooFarAway(endX, endY, endZ))
+			return true;
 		return raytraceThreshold(camX, camY, camZ, endX, endY, endZ, threshold);
 	}
 
 	public boolean raytraceUncached(double endX, double endY, double endZ) {
+		if (isTooFarAway(endX, endY, endZ))
+			return true;
 		return raytrace(camX, camY, camZ, endX, endY, endZ);
+	}
+
+	private boolean isTooFarAway(double x, double y, double z) {
+		int i = (renderDistSupplier.getAsInt() + 1) << 4;
+		return MathUtil.distSqr(camX, camY, camZ, x, y, z) > i * i;
 	}
 
 	private boolean raytraceThreshold(double startX, double startY, double startZ, double endX, double endY, double endZ, double threshold) {

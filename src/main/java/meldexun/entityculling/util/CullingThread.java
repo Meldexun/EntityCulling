@@ -28,7 +28,7 @@ public class CullingThread extends Thread {
 	private final MutableBlockPos mutablePos = new MutableBlockPos();
 	private final RaytracingEngine engine = new RaytracingEngine(EntityCullingConfig.cacheSize, (x, y, z) -> {
 		return this.cachedBlockAccess.getBlockState(this.mutablePos.setPos(x, y, z)).isOpaqueCube();
-	});
+	}, () -> Minecraft.getMinecraft().gameSettings.renderDistanceChunks);
 	private double sleepOverhead = 0.0D;
 
 	/** debug */
