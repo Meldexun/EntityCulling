@@ -1,42 +1,56 @@
-package meldexun.entityculling.util;
+package meldexun.entityculling.util.raytracing;
 
-import meldexun.entityculling.config.EntityCullingConfig;
-import meldexun.raytraceutil.RayTracingCache;
-import net.minecraft.util.EnumFacing.Axis;
+import meldexun.entityculling.util.MathUtil;
 
 public class RaytracingEngine {
 
-	public interface PositionPredicate {
+	private double camX;
+	private double camY;
+	private double camZ;
+	private int camBlockX;
+	private int camBlockY;
+	private int camBlockZ;
+	private final IRaytracingCache resultCache;
+	private final IRaytracingCache opacityCache;
+	private final Int2BoolTriFunction isOpaqueFunction;
 
-		boolean isOpaque(int x, int y, int z);
-
+	public RaytracingEngine(int cacheSize, Int2BoolTriFunction isOpaqueFunction) {
+		this.resultCache = new RaytracingMapCache();
+		this.opacityCache = new RaytracingArrayCache(cacheSize);
+		this.isOpaqueFunction = isOpaqueFunction;
 	}
 
-	private final RayTracingCache cache = new RayTracingCache(EntityCullingConfig.cacheSize);
-	private int centerX;
-	private int centerY;
-	private int centerZ;
-	private final PositionPredicate positionPredicate;
-
-	public RaytracingEngine(PositionPredicate positionPredicate) {
-		this.positionPredicate = positionPredicate;
-	}
-
-	public void setupCache(int x, int y, int z) {
-		centerX = x;
-		centerY = y;
-		centerZ = z;
+	public void setup(double x, double y, double z) {
+		camX = x;
+		camY = y;
+		camZ = z;
+		camBlockX = MathUtil.floor(x);
+		camBlockY = MathUtil.floor(y);
+		camBlockZ = MathUtil.floor(z);
 	}
 
 	public void clearCache() {
-		cache.clearCache();
+		resultCache.clearCache();
+		opacityCache.clearCache();
 	}
 
-	private boolean isOpaque(int x, int y, int z) {
-		return cache.getOrSetCachedValue(x - centerX, y - centerY, z - centerZ, () -> positionPredicate.isOpaque(x, y, z) ? 1 : 2) == 1;
+	public boolean raytraceCachedThreshold(int endX, int endY, int endZ, double threshold) {
+		return resultCache.getOrSetCachedValue(endX - camBlockX, endY - camBlockY, endZ - camBlockZ, () -> raytraceUncachedThreshold(endX, endY, endZ, threshold));
 	}
 
-	public boolean raytraceThreshold(double startX, double startY, double startZ, double endX, double endY, double endZ, double threshold) {
+	public boolean raytraceCached(int endX, int endY, int endZ) {
+		return resultCache.getOrSetCachedValue(endX - camBlockX, endY - camBlockY, endZ - camBlockZ, () -> raytraceUncached(endX, endY, endZ));
+	}
+
+	public boolean raytraceUncachedThreshold(double endX, double endY, double endZ, double threshold) {
+		return raytraceThreshold(camX, camY, camZ, endX, endY, endZ, threshold);
+	}
+
+	public boolean raytraceUncached(double endX, double endY, double endZ) {
+		return raytrace(camX, camY, camZ, endX, endY, endZ);
+	}
+
+	private boolean raytraceThreshold(double startX, double startY, double startZ, double endX, double endY, double endZ, double threshold) {
 		if (threshold <= 0.0D) {
 			return raytrace(startX, startY, startZ, endX, endY, endZ);
 		}
@@ -55,9 +69,9 @@ public class RaytracingEngine {
 		int incX = MathUtil.signum(dirX);
 		int incY = MathUtil.signum(dirY);
 		int incZ = MathUtil.signum(dirZ);
-		double dx = incX == 0 ? Double.MAX_VALUE : (double) incX / dirX;
-		double dy = incY == 0 ? Double.MAX_VALUE : (double) incY / dirY;
-		double dz = incZ == 0 ? Double.MAX_VALUE : (double) incZ / dirZ;
+		double dx = incX == 0 ? Double.MAX_VALUE : incX / dirX;
+		double dy = incY == 0 ? Double.MAX_VALUE : incY / dirY;
+		double dz = incZ == 0 ? Double.MAX_VALUE : incZ / dirZ;
 		double percentX = dx * (incX > 0 ? 1.0D - MathUtil.frac(startX) : MathUtil.frac(startX));
 		double percentY = dy * (incY > 0 ? 1.0D - MathUtil.frac(startY) : MathUtil.frac(startY));
 		double percentZ = dz * (incZ > 0 ? 1.0D - MathUtil.frac(startZ) : MathUtil.frac(startZ));
@@ -117,7 +131,7 @@ public class RaytracingEngine {
 		return true;
 	}
 
-	public boolean raytrace(double startX, double startY, double startZ, double endX, double endY, double endZ) {
+	private boolean raytrace(double startX, double startY, double startZ, double endX, double endY, double endZ) {
 		int x = MathUtil.floor(startX);
 		int y = MathUtil.floor(startY);
 		int z = MathUtil.floor(startZ);
@@ -132,9 +146,9 @@ public class RaytracingEngine {
 		int incX = MathUtil.signum(dirX);
 		int incY = MathUtil.signum(dirY);
 		int incZ = MathUtil.signum(dirZ);
-		double dx = incX == 0 ? Double.MAX_VALUE : (double) incX / dirX;
-		double dy = incY == 0 ? Double.MAX_VALUE : (double) incY / dirY;
-		double dz = incZ == 0 ? Double.MAX_VALUE : (double) incZ / dirZ;
+		double dx = incX == 0 ? Double.MAX_VALUE : incX / dirX;
+		double dy = incY == 0 ? Double.MAX_VALUE : incY / dirY;
+		double dz = incZ == 0 ? Double.MAX_VALUE : incZ / dirZ;
 		double percentX = dx * (incX > 0 ? 1.0D - MathUtil.frac(startX) : MathUtil.frac(startX));
 		double percentY = dy * (incY > 0 ? 1.0D - MathUtil.frac(startY) : MathUtil.frac(startY));
 		double percentZ = dz * (incZ > 0 ? 1.0D - MathUtil.frac(startZ) : MathUtil.frac(startZ));
@@ -162,6 +176,10 @@ public class RaytracingEngine {
 		}
 
 		return true;
+	}
+
+	private boolean isOpaque(int x, int y, int z) {
+		return opacityCache.getOrSetCachedValue(x - camBlockX, y - camBlockY, z - camBlockZ, () -> isOpaqueFunction.applyAsBool(x, y, z));
 	}
 
 }

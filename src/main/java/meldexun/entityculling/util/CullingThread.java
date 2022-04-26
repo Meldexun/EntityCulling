@@ -7,6 +7,7 @@ import java.util.NoSuchElementException;
 import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.asm.EntityCullingClassTransformer;
 import meldexun.entityculling.config.EntityCullingConfig;
+import meldexun.entityculling.util.raytracing.RaytracingEngine;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.culling.ClippingHelperImpl;
@@ -25,11 +26,9 @@ public class CullingThread extends Thread {
 
 	private final CachedBlockAccess cachedBlockAccess = new CachedBlockAccess();
 	private final MutableBlockPos mutablePos = new MutableBlockPos();
-	private final RaytracingEngine engine = new RaytracingEngine((x, y, z) -> {
-		this.mutablePos.setPos(x, y, z);
-		return this.cachedBlockAccess.getBlockState(this.mutablePos).isOpaqueCube();
+	private final RaytracingEngine engine = new RaytracingEngine(EntityCullingConfig.cacheSize, (x, y, z) -> {
+		return this.cachedBlockAccess.getBlockState(this.mutablePos.setPos(x, y, z)).isOpaqueCube();
 	});
-	private final RaytracingMapCache resultCache = new RaytracingMapCache();
 	private double sleepOverhead = 0.0D;
 
 	/** debug */
@@ -41,9 +40,6 @@ public class CullingThread extends Thread {
 	private double camX;
 	private double camY;
 	private double camZ;
-	private int camBlockX;
-	private int camBlockY;
-	private int camBlockZ;
 	private double x;
 	private double y;
 	private double z;
@@ -78,11 +74,7 @@ public class CullingThread extends Thread {
 					this.camX = this.x + cameraPosition.x;
 					this.camY = this.y + cameraPosition.y;
 					this.camZ = this.z + cameraPosition.z;
-					this.camBlockX = MathHelper.floor(this.camX);
-					this.camBlockY = MathHelper.floor(this.camY);
-					this.camBlockZ = MathHelper.floor(this.camZ);
-					this.engine.setupCache(camBlockX, camBlockY, camBlockZ);
-					this.resultCache.setupCache(camBlockX, camBlockY, camBlockZ);
+					this.engine.setup(camX, camY, camZ);
 
 					Iterator<Entity> entityIterator = world.loadedEntityList.iterator();
 					while (entityIterator.hasNext()) {
@@ -119,7 +111,6 @@ public class CullingThread extends Thread {
 			} finally {
 				this.cachedBlockAccess.clearCache();
 				this.engine.clearCache();
-				this.resultCache.clearCache();
 			}
 
 			t = System.nanoTime() - t;
@@ -300,7 +291,7 @@ public class CullingThread extends Thread {
 				return true;
 			}
 		}
-		return this.checkPointUncached(entity.posX, entity.posY + entity.height * 0.5D, entity.posZ,
+		return engine.raytraceUncachedThreshold(entity.posX, entity.posY + entity.height * 0.5D, entity.posZ,
 				EntityCullingConfig.optifineShaderOptions.entityShadowsCullingLessAggressiveModeDiff);
 	}
 
@@ -343,7 +334,7 @@ public class CullingThread extends Thread {
 			}
 		}
 		BlockPos pos = tileEntity.getPos();
-		return this.checkPointUncached(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
+		return engine.raytraceUncachedThreshold(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
 				EntityCullingConfig.optifineShaderOptions.tileEntityShadowsCullingLessAggressiveModeDiff);
 	}
 
@@ -364,14 +355,14 @@ public class CullingThread extends Thread {
 			if (IntUtil.anyMatch(
 					startY, endY,
 					startZ, endZ,
-					(y, z) -> this.checkPointCached(startX, y, z, EntityCullingConfig.raytraceThreshold))) {
+					(y, z) -> engine.raytraceCachedThreshold(startX, y, z, EntityCullingConfig.raytraceThreshold))) {
 				return true;
 			}
 		} else if (this.camX > endX) {
 			if (IntUtil.anyMatch(
 					startY, endY,
 					startZ, endZ,
-					(y, z) -> this.checkPointCached(endX, y, z, EntityCullingConfig.raytraceThreshold))) {
+					(y, z) -> engine.raytraceCachedThreshold(endX, y, z, EntityCullingConfig.raytraceThreshold))) {
 				return true;
 			}
 		}
@@ -379,14 +370,14 @@ public class CullingThread extends Thread {
 			if (IntUtil.anyMatch(
 					this.camX < startX ? startX + 1 : startX, this.camX > endX ? endX - 1 : endX,
 					startZ, endZ,
-					(x, z) -> this.checkPointCached(x, startY, z, EntityCullingConfig.raytraceThreshold))) {
+					(x, z) -> engine.raytraceCachedThreshold(x, startY, z, EntityCullingConfig.raytraceThreshold))) {
 				return true;
 			}
 		} else if (this.camY > endY) {
 			if (IntUtil.anyMatch(
 					this.camX < startX ? startX + 1 : startX, this.camX > endX ? endX - 1 : endX,
 					startZ, endZ,
-					(x, z) -> this.checkPointCached(x, endY, z, EntityCullingConfig.raytraceThreshold))) {
+					(x, z) -> engine.raytraceCachedThreshold(x, endY, z, EntityCullingConfig.raytraceThreshold))) {
 				return true;
 			}
 		}
@@ -394,14 +385,14 @@ public class CullingThread extends Thread {
 			if (IntUtil.anyMatch(
 					this.camX < startX ? startX + 1 : startX, this.camX > endX ? endX - 1 : endX,
 					this.camY < startY ? startY + 1 : startY, this.camY > endY ? endY - 1 : endY,
-					(x, y) -> this.checkPointCached(x, y, startZ, EntityCullingConfig.raytraceThreshold))) {
+					(x, y) -> engine.raytraceCachedThreshold(x, y, startZ, EntityCullingConfig.raytraceThreshold))) {
 				return true;
 			}
 		} else if (this.camZ > endZ) {
 			if (IntUtil.anyMatch(
 					this.camX < startX ? startX + 1 : startX, this.camX > endX ? endX - 1 : endX,
 					this.camY < startY ? startY + 1 : startY, this.camY > endY ? endY - 1 : endY,
-					(x, y) -> this.checkPointCached(x, y, endZ, EntityCullingConfig.raytraceThreshold))) {
+					(x, y) -> engine.raytraceCachedThreshold(x, y, endZ, EntityCullingConfig.raytraceThreshold))) {
 				return true;
 			}
 		}
@@ -409,12 +400,5 @@ public class CullingThread extends Thread {
 		return false;
 	}
 
-	private boolean checkPointCached(int endX, int endY, int endZ, double threshold) {
-		return this.resultCache.getOrSetCachedValue(endX, endY, endZ, () -> checkPointUncached(endX, endY, endZ, threshold));
-	}
-
-	private boolean checkPointUncached(double endX, double endY, double endZ, double threshold) {
-		return this.engine.raytraceThreshold(this.camX, this.camY, this.camZ, endX, endY, endZ, threshold);
-	}
 
 }

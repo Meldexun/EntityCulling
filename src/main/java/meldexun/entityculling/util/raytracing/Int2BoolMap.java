@@ -1,4 +1,4 @@
-package meldexun.entityculling.util;
+package meldexun.entityculling.util.raytracing;
 
 import java.util.function.IntPredicate;
 
@@ -6,7 +6,7 @@ import it.unimi.dsi.fastutil.HashCommon;
 import it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap;
 
 @SuppressWarnings("serial")
-public class Int2BoolMap extends Int2BooleanOpenHashMap {
+class Int2BoolMap extends Int2BooleanOpenHashMap {
 
 	public Int2BoolMap() {
 		super();
@@ -16,17 +16,14 @@ public class Int2BoolMap extends Int2BooleanOpenHashMap {
 		super(expected, f);
 	}
 
-	public boolean computeIfAbsent(int k, IntPredicate mappingFunc) {
-		int pos = find(k);
-		if (pos < 0) {
-			boolean v = mappingFunc.test(k);
-			insert(-pos - 1, k, v);
-			return v;
-		}
-		return value[pos];
+	public boolean computeIfAbsent(final int k, final IntPredicate mappingFunction) {
+		final int pos = find(k);
+		if (pos >= 0) return value[pos];
+		final boolean newValue = mappingFunction.test(k);
+		insert(-pos - 1, k, newValue);
+		return newValue;
 	}
 
-	// @formatter:off
 	private int find(final int k) {
 		if (k == 0) return containsNullKey ? n : -(n + 1);
 		int curr;
@@ -48,6 +45,5 @@ public class Int2BoolMap extends Int2BooleanOpenHashMap {
 		value[pos] = v;
 		if (size++ >= maxFill) rehash(HashCommon.arraySize(size + 1, f));
 	}
-	// @formatter:on
 
 }
