@@ -6,9 +6,6 @@ import javax.annotation.Nullable;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.config.EntityCullingConfig;
@@ -19,7 +16,6 @@ import meldexun.entityculling.util.MutableAABB;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 
 @Mixin(TileEntity.class)
 public class MixinTileEntity implements IBoundingBoxCache, ITileEntityRendererCache {
@@ -50,6 +46,8 @@ public class MixinTileEntity implements IBoundingBoxCache, ITileEntityRendererCa
 	private boolean initialized;
 	@Unique
 	private TileEntitySpecialRenderer<TileEntity> renderer;
+	@Unique
+	private boolean rendererInitialized;
 
 	@Unique
 	@Override
@@ -77,18 +75,15 @@ public class MixinTileEntity implements IBoundingBoxCache, ITileEntityRendererCa
 		return this.cachedBoundingBox;
 	}
 
-	@Inject(method = "setWorld", at = @At("HEAD"))
-	public void setWorld(World world, CallbackInfo info) {
-		if (!world.isRemote)
-			return;
-		renderer = loadRenderer((TileEntity) (Object) this);
-	}
-
 	@SuppressWarnings("unchecked")
 	@Unique
 	@Override
 	@Nullable
 	public <T extends TileEntity> TileEntitySpecialRenderer<T> getRenderer() {
+		if (!rendererInitialized) {
+			renderer = loadRenderer((TileEntity) (Object) this);
+			rendererInitialized = true;
+		}
 		return (TileEntitySpecialRenderer<T>) renderer;
 	}
 

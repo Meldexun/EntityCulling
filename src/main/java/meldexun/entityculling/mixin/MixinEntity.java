@@ -4,9 +4,6 @@ import javax.annotation.Nullable;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.util.IBoundingBoxCache;
@@ -23,6 +20,8 @@ public class MixinEntity implements IBoundingBoxCache, IEntityRendererCache {
 	private final MutableAABB cachedBoundingBox = new MutableAABB();
 	@Unique
 	private Render<Entity> renderer;
+	@Unique
+	private boolean rendererInitialized;
 
 	@Unique
 	@Override
@@ -45,18 +44,15 @@ public class MixinEntity implements IBoundingBoxCache, IEntityRendererCache {
 		return this.cachedBoundingBox;
 	}
 
-	@Inject(method = "onAddedToWorld", at = @At("HEAD"), remap = false)
-	public void onAddedToWorld(CallbackInfo info) {
-		if (!((Entity) (Object) this).world.isRemote)
-			return;
-		renderer = loadRenderer((Entity) (Object) this);
-	}
-
 	@SuppressWarnings("unchecked")
 	@Unique
 	@Override
 	@Nullable
 	public <T extends Entity> Render<T> getRenderer() {
+		if (!rendererInitialized) {
+			renderer = loadRenderer((Entity) (Object) this);
+			rendererInitialized = true;
+		}
 		return (Render<T>) renderer;
 	}
 
