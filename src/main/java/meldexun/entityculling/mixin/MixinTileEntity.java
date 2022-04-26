@@ -65,7 +65,7 @@ public class MixinTileEntity implements IBoundingBoxCache, ITileEntityRendererCa
 				cachedBoundingBox.grow(v);
 			}
 			if (EntityCulling.useOpenGlBasedCulling() && EntityCullingConfig.tileEntityAABBGrowth) {
-				cachedBoundingBox.grow(0.0625D);
+				cachedBoundingBox.grow(0.03125D);
 			}
 			initialized = true;
 		}
