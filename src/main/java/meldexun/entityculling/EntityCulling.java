@@ -14,6 +14,7 @@ import meldexun.entityculling.util.IEntityRendererCache;
 import meldexun.entityculling.util.ILoadable;
 import meldexun.entityculling.util.ITileEntityRendererCache;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
@@ -37,7 +38,7 @@ public class EntityCulling {
 
 	public static final String MOD_ID = "entityculling";
 	private static CullingThread cullingThread;
-	private static final DecimalFormat FORMAT = new DecimalFormat("#.#");
+	private static final DecimalFormat FORMAT = new DecimalFormat("0.0");
 	public static boolean isCubicChunksInstalled;
 	public static boolean isFairyLightsInstalled;
 	public static boolean isValkyrienSkiesInstalled;
@@ -105,17 +106,23 @@ public class EntityCulling {
 		}
 		Minecraft mc = Minecraft.getMinecraft();
 		ScaledResolution scaled = new ScaledResolution(mc);
-		this.drawOnLeft("Time: " + FORMAT.format(Arrays.stream(cullingThread.time).average().getAsDouble() / 1_000_000.0D) + "ms", scaled.getScaledWidth(),
-				160);
-		this.drawOnLeft("E: " + RenderGlobalHook.entityRenderer.renderedEntities + "/" + RenderGlobalHook.entityRenderer.occludedEntities + "/"
-				+ RenderGlobalHook.entityRenderer.totalEntities, scaled.getScaledWidth(), 170);
-		this.drawOnLeft("TE: " + RenderGlobalHook.tileEntityRenderer.renderedTileEntities + "/" + RenderGlobalHook.tileEntityRenderer.occludedTileEntities + "/"
-				+ RenderGlobalHook.tileEntityRenderer.totalTileEntities, scaled.getScaledWidth(), 180);
+		int width = scaled.getScaledWidth();
+		int height = scaled.getScaledHeight();
+		drawDebug("Time:", FORMAT.format(Arrays.stream(cullingThread.time).average().getAsDouble() / 1_000_000.0D) + "ms", width, height - 80);
+		drawDebug("E (R):", Integer.toString(RenderGlobalHook.entityRenderer.renderedEntities), width, height - 70);
+		drawDebug("E (C):", Integer.toString(RenderGlobalHook.entityRenderer.occludedEntities), width, height - 60);
+		drawDebug("E (T):", Integer.toString(RenderGlobalHook.entityRenderer.totalEntities), width, height - 50);
+		drawDebug("TE (R):", Integer.toString(RenderGlobalHook.tileEntityRenderer.renderedTileEntities), width, height - 40);
+		drawDebug("TE (C):", Integer.toString(RenderGlobalHook.tileEntityRenderer.occludedTileEntities), width, height - 30);
+		drawDebug("TE (T):", Integer.toString(RenderGlobalHook.tileEntityRenderer.totalTileEntities), width, height - 20);
 	}
 
-	private void drawOnLeft(String string, int x, int y) {
+	private void drawDebug(String prefix, String string, int x, int y) {
 		Minecraft mc = Minecraft.getMinecraft();
-		mc.fontRenderer.drawString(string, x - mc.fontRenderer.getStringWidth(string), y, 0xFFFFFFFF);
+		FontRenderer font = mc.fontRenderer;
+		int stringWidth = font.getStringWidth(string);
+		font.drawString(prefix, x - Math.max(stringWidth + font.getStringWidth(prefix), 60), y, 0xFFFFFFFF);
+		font.drawString(string, x - stringWidth, y, 0xFFFFFFFF);
 	}
 
 }
