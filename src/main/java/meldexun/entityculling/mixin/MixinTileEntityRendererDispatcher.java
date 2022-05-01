@@ -30,6 +30,10 @@ public class MixinTileEntityRendererDispatcher {
 			return tileEntityRenderDispatcher.getRenderer(tileEntity);
 		}
 
+		if (tileEntity == null)
+			return null;
+		if (tileEntity.isInvalid())
+			return null;
 		return ((ITileEntityRendererCache) tileEntity).getRenderer();
 	}
 
