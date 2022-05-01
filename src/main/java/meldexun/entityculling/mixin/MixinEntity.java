@@ -9,6 +9,7 @@ import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.util.IBoundingBoxCache;
 import meldexun.entityculling.util.IEntityRendererCache;
 import meldexun.entityculling.util.MutableAABB;
+import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
@@ -51,7 +52,9 @@ public class MixinEntity implements IBoundingBoxCache, IEntityRendererCache {
 	public <T extends Entity> Render<T> getRenderer() {
 		if (!rendererInitialized) {
 			renderer = loadRenderer((Entity) (Object) this);
-			rendererInitialized = true;
+			if (!(((Entity) (Object) this) instanceof AbstractClientPlayer) || ((AbstractClientPlayer) (Entity) (Object) this).hasPlayerInfo()) {
+				rendererInitialized = true;
+			}
 		}
 		return (Render<T>) renderer;
 	}
