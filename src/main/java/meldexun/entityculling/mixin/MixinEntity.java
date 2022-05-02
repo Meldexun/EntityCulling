@@ -51,10 +51,12 @@ public class MixinEntity implements IBoundingBoxCache, IEntityRendererCache {
 	@Nullable
 	public <T extends Entity> Render<T> getRenderer() {
 		if (!rendererInitialized) {
-			renderer = loadRenderer((Entity) (Object) this);
-			if (!(((Entity) (Object) this) instanceof AbstractClientPlayer) || ((AbstractClientPlayer) (Entity) (Object) this).hasPlayerInfo()) {
+			if (!((Entity) (Object) this instanceof AbstractClientPlayer)
+					|| (((AbstractClientPlayer) (Entity) (Object) this).playerInfo != null
+					&& ((AbstractClientPlayer) (Entity) (Object) this).playerInfo.skinType != null)) {
 				rendererInitialized = true;
 			}
+			renderer = loadRenderer((Entity) (Object) this);
 		}
 		return (Render<T>) renderer;
 	}
