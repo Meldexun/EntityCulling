@@ -10,40 +10,33 @@ import net.minecraft.tileentity.TileEntity;
 @Mixin(value = { Entity.class, TileEntity.class })
 public class MixinCullable implements ICullable {
 
+	// ----- opengl culling ----- //
+
 	@Unique
-	private int culling_lastFrameUpdated = Integer.MIN_VALUE;
+	private final CullInfo cullInfo = new CullInfo();
 	@Unique
-	private int culling_id;
+	private final CullInfo shadowCullInfo = new CullInfo();
+
+	@Unique
+	@Override
+	public CullInfo getCullInfo() {
+		return cullInfo;
+	}
+
+	@Unique
+	@Override
+	public CullInfo getShadowCullInfo() {
+		return shadowCullInfo;
+	}
+
+	// ----- raytraced culling ----- //
+
 	@Unique
 	private boolean culled;
 	@Unique
 	private boolean shadowCulled;
 	@Unique
 	private boolean canBeOcclusionCulled;
-
-	@Unique
-	@Override
-	public int culling_getLastTimeUpdated() {
-		return culling_lastFrameUpdated;
-	}
-
-	@Unique
-	@Override
-	public void culling_setLastTimeUpdated(int lastFrameUpdated) {
-		culling_lastFrameUpdated = lastFrameUpdated;
-	}
-
-	@Unique
-	@Override
-	public int culling_getId() {
-		return culling_id;
-	}
-
-	@Unique
-	@Override
-	public void culling_setId(int id) {
-		culling_id = id;
-	}
 
 	@Unique
 	@Override

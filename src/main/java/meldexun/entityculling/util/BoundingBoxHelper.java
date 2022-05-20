@@ -5,8 +5,10 @@ import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
-import meldexun.entityculling.asm.hook.RenderGlobalHook;
 import meldexun.entityculling.config.EntityCullingConfig;
+import meldexun.renderlib.api.IBoundingBoxCache;
+import meldexun.renderlib.util.MutableAABB;
+import meldexun.renderlib.util.RenderUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
@@ -86,7 +88,7 @@ public class BoundingBoxHelper {
 			MutableAABB aabb = ((IBoundingBoxCache) e).getCachedBoundingBox();
 
 			GlStateManager.pushMatrix();
-			GlStateManager.translate(aabb.minX() - RenderGlobalHook.cameraEntityX, aabb.minY() - RenderGlobalHook.cameraEntityY, aabb.minZ() - RenderGlobalHook.cameraEntityZ);
+			GlStateManager.translate(aabb.minX() - RenderUtil.getCameraEntityX(), aabb.minY() - RenderUtil.getCameraEntityY(), aabb.minZ() - RenderUtil.getCameraEntityZ());
 			GlStateManager.scale(aabb.maxX() - aabb.minX(), aabb.maxY() - aabb.minY(), aabb.maxZ() - aabb.minZ());
 
 			GL11.glDrawElements(GL11.GL_TRIANGLE_STRIP, 14, GL11.GL_UNSIGNED_BYTE, 0);
@@ -98,7 +100,7 @@ public class BoundingBoxHelper {
 			MutableAABB aabb = ((IBoundingBoxCache) te).getCachedBoundingBox();
 
 			GlStateManager.pushMatrix();
-			GlStateManager.translate(aabb.minX() - RenderGlobalHook.cameraEntityX, aabb.minY() - RenderGlobalHook.cameraEntityY, aabb.minZ() - RenderGlobalHook.cameraEntityZ);
+			GlStateManager.translate(aabb.minX() - RenderUtil.getCameraEntityX(), aabb.minY() - RenderUtil.getCameraEntityY(), aabb.minZ() - RenderUtil.getCameraEntityZ());
 			GlStateManager.scale(aabb.maxX() - aabb.minX(), aabb.maxY() - aabb.minY(), aabb.maxZ() - aabb.minZ());
 
 			GL11.glDrawElements(GL11.GL_TRIANGLE_STRIP, 14, GL11.GL_UNSIGNED_BYTE, 0);

@@ -1,38 +1,33 @@
 package meldexun.entityculling.mixin;
 
-import java.util.Collection;
-
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import meldexun.entityculling.asm.hook.RenderGlobalHook;
-import meldexun.entityculling.config.EntityCullingConfig;
+import meldexun.entityculling.EntityCulling;
+import meldexun.entityculling.asm.EntityCullingClassTransformer;
+import meldexun.entityculling.util.culling.CullingInstance;
+import meldexun.reflectionutil.ReflectionField;
+import meldexun.renderlib.util.RenderUtil;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.entity.Entity;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.client.MinecraftForgeClient;
 
-@Mixin(RenderGlobal.class)
+@Mixin(value = RenderGlobal.class)
 public class MixinRenderGlobal {
 
-	@Inject(method = "setupTerrain", at = @At("HEAD"))
-	public void setupTerrain(Entity viewEntity, double partialTicks, ICamera camera, int frameCount, boolean playerSpectator, CallbackInfo info) {
-		if (!EntityCullingConfig.enabled) {
-			return;
+	private static final ReflectionField<Boolean> IS_SHADOW_PASS = new ReflectionField<>("net.optifine.shaders.Shaders", "isShadowPass", "isShadowPass");
+
+	@Inject(method = "renderEntities", at = @At("HEAD"))
+	public void renderEntities(Entity renderViewEntity, ICamera camera, float partialTicks, CallbackInfo info) {
+		if (EntityCulling.useOpenGlBasedCulling()
+				&& MinecraftForgeClient.getRenderPass() == 0
+				&& (!EntityCullingClassTransformer.OPTIFINE_DETECTED || !IS_SHADOW_PASS.getBoolean(null))) {
+			CullingInstance cullingInstance = CullingInstance.getInstance();
+			cullingInstance.updateResults(RenderUtil.getProjectionModelViewMatrix());
 		}
-
-		RenderGlobalHook.setup(partialTicks, camera, frameCount);
-	}
-
-	@Inject(method = "updateTileEntities", cancellable = true, at = @At("HEAD"))
-	public void updateTileEntities(Collection<TileEntity> tileEntitiesToRemove, Collection<TileEntity> tileEntitiesToAdd, CallbackInfo info) {
-		if (!EntityCullingConfig.enabled) {
-			return;
-		}
-
-		info.cancel();
 	}
 
 }

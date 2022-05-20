@@ -7,18 +7,12 @@
   "mixins": [
   ],
   "client": [
-    "MixinChunk",
-    "MixinClippingHelper",
     "MixinCullable",
-    "MixinEntity",
-    "MixinLoadable",
-    "MixinMinecraft",
-    "MixinRender",
+    "MixinEntityRenderer",
+    "MixinEntityRendererOptifine",
     "MixinRenderGlobal",
-    "MixinRenderManager",
-    "MixinTileEntity",
-    "MixinTileEntityRendererDispatcher",
-    "MixinWorld"
+    "MixinTileEntityRenderer",
+    "MixinTileEntityRendererOptifine"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -1,7 +1,6 @@
 package meldexun.entityculling.util.culling;
 
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
@@ -17,52 +16,48 @@ import org.lwjgl.opengl.GL44;
 import org.lwjgl.opengl.GLSync;
 
 import meldexun.entityculling.EntityCulling;
-import meldexun.entityculling.asm.EntityCullingClassTransformer;
-import meldexun.entityculling.asm.hook.RenderGlobalHook;
-import meldexun.entityculling.opengl.Buffer;
-import meldexun.entityculling.opengl.ShaderBuilder;
-import meldexun.entityculling.util.CameraUtil;
-import meldexun.entityculling.util.ICullable;
+import meldexun.entityculling.util.ICullable.CullInfo;
 import meldexun.entityculling.util.ResourceSupplier;
-import meldexun.entityculling.util.matrix.Matrix4f;
-import meldexun.reflectionutil.ReflectionMethod;
+import meldexun.matrixutil.Matrix4f;
+import meldexun.renderlib.util.GLShader;
+import meldexun.renderlib.util.GLUtil;
+import meldexun.renderlib.util.PersistentBuffer;
+import meldexun.renderlib.util.RenderUtil;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.Vec3d;
 
 public class CullingInstance {
 
-	private static final ReflectionMethod<Boolean> IS_SHADERS = new ReflectionMethod<>("Config", "isShaders", "isShaders");
 	private static final int MAX_OBJ_COUNT = 1 << 16;
 	private static CullingInstance instance;
+	private static CullingInstance shadow_instance;
 
-	private final int shader;
+	private final GLShader shader;
 	private final int uniform_projViewMat;
 	private final int uniform_frame;
-	private final FloatBuffer matrixBuffer = GLAllocation.createDirectFloatBuffer(16);
 
-	private final int cubeVertexBuffer;
-	private final int cubeIndexBuffer;
-	private final Buffer vboBuffer;
+	public final int cubeVertexBuffer;
+	public final int cubeIndexBuffer;
+	private final PersistentBuffer vboBuffer;
 	private final int vao;
-	private final Buffer ssboBuffer;
+	private final PersistentBuffer ssboBuffer;
 
 	private int objCount;
 	private int frame;
 
 	private GLSync fence;
 
-	private CullingInstance() {
-		shader = new ShaderBuilder()
+	public CullingInstance() {
+		shader = new GLShader.Builder()
 				.addShader(GL20.GL_VERTEX_SHADER, new ResourceSupplier(new ResourceLocation(EntityCulling.MOD_ID, "shaders/vert.glsl")))
 				.addShader(GL20.GL_FRAGMENT_SHADER, new ResourceSupplier(new ResourceLocation(EntityCulling.MOD_ID, "shaders/frag.glsl")))
 				.build();
-		uniform_projViewMat = GL20.glGetUniformLocation(shader, "projectionViewMatrix");
-		uniform_frame = GL20.glGetUniformLocation(shader, "frame");
+		uniform_projViewMat = shader.getUniform("projectionViewMatrix");
+		uniform_frame = shader.getUniform("frame");
 
-		vboBuffer = new Buffer(MAX_OBJ_COUNT * 7 * 4, GL30.GL_MAP_WRITE_BIT | GL44.GL_MAP_PERSISTENT_BIT, GL15.GL_DYNAMIC_DRAW);
-		ssboBuffer = new Buffer(MAX_OBJ_COUNT * 4, GL30.GL_MAP_READ_BIT | GL44.GL_MAP_PERSISTENT_BIT, GL15.GL_DYNAMIC_READ);
+		vboBuffer = new PersistentBuffer(MAX_OBJ_COUNT * 7 * 4, GL30.GL_MAP_WRITE_BIT);
+		ssboBuffer = new PersistentBuffer(MAX_OBJ_COUNT * 4, GL30.GL_MAP_READ_BIT);
 
 		cubeVertexBuffer = GL15.glGenBuffers();
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, cubeVertexBuffer);
@@ -112,6 +107,13 @@ public class CullingInstance {
 		return instance;
 	}
 
+	public static CullingInstance getShadowInstance() {
+		if (shadow_instance == null) {
+			shadow_instance = new CullingInstance();
+		}
+		return shadow_instance;
+	}
+
 	private static ByteBuffer asByteBuffer(byte[] data) {
 		return (ByteBuffer) GLAllocation.createDirectByteBuffer(data.length).put(data).flip();
 	}
@@ -124,41 +126,41 @@ public class CullingInstance {
 		}
 	}
 
-	public boolean isVisible(ICullable cullable) {
-		if (cullable.culling_getLastTimeUpdated() < frame - 1) {
+	public boolean isVisible(CullInfo cullInfo) {
+		if (cullInfo.getLastTimeUpdated() < frame - 1) {
 			return true;
 		}
 		sync();
-		return ssboBuffer.getByteBuffer().getInt(cullable.culling_getId() * 4) == frame;
+		return ssboBuffer.getByteBuffer().getInt(cullInfo.getId() * 4) == frame;
 	}
 
-	public void addBox(ICullable obj, double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
-		if (obj.culling_getLastTimeUpdated() == frame) {
+	public void addBox(CullInfo cullInfo, double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
+		if (cullInfo.getLastTimeUpdated() == frame) {
 			return;
 		}
-		Vec3d pos = CameraUtil.getCamera();
-		if (pos.x >= minX && pos.x <= maxX && pos.y >= minY && pos.y <= maxY && pos.z >= minZ && pos.z <= maxZ) {
+		if ((RenderUtil.getCameraX() >= minX && RenderUtil.getCameraX() <= maxX)
+				&& (RenderUtil.getCameraY() >= minY && RenderUtil.getCameraY() <= maxY)
+				&& (RenderUtil.getCameraZ() >= minZ && RenderUtil.getCameraZ() <= maxZ)) {
 			return;
 		}
-		vboBuffer.getByteBuffer().putFloat(objCount * 28, (float) (minX - RenderGlobalHook.cameraEntityX));
-		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 4, (float) (minY - RenderGlobalHook.cameraEntityY));
-		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 8, (float) (minZ - RenderGlobalHook.cameraEntityZ));
+		vboBuffer.getByteBuffer().putFloat(objCount * 28, (float) (minX - RenderUtil.getCameraEntityX()));
+		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 4, (float) (minY - RenderUtil.getCameraEntityY()));
+		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 8, (float) (minZ - RenderUtil.getCameraEntityZ()));
 		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 12, (float) (maxX - minX));
 		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 16, (float) (maxY - minY));
 		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 20, (float) (maxZ - minZ));
 		vboBuffer.getByteBuffer().putInt(objCount * 28 + 24, objCount);
-		obj.culling_setLastTimeUpdated(frame);
-		obj.culling_setId(objCount);
+		cullInfo.setLastTimeUpdated(frame);
+		cullInfo.setId(objCount);
 		objCount++;
 	}
 
 	public void updateResults(Matrix4f projViewMat) {
 		frame++;
 
-		int prevShaderProgram = EntityCullingClassTransformer.OPTIFINE_DETECTED && IS_SHADERS.invoke(null) ? GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM) : 0;
-		GL20.glUseProgram(shader);
-		projViewMat.store(matrixBuffer);
-		GL20.glUniformMatrix4(uniform_projViewMat, false, matrixBuffer);
+		GLShader.push();
+		shader.use();
+		GLUtil.setMatrix(uniform_projViewMat, projViewMat);
 		GL20.glUniform1i(uniform_frame, frame);
 		GL30.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 1, ssboBuffer.getBuffer());
 
@@ -173,19 +175,18 @@ public class CullingInstance {
 
 		clearRenderState();
 
-		GL20.glUseProgram(prevShaderProgram);
+		GLShader.pop();
 
 		objCount = 0;
 	}
 
 	private void setupRenderState() {
-		/*if (!EntityCullingConfig.debugRenderBoxes) {
-			GlStateManager.colorMask(false, false, false, false);
-		} else {
-			GlStateManager.enableBlend();
-			GlStateManager.tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
-		}*/
+		/*
+		GlStateManager.enableBlend();
+		GlStateManager.tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
+		/*/
 		GlStateManager.colorMask(false, false, false, false);
+		//*/
 		GlStateManager.disableAlpha();
 		GlStateManager.disableLighting();
 		GlStateManager.disableLight(0);
@@ -200,12 +201,11 @@ public class CullingInstance {
 	}
 
 	private void clearRenderState() {
-		/*if (!EntityCullingConfig.debugRenderBoxes) {
-			GlStateManager.colorMask(true, true, true, true);
-		} else {
-			GlStateManager.disableBlend();
-		}*/
+		/*
+		GlStateManager.disableBlend();
+		/*/
 		GlStateManager.colorMask(true, true, true, true);
+		//*/
 		GlStateManager.enableAlpha();
 		GlStateManager.enableLighting();
 		GlStateManager.enableLight(0);
