@@ -2,9 +2,11 @@ package meldexun.entityculling.asm;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 
+import net.minecraftforge.fml.relauncher.CoreModManager;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 
 @IFMLLoadingPlugin.MCVersion("1.12.2")
@@ -31,6 +33,7 @@ public class EntityCullingPlugin implements IFMLLoadingPlugin {
 		if (Boolean.FALSE.equals(data.get("runtimeDeobfuscationEnabled"))) {
 			MixinBootstrap.init();
 			MixinEnvironment.getDefaultEnvironment().setObfuscationContext("searge");
+			CoreModManager.getReparseableCoremods().removeIf(s -> StringUtils.containsIgnoreCase(s, "renderlib"));
 		}
 	}
 
