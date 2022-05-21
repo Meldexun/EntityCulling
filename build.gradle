@@ -65,12 +65,12 @@ repositories {
 
 dependencies {
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
-
-    buildDependencies 'curse.maven:CubicChunks-292243:3546640'
-    implementation 'meldexun:RenderLib:1.12.2-1.0.4@jar'
-
     implementation "org.spongepowered:mixin:${mixin_version}"
     annotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
+
+    implementation fg.deobf('meldexun:RenderLib:1.12.2-1.0.5@jar')
+
+    buildDependencies 'curse.maven:CubicChunks-292243:3546640'
 }
 
 mixin {
