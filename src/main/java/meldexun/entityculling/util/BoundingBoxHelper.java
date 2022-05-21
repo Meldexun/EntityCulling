@@ -5,7 +5,6 @@ import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
-import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.renderlib.api.IBoundingBoxCache;
 import meldexun.renderlib.util.MutableAABB;
 import meldexun.renderlib.util.RenderUtil;
@@ -57,13 +56,6 @@ public class BoundingBoxHelper {
 	}
 
 	public void drawPoints(double partialTicks) {
-		if (!EntityCullingConfig.debugRenderBoxes) {
-			return;
-		}
-		/*if (EntityCulling.useOpenGlBasedCulling()) {
-			return;
-		}*/
-
 		Minecraft mc = Minecraft.getMinecraft();
 
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 0.5F);

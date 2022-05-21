@@ -229,9 +229,9 @@ public class CullingThread extends Thread {
 	}
 
 	private boolean checkEntityShadowVisibility(Entity entity) {
-		if (!EntityCullingConfig.optifineShaderOptions.entityShadowsEnabled) {
-			return false;
-		}
+		//if (!EntityCullingConfig.optifineShaderOptions.entityShadowsEnabled) {
+		//	return false;
+		//}
 		if (!EntityCullingConfig.optifineShaderOptions.entityShadowsCulling) {
 			return true;
 		}
@@ -283,9 +283,9 @@ public class CullingThread extends Thread {
 	}
 
 	private boolean checkTileEntityShadowVisibility(TileEntity tileEntity) {
-		if (!EntityCullingConfig.optifineShaderOptions.tileEntityShadowsEnabled) {
-			return false;
-		}
+		//if (!EntityCullingConfig.optifineShaderOptions.tileEntityShadowsEnabled) {
+		//	return false;
+		//}
 		if (!EntityCullingConfig.optifineShaderOptions.tileEntityShadowsCulling) {
 			return true;
 		}
