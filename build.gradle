@@ -86,16 +86,10 @@ mixin {
 }
 
 processResources {
-    inputs.property('mod_id', "${mod_id}")
-    inputs.property('mod_name', "${mod_name}")
-    inputs.property('mod_version', "${mod_stage}" != "" ? "${mod_version}-${mod_stage}" : "${mod_version}")
-    inputs.property('mc_version', "${mc_version}")
+    inputs.property('version', "${mod_stage}" != "" ? "${mod_version}-${mod_stage}" : "${mod_version}")
 
     filesMatching('mcmod.info') {
-        expand mod_id: inputs.properties.get('mod_id'),
-               mod_name: inputs.properties.get('mod_name'),
-               mod_version: inputs.properties.get('mod_version'),
-               mc_version: inputs.properties.get('mc_version')
+        expand version: inputs.properties.get('version')
     }
 }
 
