@@ -15,8 +15,6 @@ import meldexun.renderlib.api.ITileEntityRendererCache;
 import meldexun.renderlib.util.MutableAABB;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
-import net.minecraft.client.renderer.culling.ClippingHelperImpl;
-import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -41,7 +39,6 @@ public class CullingThread extends Thread {
 	public long[] time = new long[100];
 
 	private boolean spectator;
-	private Frustum frustum;
 	private double camX;
 	private double camY;
 	private double camZ;
@@ -73,8 +70,6 @@ public class CullingThread extends Thread {
 					this.x = renderViewEntity.lastTickPosX + (renderViewEntity.posX - renderViewEntity.lastTickPosX) * partialTicks;
 					this.y = renderViewEntity.lastTickPosY + (renderViewEntity.posY - renderViewEntity.lastTickPosY) * partialTicks;
 					this.z = renderViewEntity.lastTickPosZ + (renderViewEntity.posZ - renderViewEntity.lastTickPosZ) * partialTicks;
-					this.frustum = new Frustum(ClippingHelperImpl.instance);
-					this.frustum.setPosition(this.x, this.y, this.z);
 					Vec3d cameraPosition = ActiveRenderInfo.getCameraPosition();
 					this.camX = this.x + cameraPosition.x;
 					this.camY = this.y + cameraPosition.y;
