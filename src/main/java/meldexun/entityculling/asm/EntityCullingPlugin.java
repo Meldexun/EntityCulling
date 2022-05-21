@@ -28,8 +28,10 @@ public class EntityCullingPlugin implements IFMLLoadingPlugin {
 
 	@Override
 	public void injectData(Map<String, Object> data) {
-		MixinBootstrap.init();
-		MixinEnvironment.getDefaultEnvironment().setObfuscationContext("searge");
+		if (Boolean.FALSE.equals(data.get("runtimeDeobfuscationEnabled"))) {
+			MixinBootstrap.init();
+			MixinEnvironment.getDefaultEnvironment().setObfuscationContext("searge");
+		}
 	}
 
 	@Override
