@@ -19,9 +19,9 @@ import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.util.ICullable.CullInfo;
 import meldexun.entityculling.util.ResourceSupplier;
 import meldexun.matrixutil.Matrix4f;
+import meldexun.renderlib.util.GLBuffer;
 import meldexun.renderlib.util.GLShader;
 import meldexun.renderlib.util.GLUtil;
-import meldexun.renderlib.util.PersistentBuffer;
 import meldexun.renderlib.util.RenderUtil;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
@@ -39,9 +39,9 @@ public class CullingInstance {
 
 	public final int cubeVertexBuffer;
 	public final int cubeIndexBuffer;
-	private final PersistentBuffer vboBuffer;
+	private final GLBuffer vboBuffer;
 	private final int vao;
-	private final PersistentBuffer ssboBuffer;
+	private final GLBuffer ssboBuffer;
 
 	private int objCount;
 	private int frame;
@@ -56,8 +56,8 @@ public class CullingInstance {
 		uniform_projViewMat = shader.getUniform("projectionViewMatrix");
 		uniform_frame = shader.getUniform("frame");
 
-		vboBuffer = new PersistentBuffer(MAX_OBJ_COUNT * 7 * 4, GL30.GL_MAP_WRITE_BIT);
-		ssboBuffer = new PersistentBuffer(MAX_OBJ_COUNT * 4, GL30.GL_MAP_READ_BIT);
+		vboBuffer = new GLBuffer(MAX_OBJ_COUNT * 7 * 4, GL30.GL_MAP_WRITE_BIT, GL15.GL_STREAM_DRAW, true, GL30.GL_MAP_WRITE_BIT);
+		ssboBuffer = new GLBuffer(MAX_OBJ_COUNT * 4, GL30.GL_MAP_READ_BIT, GL15.GL_STREAM_DRAW, true, GL30.GL_MAP_READ_BIT);
 
 		cubeVertexBuffer = GL15.glGenBuffers();
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, cubeVertexBuffer);
