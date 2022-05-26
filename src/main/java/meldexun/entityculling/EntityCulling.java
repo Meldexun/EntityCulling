@@ -25,7 +25,7 @@ import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-@Mod(modid = EntityCulling.MOD_ID, dependencies = "required:renderlib@[1.0.5,)")
+@Mod(modid = EntityCulling.MOD_ID, dependencies = "required:renderlib@[1.0.6,)")
 public class EntityCulling {
 
 	public static final String MOD_ID = "entityculling";
