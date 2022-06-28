@@ -15,7 +15,7 @@ public class EntityCullingConfig {
 	public static int cacheSize = 12;
 
 	public static boolean debugCullInfo = false;
-	//public static boolean debugRenderBoxes = false;
+	public static boolean debugRenderBoxes = false;
 
 	public static boolean disabledInSpectator = true;
 

@@ -19,7 +19,8 @@ public class BoundingBoxHelper {
 
 	private static BoundingBoxHelper instance;
 	private final int cubeVertexBuffer;
-	private final int cubeIndexBuffer;
+	private final int triangleStripCubeIndexBuffer;
+	private final int linesCubeIndexBuffer;
 
 	public BoundingBoxHelper() {
 		cubeVertexBuffer = GL15.glGenBuffers();
@@ -36,10 +37,19 @@ public class BoundingBoxHelper {
 		}), GL15.GL_STATIC_DRAW);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 
-		cubeIndexBuffer = GL15.glGenBuffers();
-		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, cubeIndexBuffer);
+		triangleStripCubeIndexBuffer = GL15.glGenBuffers();
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, triangleStripCubeIndexBuffer);
 		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, asByteBuffer(new byte[] {
 				7, 3, 5, 1, 0, 3, 2, 7, 6, 5, 4, 0, 6, 2
+		}), GL15.GL_STATIC_DRAW);
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+
+		linesCubeIndexBuffer = GL15.glGenBuffers();
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, linesCubeIndexBuffer);
+		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, asByteBuffer(new byte[] {
+				0, 1, 1, 5, 5, 4, 4, 0,
+				0, 2, 1, 3, 5, 7, 4, 6,
+				2, 3, 3, 7, 7, 6, 6, 2
 		}), GL15.GL_STATIC_DRAW);
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
@@ -55,7 +65,7 @@ public class BoundingBoxHelper {
 		return (ByteBuffer) GLAllocation.createDirectByteBuffer(data.length).put(data).flip();
 	}
 
-	public void drawPoints(double partialTicks) {
+	public void drawRenderBoxes(double partialTicks) {
 		Minecraft mc = Minecraft.getMinecraft();
 
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 0.5F);
@@ -70,7 +80,6 @@ public class BoundingBoxHelper {
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, cubeVertexBuffer);
 		GL11.glVertexPointer(3, GL11.GL_BYTE, 0, 0);
 		GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
-		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, cubeIndexBuffer);
 
 		for (Entity e : mc.world.loadedEntityList) {
 			if (e == mc.getRenderViewEntity()) {
@@ -83,6 +92,9 @@ public class BoundingBoxHelper {
 			GlStateManager.translate(aabb.minX() - RenderUtil.getCameraEntityX(), aabb.minY() - RenderUtil.getCameraEntityY(), aabb.minZ() - RenderUtil.getCameraEntityZ());
 			GlStateManager.scale(aabb.maxX() - aabb.minX(), aabb.maxY() - aabb.minY(), aabb.maxZ() - aabb.minZ());
 
+			GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, linesCubeIndexBuffer);
+			GL11.glDrawElements(GL11.GL_LINES, 24, GL11.GL_UNSIGNED_BYTE, 0);
+			GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, triangleStripCubeIndexBuffer);
 			GL11.glDrawElements(GL11.GL_TRIANGLE_STRIP, 14, GL11.GL_UNSIGNED_BYTE, 0);
 
 			GlStateManager.popMatrix();
@@ -95,6 +107,9 @@ public class BoundingBoxHelper {
 			GlStateManager.translate(aabb.minX() - RenderUtil.getCameraEntityX(), aabb.minY() - RenderUtil.getCameraEntityY(), aabb.minZ() - RenderUtil.getCameraEntityZ());
 			GlStateManager.scale(aabb.maxX() - aabb.minX(), aabb.maxY() - aabb.minY(), aabb.maxZ() - aabb.minZ());
 
+			GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, linesCubeIndexBuffer);
+			GL11.glDrawElements(GL11.GL_LINES, 24, GL11.GL_UNSIGNED_BYTE, 0);
+			GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, triangleStripCubeIndexBuffer);
 			GL11.glDrawElements(GL11.GL_TRIANGLE_STRIP, 14, GL11.GL_UNSIGNED_BYTE, 0);
 
 			GlStateManager.popMatrix();

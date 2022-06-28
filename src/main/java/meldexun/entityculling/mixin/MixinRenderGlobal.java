@@ -7,6 +7,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.asm.EntityCullingClassTransformer;
+import meldexun.entityculling.config.EntityCullingConfig;
+import meldexun.entityculling.util.BoundingBoxHelper;
 import meldexun.entityculling.util.culling.CullingInstance;
 import meldexun.reflectionutil.ReflectionField;
 import meldexun.renderlib.util.RenderUtil;
@@ -27,6 +29,11 @@ public class MixinRenderGlobal {
 				&& (!EntityCullingClassTransformer.OPTIFINE_DETECTED || !IS_SHADOW_PASS.getBoolean(null))) {
 			CullingInstance cullingInstance = CullingInstance.getInstance();
 			cullingInstance.updateResults(RenderUtil.getProjectionModelViewMatrix());
+		}
+		if (EntityCullingConfig.debugRenderBoxes
+				&& MinecraftForgeClient.getRenderPass() == 1
+				&& (!EntityCullingClassTransformer.OPTIFINE_DETECTED || !IS_SHADOW_PASS.getBoolean(null))) {
+			BoundingBoxHelper.getInstance().drawRenderBoxes(partialTicks);
 		}
 	}
 
