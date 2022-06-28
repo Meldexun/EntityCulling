@@ -30,6 +30,9 @@ public class MixinEntityRenderer {
 
 	@Overwrite(remap = false)
 	protected <T extends Entity> boolean isOcclusionCulled(T entity) {
+		if (RenderUtil.isRecursive()) {
+			return false;
+		}
 		if (EntityCulling.useOpenGlBasedCulling()) {
 			if (!EntityCullingConfig.enabled) {
 				return false;

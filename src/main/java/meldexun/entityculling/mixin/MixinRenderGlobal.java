@@ -24,6 +24,9 @@ public class MixinRenderGlobal {
 
 	@Inject(method = "renderEntities", at = @At("HEAD"))
 	public void renderEntities(Entity renderViewEntity, ICamera camera, float partialTicks, CallbackInfo info) {
+		if (RenderUtil.isRecursive()) {
+			return;
+		}
 		if (EntityCulling.useOpenGlBasedCulling()
 				&& MinecraftForgeClient.getRenderPass() == 0
 				&& (!EntityCullingClassTransformer.OPTIFINE_DETECTED || !IS_SHADOW_PASS.getBoolean(null))) {

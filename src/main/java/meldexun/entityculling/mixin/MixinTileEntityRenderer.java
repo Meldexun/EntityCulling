@@ -14,6 +14,7 @@ import meldexun.reflectionutil.ReflectionField;
 import meldexun.renderlib.api.IBoundingBoxCache;
 import meldexun.renderlib.renderer.tileentity.TileEntityRenderer;
 import meldexun.renderlib.util.MutableAABB;
+import meldexun.renderlib.util.RenderUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.tileentity.TileEntity;
 
@@ -32,6 +33,9 @@ public class MixinTileEntityRenderer {
 
 	@Overwrite(remap = false)
 	protected <T extends TileEntity> boolean isOcclusionCulled(T tileEntity) {
+		if (RenderUtil.isRecursive()) {
+			return false;
+		}
 		if (EntityCulling.useOpenGlBasedCulling()) {
 			if (EntityCullingClassTransformer.OPTIFINE_DETECTED && IS_SHADOW_PASS.getBoolean(null)) {
 				return false;
