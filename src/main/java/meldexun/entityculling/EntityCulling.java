@@ -3,12 +3,11 @@ package meldexun.entityculling;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 
-import org.lwjgl.opengl.GLContext;
-
 import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.util.CullingThread;
 import meldexun.renderlib.renderer.EntityRenderManager;
 import meldexun.renderlib.renderer.TileEntityRenderManager;
+import meldexun.renderlib.util.GLUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.ScaledResolution;
@@ -32,17 +31,14 @@ public class EntityCulling {
 	private static CullingThread cullingThread;
 	private static final DecimalFormat FORMAT = new DecimalFormat("0.0");
 	public static boolean isCubicChunksInstalled;
-	private static boolean isOpenGL44Supported;
 	public static int frame;
 
 	public static boolean useOpenGlBasedCulling() {
-		return isOpenGL44Supported && EntityCullingConfig.openglBasedCulling;
+		return EntityCullingConfig.openglBasedCulling && GLUtil.CAPS.OpenGL44;
 	}
 
 	@EventHandler
 	public void onFMLConstructionEvent(FMLConstructionEvent event) {
-		isOpenGL44Supported = GLContext.getCapabilities().OpenGL44;
-
 		EntityCullingConfig.onConfigChanged();
 		MinecraftForge.EVENT_BUS.register(this);
 
