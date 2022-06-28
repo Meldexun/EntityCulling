@@ -33,8 +33,8 @@ public class EntityCullingConfig {
 	@Config.RangeDouble(min = 0.0D, max = 1024.0D)
 	public static double raytraceThreshold = 1.0D;
 
-	//@Config.Comment("If enabled tile entity bounding boxes are increased slightly to avoid issues when other mods don't correctly set their bounding boxes (requires opengl based culling). If you still have culling or flickering issues you can use the 'debugRenderBoxes', 'entityBoundingBoxGrowthList' and 'tileEntityBoundingBoxGrowthList' config options to try to fix the bounding box of that entity or tile entity.")
-	//public static boolean tileEntityAABBGrowth = true;
+	@Config.Comment("If enabled tile entity bounding boxes are increased slightly to avoid issues when other mods don't correctly set their bounding boxes (requires opengl based culling). If you still have culling or flickering issues you can use the 'debugRenderBoxes', 'entityBoundingBoxGrowthList' and 'tileEntityBoundingBoxGrowthList' config options to try to fix the bounding box of that entity or tile entity.")
+	public static boolean tileEntityAABBGrowth = true;
 
 	public static EntityOptions entity = new EntityOptions();
 	public static TileEntityOptions tileEntity = new TileEntityOptions();

@@ -11,6 +11,7 @@
     "MixinEntityRenderer",
     "MixinEntityRendererOptifine",
     "MixinRenderGlobal",
+    "MixinTileEntity",
     "MixinTileEntityRenderer",
     "MixinTileEntityRendererOptifine"
   ],
