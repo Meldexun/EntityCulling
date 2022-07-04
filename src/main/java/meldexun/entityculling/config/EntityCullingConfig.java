@@ -75,7 +75,7 @@ public class EntityCullingConfig {
 		@Config.RangeDouble(min = 0.0D, max = 1024.0D)
 		public double skipHiddenTileEntityRenderingSize = 16.0D;
 		@Config.Comment("Tile entities which will always be rendered. (Accepts 'modid' or 'modid:tile_entity_name')")
-		public String[] skipHiddenTileEntityRenderingBlacklist = new String[0];
+		public String[] skipHiddenTileEntityRenderingBlacklist = { "enderio:tile_travel_anchor" };
 		@Config.Ignore
 		public ResourceLocationMap<TileEntity, Boolean> skipHiddenTileEntityRenderingBlacklistImpl = new ResourceLocationMap<>(TileEntity.REGISTRY::getNameForObject, false, s -> true);
 
