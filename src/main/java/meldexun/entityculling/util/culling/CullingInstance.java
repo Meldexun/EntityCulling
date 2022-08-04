@@ -39,7 +39,7 @@ public class CullingInstance {
 
 	public final int cubeVertexBuffer;
 	public final int cubeIndexBuffer;
-	private final GLBuffer vboBuffer;
+	private final BBBuffer vboBuffer;
 	private final int vao;
 	private final GLBuffer ssboBuffer;
 
@@ -56,7 +56,7 @@ public class CullingInstance {
 		uniform_projViewMat = shader.getUniform("projectionViewMatrix");
 		uniform_frame = shader.getUniform("frame");
 
-		vboBuffer = new GLBuffer(MAX_OBJ_COUNT * 7 * 4, GL30.GL_MAP_WRITE_BIT, GL15.GL_STREAM_DRAW, true, GL30.GL_MAP_WRITE_BIT);
+		vboBuffer = new BBBuffer(MAX_OBJ_COUNT * 7 * 4, GL30.GL_MAP_WRITE_BIT, GL15.GL_STREAM_DRAW, true, GL30.GL_MAP_WRITE_BIT);
 		ssboBuffer = new GLBuffer(MAX_OBJ_COUNT * 4, GL30.GL_MAP_READ_BIT, GL15.GL_STREAM_DRAW, true, GL30.GL_MAP_READ_BIT);
 
 		cubeVertexBuffer = GL15.glGenBuffers();
@@ -143,13 +143,14 @@ public class CullingInstance {
 				&& (RenderUtil.getCameraZ() >= minZ && RenderUtil.getCameraZ() <= maxZ)) {
 			return;
 		}
-		vboBuffer.getByteBuffer().putFloat(objCount * 28, (float) (minX - RenderUtil.getCameraEntityX()));
-		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 4, (float) (minY - RenderUtil.getCameraEntityY()));
-		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 8, (float) (minZ - RenderUtil.getCameraEntityZ()));
-		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 12, (float) (maxX - minX));
-		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 16, (float) (maxY - minY));
-		vboBuffer.getByteBuffer().putFloat(objCount * 28 + 20, (float) (maxZ - minZ));
-		vboBuffer.getByteBuffer().putInt(objCount * 28 + 24, objCount);
+		vboBuffer.put(
+				(float) (minX - RenderUtil.getCameraEntityX()),
+				(float) (minY - RenderUtil.getCameraEntityY()),
+				(float) (minZ - RenderUtil.getCameraEntityZ()),
+				(float) (maxX - minX),
+				(float) (maxY - minY),
+				(float) (maxZ - minZ),
+				objCount);
 		cullInfo.setLastTimeUpdated(frame);
 		cullInfo.setId(objCount);
 		objCount++;
