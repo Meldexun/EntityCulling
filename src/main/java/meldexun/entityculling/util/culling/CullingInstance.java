@@ -7,12 +7,8 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
-import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GL33;
-import org.lwjgl.opengl.GL42;
 import org.lwjgl.opengl.GL43;
-import org.lwjgl.opengl.GL44;
-import org.lwjgl.opengl.GLSync;
 
 import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.util.ICullable.CullInfo;
@@ -35,7 +31,6 @@ public class CullingInstance {
 	private static final String A_SIZE = "a_Size";
 	private static final String A_OBJID = "a_ObjID";
 	private static final String U_MATRIX = "u_ModelViewProjectionMatrix";
-	private static final String U_FRAME = "u_Frame";
 	private static CullingInstance instance;
 	private static CullingInstance shadow_instance;
 
@@ -45,12 +40,10 @@ public class CullingInstance {
 	public final int cubeIndexBuffer;
 	private final BBBuffer vboBuffer;
 	private final int vao;
-	private final GLBuffer ssboBuffer;
+	private GLBuffer ssboBuffer;
 
 	private int objCount;
 	private int frame;
-
-	private GLSync fence;
 
 	public CullingInstance() {
 		shader = new GLShader.Builder()
@@ -120,20 +113,15 @@ public class CullingInstance {
 		return (ByteBuffer) GLAllocation.createDirectByteBuffer(data.length).put(data).flip();
 	}
 
-	private void sync() {
-		if (fence != null) {
-			GL32.glClientWaitSync(fence, 0, 1_000_000_000);
-			GL32.glDeleteSync(fence);
-			fence = null;
-		}
-	}
-
 	public boolean isVisible(CullInfo cullInfo) {
 		if (cullInfo.getLastTimeUpdated() < frame - 1) {
 			return true;
 		}
-		sync();
-		return ssboBuffer.getByteBuffer().getInt(cullInfo.getId() * 4) == frame;
+		if (ssboBuffer == null) {
+			return false;
+		}
+		ssboBuffer.map(GL30.GL_MAP_READ_BIT, GL15.GL_READ_ONLY);
+		return ssboBuffer.getByteBuffer().getInt(cullInfo.getId() * 4) == 1;
 	}
 
 	public void addBox(CullInfo cullInfo, double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
@@ -159,28 +147,35 @@ public class CullingInstance {
 	}
 
 	public void updateResults(Matrix4f projViewMat) {
+		if (ssboBuffer != null) {
+			ssboBuffer.dispose();
+		}
+
 		frame++;
 
-		GLShader.push();
-		shader.use();
-		GLUtil.setMatrix(shader.getUniform(U_MATRIX), projViewMat);
-		GL20.glUniform1i(shader.getUniform(U_FRAME), frame);
-		GL30.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 1, ssboBuffer.getBuffer());
 
-		setupRenderState();
+		if (objCount > 0) {
+			ssboBuffer = new GLBuffer(objCount * 4, GL30.GL_MAP_READ_BIT, GL15.GL_STREAM_READ);
 
-		// render
-		GL30.glBindVertexArray(vao);
-		GL31.glDrawElementsInstanced(GL11.GL_TRIANGLE_STRIP, 14, GL11.GL_UNSIGNED_BYTE, 0, objCount);
-		GL42.glMemoryBarrier(GL44.GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
-		fence = GL32.glFenceSync(GL32.GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-		GL30.glBindVertexArray(0);
+			GLShader.push();
+			shader.use();
+			GLUtil.setMatrix(shader.getUniform(U_MATRIX), projViewMat);
+			GL30.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 1, ssboBuffer.getBuffer());
 
-		clearRenderState();
+			setupRenderState();
 
-		GLShader.pop();
+			// render
+			GL30.glBindVertexArray(vao);
+			GL31.glDrawElementsInstanced(GL11.GL_TRIANGLE_STRIP, 14, GL11.GL_UNSIGNED_BYTE, 0, objCount);
+			GL30.glBindVertexArray(0);
 
-		objCount = 0;
+			clearRenderState();
+
+			GL30.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 1, 0);
+			GLShader.pop();
+
+			objCount = 0;
+		}
 	}
 
 	private void setupRenderState() {
