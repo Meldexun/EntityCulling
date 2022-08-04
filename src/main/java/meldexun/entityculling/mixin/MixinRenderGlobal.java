@@ -22,6 +22,7 @@ public class MixinRenderGlobal {
 
 	private static final ReflectionField<Boolean> IS_SHADOW_PASS = new ReflectionField<>("net.optifine.shaders.Shaders", "isShadowPass", "isShadowPass");
 
+	/** {@link RenderGlobal#renderEntities(Entity, ICamera, float)} */
 	@Inject(method = "renderEntities", at = @At("RETURN"))
 	public void renderEntities(Entity renderViewEntity, ICamera camera, float partialTicks, CallbackInfo info) {
 		if (RenderUtil.isRecursive()) {
