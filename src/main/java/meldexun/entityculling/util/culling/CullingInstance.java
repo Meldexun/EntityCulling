@@ -30,12 +30,16 @@ import net.minecraft.util.ResourceLocation;
 public class CullingInstance {
 
 	private static final int MAX_OBJ_COUNT = 1 << 16;
+	private static final String A_POS = "a_Pos";
+	private static final String A_OFFSET = "a_Offset";
+	private static final String A_SIZE = "a_Size";
+	private static final String A_OBJID = "a_ObjID";
+	private static final String U_MATRIX = "u_ModelViewProjectionMatrix";
+	private static final String U_FRAME = "u_Frame";
 	private static CullingInstance instance;
 	private static CullingInstance shadow_instance;
 
 	private final GLShader shader;
-	private final int uniform_projViewMat;
-	private final int uniform_frame;
 
 	public final int cubeVertexBuffer;
 	public final int cubeIndexBuffer;
@@ -53,8 +57,6 @@ public class CullingInstance {
 				.addShader(GL20.GL_VERTEX_SHADER, new ResourceSupplier(new ResourceLocation(EntityCulling.MOD_ID, "shaders/vert.glsl")))
 				.addShader(GL20.GL_FRAGMENT_SHADER, new ResourceSupplier(new ResourceLocation(EntityCulling.MOD_ID, "shaders/frag.glsl")))
 				.build();
-		uniform_projViewMat = shader.getUniform("projectionViewMatrix");
-		uniform_frame = shader.getUniform("frame");
 
 		vboBuffer = new BBBuffer(MAX_OBJ_COUNT * 7 * 4, GL30.GL_MAP_WRITE_BIT, GL15.GL_STREAM_DRAW, true, GL30.GL_MAP_WRITE_BIT);
 		ssboBuffer = new GLBuffer(MAX_OBJ_COUNT * 4, GL30.GL_MAP_READ_BIT, GL15.GL_STREAM_DRAW, true, GL30.GL_MAP_READ_BIT);
@@ -83,18 +85,18 @@ public class CullingInstance {
 		vao = GL30.glGenVertexArrays();
 		GL30.glBindVertexArray(vao);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, cubeVertexBuffer);
-		GL20.glVertexAttribPointer(0, 3, GL11.GL_BYTE, false, 0, 0);
-		GL20.glEnableVertexAttribArray(0);
+		GL20.glVertexAttribPointer(shader.getAttribute(A_POS), 3, GL11.GL_BYTE, false, 0, 0);
+		GL20.glEnableVertexAttribArray(shader.getAttribute(A_POS));
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboBuffer.getBuffer());
-		GL20.glVertexAttribPointer(1, 3, GL11.GL_FLOAT, false, 28, 0);
-		GL20.glVertexAttribPointer(2, 3, GL11.GL_FLOAT, false, 28, 12);
-		GL30.glVertexAttribIPointer(3, 1, GL11.GL_INT, 28, 24);
-		GL20.glEnableVertexAttribArray(1);
-		GL20.glEnableVertexAttribArray(2);
-		GL20.glEnableVertexAttribArray(3);
-		GL33.glVertexAttribDivisor(1, 1);
-		GL33.glVertexAttribDivisor(2, 1);
-		GL33.glVertexAttribDivisor(3, 1);
+		GL20.glVertexAttribPointer(shader.getAttribute(A_OFFSET), 3, GL11.GL_FLOAT, false, 28, 0);
+		GL20.glVertexAttribPointer(shader.getAttribute(A_SIZE), 3, GL11.GL_FLOAT, false, 28, 12);
+		GL30.glVertexAttribIPointer(shader.getAttribute(A_OBJID), 1, GL11.GL_INT, 28, 24);
+		GL20.glEnableVertexAttribArray(shader.getAttribute(A_OFFSET));
+		GL20.glEnableVertexAttribArray(shader.getAttribute(A_SIZE));
+		GL20.glEnableVertexAttribArray(shader.getAttribute(A_OBJID));
+		GL33.glVertexAttribDivisor(shader.getAttribute(A_OFFSET), 1);
+		GL33.glVertexAttribDivisor(shader.getAttribute(A_SIZE), 1);
+		GL33.glVertexAttribDivisor(shader.getAttribute(A_OBJID), 1);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, cubeIndexBuffer);
 		GL30.glBindVertexArray(0);
@@ -161,8 +163,8 @@ public class CullingInstance {
 
 		GLShader.push();
 		shader.use();
-		GLUtil.setMatrix(uniform_projViewMat, projViewMat);
-		GL20.glUniform1i(uniform_frame, frame);
+		GLUtil.setMatrix(shader.getUniform(U_MATRIX), projViewMat);
+		GL20.glUniform1i(shader.getUniform(U_FRAME), frame);
 		GL30.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 1, ssboBuffer.getBuffer());
 
 		setupRenderState();

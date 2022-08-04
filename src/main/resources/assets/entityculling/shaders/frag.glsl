@@ -6,16 +6,16 @@ layout (std430, binding = 1) restrict buffer visibleBuffer {
   int visibles[];
 };
 
-flat in int v_objid;
+flat in int v_ObjID;
 
-uniform int frame;
+uniform int u_Frame;
 
-out vec4 f_color;
+out vec4 f_Color;
 
 void main() {
-  if (visibles[v_objid] != frame) {
-    visibles[v_objid] = frame;
+  if (visibles[v_ObjID] != u_Frame) {
+    visibles[v_ObjID] = u_Frame;
   }
 
-  f_color = vec4(1, 1, 1, 0.5);
+  f_Color = vec4(1, 1, 1, 0.5);
 }
