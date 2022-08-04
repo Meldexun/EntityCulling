@@ -22,13 +22,13 @@ public class MixinRenderGlobal {
 
 	private static final ReflectionField<Boolean> IS_SHADOW_PASS = new ReflectionField<>("net.optifine.shaders.Shaders", "isShadowPass", "isShadowPass");
 
-	@Inject(method = "renderEntities", at = @At("HEAD"))
+	@Inject(method = "renderEntities", at = @At("RETURN"))
 	public void renderEntities(Entity renderViewEntity, ICamera camera, float partialTicks, CallbackInfo info) {
 		if (RenderUtil.isRecursive()) {
 			return;
 		}
 		if (EntityCulling.useOpenGlBasedCulling()
-				&& MinecraftForgeClient.getRenderPass() == 0
+				&& MinecraftForgeClient.getRenderPass() == 1
 				&& (!EntityCullingClassTransformer.OPTIFINE_DETECTED || !IS_SHADOW_PASS.getBoolean(null))) {
 			CullingInstance cullingInstance = CullingInstance.getInstance();
 			cullingInstance.updateResults(RenderUtil.getProjectionModelViewMatrix());

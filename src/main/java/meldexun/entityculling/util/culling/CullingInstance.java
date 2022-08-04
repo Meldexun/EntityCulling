@@ -3,7 +3,6 @@ package meldexun.entityculling.util.culling;
 import java.nio.ByteBuffer;
 
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
@@ -25,6 +24,7 @@ import meldexun.renderlib.util.GLUtil;
 import meldexun.renderlib.util.RenderUtil;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.GlStateManager.CullFace;
 import net.minecraft.util.ResourceLocation;
 
 public class CullingInstance {
@@ -181,42 +181,29 @@ public class CullingInstance {
 	}
 
 	private void setupRenderState() {
-		/*
-		GlStateManager.enableBlend();
-		GlStateManager.tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
-		/*/
-		GlStateManager.colorMask(false, false, false, false);
-		//*/
-		GlStateManager.disableAlpha();
-		GlStateManager.disableLighting();
-		GlStateManager.disableLight(0);
-		GlStateManager.disableLight(1);
-		GlStateManager.disableColorMaterial();
+		GlStateManager.disableBlend();
+
+		GlStateManager.enableDepth();
+		GlStateManager.depthFunc(GL11.GL_LEQUAL);
 		GlStateManager.depthMask(false);
-		GlStateManager.disableFog();
-		GlStateManager.disableTexture2D();
-		GlStateManager.setActiveTexture(GL13.GL_TEXTURE1);
-		GlStateManager.disableTexture2D();
-		GlStateManager.setActiveTexture(GL13.GL_TEXTURE0);
+
+		GlStateManager.enableCull();
+		GlStateManager.cullFace(CullFace.BACK);
+
+		GlStateManager.colorMask(false, false, false, false);
 	}
 
 	private void clearRenderState() {
-		/*
-		GlStateManager.disableBlend();
-		/*/
-		GlStateManager.colorMask(true, true, true, true);
-		//*/
-		GlStateManager.enableAlpha();
-		GlStateManager.enableLighting();
-		GlStateManager.enableLight(0);
-		GlStateManager.enableLight(1);
-		GlStateManager.enableColorMaterial();
+		GlStateManager.enableBlend();
+
+		GlStateManager.enableDepth();
+		GlStateManager.depthFunc(GL11.GL_LEQUAL);
 		GlStateManager.depthMask(true);
-		GlStateManager.enableFog();
-		GlStateManager.enableTexture2D();
-		GlStateManager.setActiveTexture(GL13.GL_TEXTURE1);
-		GlStateManager.enableTexture2D();
-		GlStateManager.setActiveTexture(GL13.GL_TEXTURE0);
+
+		GlStateManager.disableCull();
+		GlStateManager.cullFace(CullFace.BACK);
+
+		GlStateManager.colorMask(true, true, true, true);
 	}
 
 }
