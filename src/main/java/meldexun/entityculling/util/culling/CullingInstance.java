@@ -52,7 +52,6 @@ public class CullingInstance {
 				.build();
 
 		vboBuffer = new BBBuffer(MAX_OBJ_COUNT * 7 * 4, GL30.GL_MAP_WRITE_BIT, GL15.GL_STREAM_DRAW, true, GL30.GL_MAP_WRITE_BIT);
-		ssboBuffer = new GLBuffer(MAX_OBJ_COUNT * 4, GL30.GL_MAP_READ_BIT, GL15.GL_STREAM_DRAW, true, GL30.GL_MAP_READ_BIT);
 
 		cubeVertexBuffer = GL15.glGenBuffers();
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, cubeVertexBuffer);
