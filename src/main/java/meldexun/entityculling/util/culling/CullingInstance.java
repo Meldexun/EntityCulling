@@ -152,9 +152,9 @@ public class CullingInstance {
 
 		frame++;
 
-
 		if (objCount > 0) {
 			ssboBuffer = new GLBuffer(objCount * 4, GL30.GL_MAP_READ_BIT, GL15.GL_STREAM_READ);
+			GLHelper.clearBufferData(ssboBuffer.getBuffer(), 0);
 
 			GLShader.push();
 			shader.use();
