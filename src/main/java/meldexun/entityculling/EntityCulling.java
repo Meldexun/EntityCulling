@@ -34,7 +34,7 @@ public class EntityCulling {
 	public static int frame;
 
 	public static boolean useOpenGlBasedCulling() {
-		return EntityCullingConfig.openglBasedCulling && GLUtil.CAPS.OpenGL44;
+		return EntityCullingConfig.openglBasedCulling && GLUtil.CAPS.OpenGL43;
 	}
 
 	@EventHandler
