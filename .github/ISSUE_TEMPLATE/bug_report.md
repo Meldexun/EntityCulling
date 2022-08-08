@@ -22,7 +22,6 @@ If applicable, add screenshots or videos to help explain your problem. If you ar
 
 **Versions**
 Entity Culling: 
-RenderLib: 
 Forge: 
 Minecraft: 
 Other mods (necessary to reproduce the bug): 
