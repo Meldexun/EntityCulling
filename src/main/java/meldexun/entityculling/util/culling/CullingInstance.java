@@ -113,14 +113,14 @@ public class CullingInstance {
 	}
 
 	public boolean isVisible(CullInfo cullInfo) {
-		if (cullInfo.getLastTimeUpdated() < frame - 1) {
+		if (!cullInfo.wasLastTimeUpdated(frame)) {
 			return true;
 		}
 		if (ssboBuffer == null) {
 			return false;
 		}
 		ssboBuffer.map(GL30.GL_MAP_READ_BIT, GL15.GL_READ_ONLY);
-		return ssboBuffer.getByteBuffer().getInt(cullInfo.getId() * 4) == 1;
+		return ssboBuffer.getByteBuffer().getInt(cullInfo.getId(frame) * 4) == 1;
 	}
 
 	public void addBox(CullInfo cullInfo, double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
@@ -148,6 +148,7 @@ public class CullingInstance {
 	public void updateResults(Matrix4f projViewMat) {
 		if (ssboBuffer != null) {
 			ssboBuffer.dispose();
+			ssboBuffer = null;
 		}
 
 		frame++;
