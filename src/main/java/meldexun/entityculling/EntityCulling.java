@@ -1,18 +1,11 @@
 package meldexun.entityculling;
 
-import java.text.DecimalFormat;
-import java.util.Arrays;
-
 import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.util.CullingThread;
-import meldexun.renderlib.renderer.EntityRenderManager;
-import meldexun.renderlib.renderer.TileEntityRenderManager;
 import meldexun.renderlib.util.GLUtil;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.ScaledResolution;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
+import meldexun.renderlib.util.timer.CPUTimer;
+import meldexun.renderlib.util.timer.ITimer;
+import meldexun.renderlib.util.timer.TimerEventHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
@@ -23,15 +16,16 @@ import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 @Mod(modid = EntityCulling.MOD_ID, dependencies = "required-after:renderlib@[1.1.7,)")
 public class EntityCulling {
 
 	public static final String MOD_ID = "entityculling";
 	private static CullingThread cullingThread;
-	private static final DecimalFormat FORMAT = new DecimalFormat("0.0");
 	public static boolean isCubicChunksInstalled;
-	public static int frame;
+	public static final ITimer gpuTimer = TimerEventHandler.tryCreateGLTimer("GPU (Cull)", 100);
+	public static final ITimer cpuTimer = new CPUTimer("CPU (Cull Main)", 100);
 
 	public static boolean useOpenGlBasedCulling() {
 		return EntityCullingConfig.openglBasedCulling && GLUtil.CAPS.OpenGL43;
@@ -44,6 +38,11 @@ public class EntityCulling {
 
 		cullingThread = new CullingThread();
 		cullingThread.start();
+
+		TimerEventHandler.timers.add(null);
+		TimerEventHandler.timers.add(gpuTimer);
+		TimerEventHandler.timers.add(cpuTimer);
+		TimerEventHandler.timers.add(cullingThread.timer);
 	}
 
 	@EventHandler
@@ -60,32 +59,9 @@ public class EntityCulling {
 	}
 
 	@SubscribeEvent
-	public void onRenderGameOverlayEvent(RenderGameOverlayEvent.Post event) {
-		if (event.getType() != ElementType.ALL) {
-			return;
-		}
-		if (!EntityCullingConfig.debugCullInfo) {
-			return;
-		}
-		Minecraft mc = Minecraft.getMinecraft();
-		ScaledResolution scaled = new ScaledResolution(mc);
-		int width = scaled.getScaledWidth();
-		int height = scaled.getScaledHeight();
-		drawDebug("Time:", FORMAT.format(Arrays.stream(cullingThread.time).average().getAsDouble() / 1_000_000.0D) + "ms", width, height - 80);
-		drawDebug("E (R):", Integer.toString(EntityRenderManager.renderedEntities()), width, height - 70);
-		drawDebug("E (C):", Integer.toString(EntityRenderManager.occludedEntities()), width, height - 60);
-		drawDebug("E (T):", Integer.toString(EntityRenderManager.totalEntities()), width, height - 50);
-		drawDebug("TE (R):", Integer.toString(TileEntityRenderManager.renderedTileEntities()), width, height - 40);
-		drawDebug("TE (C):", Integer.toString(TileEntityRenderManager.occludedTileEntities()), width, height - 30);
-		drawDebug("TE (T):", Integer.toString(TileEntityRenderManager.totalTileEntities()), width, height - 20);
-	}
-
-	private void drawDebug(String prefix, String string, int x, int y) {
-		Minecraft mc = Minecraft.getMinecraft();
-		FontRenderer font = mc.fontRenderer;
-		int stringWidth = font.getStringWidth(string);
-		font.drawString(prefix, x - Math.max(stringWidth + font.getStringWidth(prefix), 60), y, 0xFFFFFFFF);
-		font.drawString(string, x - stringWidth, y, 0xFFFFFFFF);
+	public void onRenderTickEvent(TickEvent.RenderTickEvent event) {
+		gpuTimer.update();
+		cpuTimer.update();
 	}
 
 }

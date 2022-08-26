@@ -34,41 +34,46 @@ public class MixinEntityRenderer {
 			return false;
 		}
 		if (EntityCulling.useOpenGlBasedCulling()) {
-			if (!EntityCullingConfig.enabled) {
-				return false;
-			}
-			if (EntityCullingConfig.disabledInSpectator && Minecraft.getMinecraft().player.isSpectator()) {
-				return false;
-			}
-			if (!EntityCullingConfig.entity.skipHiddenEntityRendering) {
-				return false;
-			}
-			if (EntityCullingConfig.entity.alwaysRenderBosses && !entity.isNonBoss()) {
-				return false;
-			}
-			if (EntityCullingConfig.entity.alwaysRenderEntitiesWithName && entity.getAlwaysRenderNameTagForRender()) {
-				return false;
-			}
-			if (EntityCullingConfig.entity.alwaysRenderPlayers && entity instanceof EntityPlayer) {
-				return false;
-			}
-			if (EntityCullingConfig.entity.alwaysRenderViewEntity && entity == Minecraft.getMinecraft().getRenderViewEntity()) {
-				return false;
-			}
-			if (EntityCullingConfig.entity.skipHiddenEntityRenderingBlacklistImpl.get(entity)) {
-				return false;
-			}
+			EntityCulling.cpuTimer.start();
+			try {
+				if (!EntityCullingConfig.enabled) {
+					return false;
+				}
+				if (EntityCullingConfig.disabledInSpectator && Minecraft.getMinecraft().player.isSpectator()) {
+					return false;
+				}
+				if (!EntityCullingConfig.entity.skipHiddenEntityRendering) {
+					return false;
+				}
+				if (EntityCullingConfig.entity.alwaysRenderBosses && !entity.isNonBoss()) {
+					return false;
+				}
+				if (EntityCullingConfig.entity.alwaysRenderEntitiesWithName && entity.getAlwaysRenderNameTagForRender()) {
+					return false;
+				}
+				if (EntityCullingConfig.entity.alwaysRenderPlayers && entity instanceof EntityPlayer) {
+					return false;
+				}
+				if (EntityCullingConfig.entity.alwaysRenderViewEntity && entity == Minecraft.getMinecraft().getRenderViewEntity()) {
+					return false;
+				}
+				if (EntityCullingConfig.entity.skipHiddenEntityRenderingBlacklistImpl.get(entity)) {
+					return false;
+				}
 
-			CullingInstance cullingInstance = CullingInstance.getInstance();
-			CullInfo cullInfo = ((ICullable) entity).getCullInfo();
-			boolean culled = !cullingInstance.isVisible(cullInfo);
+				CullingInstance cullingInstance = CullingInstance.getInstance();
+				CullInfo cullInfo = ((ICullable) entity).getCullInfo();
+				boolean culled = !cullingInstance.isVisible(cullInfo);
 
-			aabb.set(((IBoundingBoxCache) entity).getCachedBoundingBox());
-			aabb.expand(entity.posX - entity.lastTickPosX, entity.posY - entity.lastTickPosY, entity.posZ - entity.lastTickPosZ, RenderUtil.getPartialTickDelta());
-			// aabb.expand(CameraUtil.getDeltaCamera(), RenderUtil.getPartialTickDelta());
-			cullingInstance.addBox(cullInfo, aabb.minX(), aabb.minY(), aabb.minZ(), aabb.maxX(), aabb.maxY(), aabb.maxZ());
+				aabb.set(((IBoundingBoxCache) entity).getCachedBoundingBox());
+				aabb.expand(entity.posX - entity.lastTickPosX, entity.posY - entity.lastTickPosY, entity.posZ - entity.lastTickPosZ, RenderUtil.getPartialTickDelta());
+				// aabb.expand(CameraUtil.getDeltaCamera(), RenderUtil.getPartialTickDelta());
+				cullingInstance.addBox(cullInfo, aabb.minX(), aabb.minY(), aabb.minZ(), aabb.maxX(), aabb.maxY(), aabb.maxZ());
 
-			return culled;
+				return culled;
+			} finally {
+				EntityCulling.cpuTimer.stop();
+			}
 		}
 
 		return ((ICullable) entity).isCulled();

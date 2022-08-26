@@ -3,6 +3,7 @@ package meldexun.entityculling.util;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.stream.LongStream;
 
 import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.asm.EntityCullingClassTransformer;
@@ -13,6 +14,8 @@ import meldexun.renderlib.api.IEntityRendererCache;
 import meldexun.renderlib.api.ILoadable;
 import meldexun.renderlib.api.ITileEntityRendererCache;
 import meldexun.renderlib.util.MutableAABB;
+import meldexun.renderlib.util.timer.CPUTimer;
+import meldexun.renderlib.util.timer.ITimer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.crash.CrashReport;
@@ -34,9 +37,57 @@ public class CullingThread extends Thread {
 	}, () -> Minecraft.getMinecraft().gameSettings.renderDistanceChunks);
 	private double sleepOverhead = 0.0D;
 
-	/** debug */
-	private int counter = 0;
-	public long[] time = new long[100];
+	public final ITimer timer = new ITimer() {
+
+		private final ITimer timer = new CPUTimer("CPU (Cull Async)", 100);
+		private volatile String avgString;
+		private volatile String minString;
+		private volatile String maxString;
+
+		@Override
+		public void update() {
+			this.avgString = this.timer.avgString();
+			this.minString = this.timer.minString();
+			this.maxString = this.timer.maxString();
+			this.timer.update();
+		}
+
+		@Override
+		public void stop() {
+			this.timer.stop();
+		}
+
+		@Override
+		public void start() {
+			this.timer.start();
+		}
+
+		@Override
+		public LongStream results() {
+			return this.timer.results();
+		}
+
+		@Override
+		public String getName() {
+			return this.timer.getName();
+		}
+
+		@Override
+		public String avgString() {
+			return this.avgString;
+		}
+
+		@Override
+		public String minString() {
+			return this.minString;
+		}
+
+		@Override
+		public String maxString() {
+			return this.maxString;
+		}
+
+	};
 
 	private boolean spectator;
 	private double camX;
@@ -58,6 +109,9 @@ public class CullingThread extends Thread {
 
 		while (true) {
 			long t = System.nanoTime();
+			this.timer.update();
+			this.timer.start();
+
 			try {
 				World world = mc.world;
 				EntityPlayer player = mc.player;
@@ -112,14 +166,10 @@ public class CullingThread extends Thread {
 				this.cachedBlockAccess.clearCache();
 				this.engine.clearCache();
 			}
+	
+			this.timer.stop();
 
-			t = System.nanoTime() - t;
-
-			// debug
-			this.time[this.counter] = t;
-			this.counter = (this.counter + 1) % this.time.length;
-
-			double d = t / 1_000_000.0D + this.sleepOverhead;
+			double d = (System.nanoTime() - t) / 1_000_000.0D + this.sleepOverhead;
 			this.sleepOverhead = d % 1.0D;
 			long sleepTime = 10 - (long) d;
 			if (sleepTime > 0) {

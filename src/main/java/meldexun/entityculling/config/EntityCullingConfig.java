@@ -14,7 +14,6 @@ public class EntityCullingConfig {
 	@Config.Comment("Ideally should be set to equal the render distance. Ram usage (in Bytes) = 1063 * (2x + 1) ^ 3")
 	public static int cacheSize = 12;
 
-	public static boolean debugCullInfo = false;
 	public static boolean debugRenderBoxes = false;
 
 	public static boolean disabledInSpectator = true;

@@ -37,31 +37,36 @@ public class MixinTileEntityRenderer {
 			return false;
 		}
 		if (EntityCulling.useOpenGlBasedCulling()) {
-			if (EntityCullingClassTransformer.OPTIFINE_DETECTED && IS_SHADOW_PASS.getBoolean(null)) {
-				return false;
-			}
-			if (!EntityCullingConfig.enabled) {
-				return false;
-			}
-			if (EntityCullingConfig.disabledInSpectator && Minecraft.getMinecraft().player.isSpectator()) {
-				return false;
-			}
-			if (!EntityCullingConfig.tileEntity.skipHiddenTileEntityRendering) {
-				return false;
-			}
-			if (EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingBlacklistImpl.get(tileEntity)) {
-				return false;
-			}
+			EntityCulling.cpuTimer.start();
+			try {
+				if (EntityCullingClassTransformer.OPTIFINE_DETECTED && IS_SHADOW_PASS.getBoolean(null)) {
+					return false;
+				}
+				if (!EntityCullingConfig.enabled) {
+					return false;
+				}
+				if (EntityCullingConfig.disabledInSpectator && Minecraft.getMinecraft().player.isSpectator()) {
+					return false;
+				}
+				if (!EntityCullingConfig.tileEntity.skipHiddenTileEntityRendering) {
+					return false;
+				}
+				if (EntityCullingConfig.tileEntity.skipHiddenTileEntityRenderingBlacklistImpl.get(tileEntity)) {
+					return false;
+				}
 
-			CullingInstance cullingInstance = CullingInstance.getInstance();
-			CullInfo cullInfo = ((ICullable) tileEntity).getCullInfo();
-			boolean culled = !cullingInstance.isVisible(cullInfo);
+				CullingInstance cullingInstance = CullingInstance.getInstance();
+				CullInfo cullInfo = ((ICullable) tileEntity).getCullInfo();
+				boolean culled = !cullingInstance.isVisible(cullInfo);
 
-			aabb.set(((IBoundingBoxCache) tileEntity).getCachedBoundingBox());
-			// aabb.expand(CameraUtil.getDeltaCamera(), RenderUtil.getPartialTickDelta());
-			cullingInstance.addBox(cullInfo, aabb.minX(), aabb.minY(), aabb.minZ(), aabb.maxX(), aabb.maxY(), aabb.maxZ());
+				aabb.set(((IBoundingBoxCache) tileEntity).getCachedBoundingBox());
+				// aabb.expand(CameraUtil.getDeltaCamera(), RenderUtil.getPartialTickDelta());
+				cullingInstance.addBox(cullInfo, aabb.minX(), aabb.minY(), aabb.minZ(), aabb.maxX(), aabb.maxY(), aabb.maxZ());
 
-			return culled;
+				return culled;
+			} finally {
+				EntityCulling.cpuTimer.stop();
+			}
 		}
 
 		return ((ICullable) tileEntity).isCulled();

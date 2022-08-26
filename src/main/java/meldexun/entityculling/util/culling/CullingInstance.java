@@ -119,7 +119,11 @@ public class CullingInstance {
 		if (ssboBuffer == null) {
 			return false;
 		}
-		ssboBuffer.map(GL30.GL_MAP_READ_BIT, GL15.GL_READ_ONLY);
+		if (!ssboBuffer.isMapped()) {
+			EntityCulling.gpuTimer.start();
+			ssboBuffer.map(GL30.GL_MAP_READ_BIT, GL15.GL_READ_ONLY);
+			EntityCulling.gpuTimer.stop();
+		}
 		return ssboBuffer.getByteBuffer().getInt(cullInfo.getId(frame) * 4) == 1;
 	}
 
@@ -154,6 +158,8 @@ public class CullingInstance {
 		frame++;
 
 		if (objCount > 0) {
+			EntityCulling.gpuTimer.start();
+
 			ssboBuffer = new GLBuffer(objCount * 4, GL30.GL_MAP_READ_BIT, GL15.GL_STREAM_READ);
 			GLHelper.clearBufferData(ssboBuffer.getBuffer(), 0);
 
@@ -175,6 +181,8 @@ public class CullingInstance {
 			GLShader.pop();
 
 			objCount = 0;
+
+			EntityCulling.gpuTimer.stop();
 		}
 	}
 
