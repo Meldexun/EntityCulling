@@ -24,6 +24,7 @@ public class EntityCulling {
 	public static final String MOD_ID = "entityculling";
 	private static CullingThread cullingThread;
 	public static boolean isCubicChunksInstalled;
+	public static boolean isHatsInstalled;
 	public static final ITimer gpuTimer = TimerEventHandler.tryCreateGLTimer("GPU (Cull)", 100);
 	public static final ITimer cpuTimer = new CPUTimer("CPU (Cull Main)", 100);
 
@@ -48,6 +49,7 @@ public class EntityCulling {
 	@EventHandler
 	public void onFMLPostInitializationEvent(FMLPostInitializationEvent event) {
 		isCubicChunksInstalled = Loader.isModLoaded("cubicchunks");
+		isHatsInstalled = Loader.isModLoaded("hats");
 	}
 
 	@SubscribeEvent

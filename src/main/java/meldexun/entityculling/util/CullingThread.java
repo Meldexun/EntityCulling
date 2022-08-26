@@ -8,6 +8,7 @@ import java.util.stream.LongStream;
 import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.asm.EntityCullingClassTransformer;
 import meldexun.entityculling.config.EntityCullingConfig;
+import meldexun.entityculling.integration.Hats;
 import meldexun.entityculling.util.raytracing.RaytracingEngine;
 import meldexun.renderlib.api.IBoundingBoxCache;
 import meldexun.renderlib.api.IEntityRendererCache;
@@ -209,6 +210,9 @@ public class CullingThread extends Thread {
 		}
 		if (!EntityCullingConfig.entity.skipHiddenEntityRendering) {
 			return true;
+		}
+		if (EntityCulling.isHatsInstalled && Hats.isHat(entity)) {
+			return false;
 		}
 		if (EntityCullingConfig.entity.alwaysRenderBosses && !entity.isNonBoss()) {
 			return true;

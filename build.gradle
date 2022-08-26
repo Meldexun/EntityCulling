@@ -50,6 +50,7 @@ dependencies {
     atDependencies fg.deobf('meldexun:RenderLib:1.12.2-1.1.7@jar')
 
     buildDependencies 'curse.maven:CubicChunks-292243:3546640'
+    buildDependencies 'curse.maven:Hats-229073:2960397'
 }
 
 minecraft {

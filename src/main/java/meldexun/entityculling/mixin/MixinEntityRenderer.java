@@ -6,6 +6,7 @@ import org.spongepowered.asm.mixin.Unique;
 
 import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.config.EntityCullingConfig;
+import meldexun.entityculling.integration.Hats;
 import meldexun.entityculling.util.ICullable;
 import meldexun.entityculling.util.ICullable.CullInfo;
 import meldexun.entityculling.util.culling.CullingInstance;
@@ -43,6 +44,9 @@ public class MixinEntityRenderer {
 					return false;
 				}
 				if (!EntityCullingConfig.entity.skipHiddenEntityRendering) {
+					return false;
+				}
+				if (EntityCulling.isHatsInstalled && Hats.isHat(entity)) {
 					return false;
 				}
 				if (EntityCullingConfig.entity.alwaysRenderBosses && !entity.isNonBoss()) {
