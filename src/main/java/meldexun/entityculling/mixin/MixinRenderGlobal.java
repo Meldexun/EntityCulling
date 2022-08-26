@@ -17,7 +17,7 @@ import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.entity.Entity;
 import net.minecraftforge.client.MinecraftForgeClient;
 
-@Mixin(value = RenderGlobal.class)
+@Mixin(RenderGlobal.class)
 public class MixinRenderGlobal {
 
 	private static final ReflectionField<Boolean> IS_SHADOW_PASS = new ReflectionField<>("net.optifine.shaders.Shaders", "isShadowPass", "isShadowPass");
