@@ -187,6 +187,8 @@ public class CullingInstance {
 	}
 
 	private void setupRenderState() {
+		GLHelper.saveShaderGLState();
+
 		GlStateManager.disableBlend();
 
 		GlStateManager.enableDepth();
@@ -200,16 +202,7 @@ public class CullingInstance {
 	}
 
 	private void clearRenderState() {
-		GlStateManager.enableBlend();
-
-		GlStateManager.enableDepth();
-		GlStateManager.depthFunc(GL11.GL_LEQUAL);
-		GlStateManager.depthMask(true);
-
-		GlStateManager.disableCull();
-		GlStateManager.cullFace(CullFace.BACK);
-
-		GlStateManager.colorMask(true, true, true, true);
+		GLHelper.restoreShaderGLState();
 	}
 
 }

@@ -7,6 +7,7 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 
 import meldexun.entityculling.EntityCulling;
+import meldexun.entityculling.util.culling.GLHelper;
 import meldexun.matrixutil.Matrix4f;
 import meldexun.renderlib.api.IBoundingBoxCache;
 import meldexun.renderlib.util.GLShader;
@@ -156,6 +157,8 @@ public class BoundingBoxHelper {
 	}
 
 	private void setupRenderState() {
+		GLHelper.saveShaderGLState();
+
 		GlStateManager.enableBlend();
 		GlStateManager.tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
 
@@ -164,17 +167,12 @@ public class BoundingBoxHelper {
 		GlStateManager.depthMask(false);
 
 		GlStateManager.disableCull();
+
+		GlStateManager.colorMask(true, true, true, true);
 	}
 
 	private void clearRenderState() {
-		GlStateManager.enableBlend();
-		GlStateManager.tryBlendFuncSeparate(GL11.GL_DST_COLOR, GL11.GL_SRC_COLOR, GL11.GL_ONE, GL11.GL_ZERO);
-
-		GlStateManager.enableDepth();
-		GlStateManager.depthFunc(GL11.GL_LEQUAL);
-		GlStateManager.depthMask(true);
-
-		GlStateManager.disableCull();
+		GLHelper.restoreShaderGLState();
 	}
 
 }
