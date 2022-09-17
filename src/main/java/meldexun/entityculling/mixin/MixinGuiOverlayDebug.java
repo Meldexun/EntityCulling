@@ -15,7 +15,7 @@ import meldexun.renderlib.renderer.TileEntityRenderManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiOverlayDebug;
 
-@Mixin(value = GuiOverlayDebug.class, priority = 900)
+@Mixin(value = GuiOverlayDebug.class, priority = 1100)
 public class MixinGuiOverlayDebug {
 
 	@Shadow
