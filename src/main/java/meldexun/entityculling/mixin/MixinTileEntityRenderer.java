@@ -5,12 +5,10 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Unique;
 
 import meldexun.entityculling.EntityCulling;
-import meldexun.entityculling.asm.EntityCullingClassTransformer;
 import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.util.ICullable;
 import meldexun.entityculling.util.ICullable.CullInfo;
 import meldexun.entityculling.util.culling.CullingInstance;
-import meldexun.reflectionutil.ReflectionField;
 import meldexun.renderlib.api.IBoundingBoxCache;
 import meldexun.renderlib.renderer.tileentity.TileEntityRenderer;
 import meldexun.renderlib.util.MutableAABB;
@@ -20,8 +18,6 @@ import net.minecraft.tileentity.TileEntity;
 
 @Mixin(TileEntityRenderer.class)
 public class MixinTileEntityRenderer {
-
-	private static final ReflectionField<Boolean> IS_SHADOW_PASS = new ReflectionField<>("net.optifine.shaders.Shaders", "isShadowPass", "isShadowPass");
 
 	@Unique
 	protected final MutableAABB aabb = new MutableAABB();
@@ -39,9 +35,6 @@ public class MixinTileEntityRenderer {
 		if (EntityCulling.useOpenGlBasedCulling()) {
 			EntityCulling.cpuTimer.start();
 			try {
-				if (EntityCullingClassTransformer.OPTIFINE_DETECTED && IS_SHADOW_PASS.getBoolean(null)) {
-					return false;
-				}
 				if (!EntityCullingConfig.enabled) {
 					return false;
 				}

@@ -6,7 +6,6 @@ import java.util.NoSuchElementException;
 import java.util.stream.LongStream;
 
 import meldexun.entityculling.EntityCulling;
-import meldexun.entityculling.asm.EntityCullingClassTransformer;
 import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.integration.Hats;
 import meldexun.entityculling.util.raytracing.RaytracingEngine;
@@ -14,6 +13,7 @@ import meldexun.renderlib.api.IBoundingBoxCache;
 import meldexun.renderlib.api.IEntityRendererCache;
 import meldexun.renderlib.api.ILoadable;
 import meldexun.renderlib.api.ITileEntityRendererCache;
+import meldexun.renderlib.integration.Optifine;
 import meldexun.renderlib.util.MutableAABB;
 import meldexun.renderlib.util.timer.CPUTimer;
 import meldexun.renderlib.util.timer.ITimer;
@@ -187,7 +187,7 @@ public class CullingThread extends Thread {
 		if (!EntityCulling.useOpenGlBasedCulling()) {
 			((ICullable) entity).setCulled(!this.checkEntityVisibility(entity));
 		}
-		if (EntityCullingClassTransformer.OPTIFINE_DETECTED) {
+		if (Optifine.isOptifineDetected()) {
 			((ICullable) entity).setShadowCulled(!this.checkEntityShadowVisibility(entity));
 		}
 	}
@@ -196,7 +196,7 @@ public class CullingThread extends Thread {
 		if (!EntityCulling.useOpenGlBasedCulling()) {
 			((ICullable) tileEntity).setCulled(!this.checkTileEntityVisibility(tileEntity));
 		}
-		if (EntityCullingClassTransformer.OPTIFINE_DETECTED) {
+		if (Optifine.isOptifineDetected()) {
 			((ICullable) tileEntity).setShadowCulled(!this.checkTileEntityShadowVisibility(tileEntity));
 		}
 	}
