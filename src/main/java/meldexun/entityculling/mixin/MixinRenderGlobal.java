@@ -16,21 +16,26 @@ import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.entity.Entity;
 import net.minecraftforge.client.MinecraftForgeClient;
 
-@Mixin(RenderGlobal.class)
+@Mixin(value = RenderGlobal.class, priority = 1100)
 public class MixinRenderGlobal {
 
 	/** {@link RenderGlobal#renderEntities(Entity, ICamera, float)} */
-	@Inject(method = "renderEntities", at = @At("RETURN"))
-	public void renderEntities(Entity renderViewEntity, ICamera camera, float partialTicks, CallbackInfo info) {
+	@Inject(method = "renderEntities", at = @At("HEAD"))
+	public void preEntities(Entity renderViewEntity, ICamera camera, float partialTicks, CallbackInfo info) {
 		if (RenderUtil.isRecursive()) {
 			return;
 		}
 		if (EntityCulling.useOpenGlBasedCulling()
-				&& MinecraftForgeClient.getRenderPass() == 1
+				&& MinecraftForgeClient.getRenderPass() == 0
 				&& (!Optifine.isOptifineDetected() || !Optifine.isShadowPass())) {
 			CullingInstance cullingInstance = CullingInstance.getInstance();
 			cullingInstance.updateResults(RenderUtil.getProjectionModelViewMatrix());
 		}
+	}
+
+	/** {@link RenderGlobal#renderEntities(Entity, ICamera, float)} */
+	@Inject(method = "renderEntities", at = @At("RETURN"))
+	public void postEntities(Entity renderViewEntity, ICamera camera, float partialTicks, CallbackInfo info) {
 		if (EntityCullingConfig.debugRenderBoxes
 				&& MinecraftForgeClient.getRenderPass() == 1
 				&& (!Optifine.isOptifineDetected() || !Optifine.isShadowPass())) {

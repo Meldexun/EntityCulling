@@ -25,7 +25,7 @@ public class EntityCullingConfig {
 	@Config.Comment("If you have a weak CPU enabling this option might help reducing the CPU usage.")
 	public static boolean enableRaytraceCache = false;
 
-	@Config.Comment("If enabled and OpenGl 4.3 is supported OpenGl based culling is used which is a lot faster and more accurate. If you have a weak GPU you might want to disable this.")
+	@Config.Comment("If enabled and OpenGl 4.4 is supported OpenGl based culling is used which is a lot faster and more accurate. If you have a weak GPU you might want to disable this.")
 	public static boolean openglBasedCulling = true;
 
 	@Config.Comment("If you feel the need to increase this value because of entities being culled falsely then another modder probably messed up their render bounding boxes and you should report the issue to them. Alternatively you can use the (tile-)entityBoundingBoxGrowthList settings to fix bounding boxes on your own.")

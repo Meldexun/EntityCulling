@@ -8,7 +8,9 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL33;
+import org.lwjgl.opengl.GL42;
 import org.lwjgl.opengl.GL43;
+import org.lwjgl.opengl.GL44;
 
 import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.util.ICullable.CullInfo;
@@ -40,7 +42,9 @@ public class CullingInstance {
 	public final int cubeIndexBuffer;
 	private final BBBuffer vboBuffer;
 	private final int vao;
-	private GLBuffer ssboBuffer;
+	private final GLBuffer cpuSSBO;
+	private final GLBuffer gpuSSBO;
+	private int syncQuery = -1;
 
 	private int objCount;
 	private int frame;
@@ -52,6 +56,9 @@ public class CullingInstance {
 				.build();
 
 		vboBuffer = new BBBuffer(MAX_OBJ_COUNT * 7 * 4, GL30.GL_MAP_WRITE_BIT, GL15.GL_STREAM_DRAW, true, GL30.GL_MAP_WRITE_BIT);
+
+		cpuSSBO = new GLBuffer(MAX_OBJ_COUNT * 4, GL30.GL_MAP_READ_BIT | GL44.GL_CLIENT_STORAGE_BIT, 0, true, GL30.GL_MAP_READ_BIT);
+		gpuSSBO = new GLBuffer(MAX_OBJ_COUNT * 4, 0, 0);
 
 		cubeVertexBuffer = GL15.glGenBuffers();
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, cubeVertexBuffer);
@@ -116,15 +123,12 @@ public class CullingInstance {
 		if (!cullInfo.wasLastTimeUpdated(frame)) {
 			return true;
 		}
-		if (ssboBuffer == null) {
-			return false;
+		if (syncQuery != -1) {
+			GL33.glGetQueryObjecti64(syncQuery, GL15.GL_QUERY_RESULT);
+			GL15.glDeleteQueries(syncQuery);
+			syncQuery = -1;
 		}
-		if (!ssboBuffer.isMapped()) {
-			EntityCulling.gpuTimer.start();
-			ssboBuffer.map(GL30.GL_MAP_READ_BIT, GL15.GL_READ_ONLY);
-			EntityCulling.gpuTimer.stop();
-		}
-		return ssboBuffer.getByteBuffer().getInt(cullInfo.getId(frame) * 4) == 1;
+		return cpuSSBO.getByteBuffer().getInt(cullInfo.getId(frame) * 4) == 1;
 	}
 
 	public void addBox(CullInfo cullInfo, double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
@@ -150,23 +154,17 @@ public class CullingInstance {
 	}
 
 	public void updateResults(Matrix4f projViewMat) {
-		if (ssboBuffer != null) {
-			ssboBuffer.dispose();
-			ssboBuffer = null;
-		}
-
 		frame++;
 
 		if (objCount > 0) {
 			EntityCulling.gpuTimer.start();
 
-			ssboBuffer = new GLBuffer(objCount * 4, GL30.GL_MAP_READ_BIT, GL15.GL_STREAM_READ);
-			GLHelper.clearBufferData(ssboBuffer.getBuffer(), 0);
+			GLHelper.clearBufferSubData(gpuSSBO.getBuffer(), 0L, objCount * 4, 0);
 
 			GLShader.push();
 			shader.use();
 			GLUtil.setMatrix(shader.getUniform(U_MATRIX), projViewMat);
-			GL30.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 1, ssboBuffer.getBuffer());
+			GL30.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 1, gpuSSBO.getBuffer());
 
 			setupRenderState();
 
@@ -179,6 +177,14 @@ public class CullingInstance {
 
 			GL30.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 1, 0);
 			GLShader.pop();
+
+			GLHelper.copyBufferSubData(gpuSSBO.getBuffer(), cpuSSBO.getBuffer(), 0L, 0L, objCount * 4);
+			GL42.glMemoryBarrier(GL44.GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
+			if (syncQuery != -1) {
+				GL15.glDeleteQueries(syncQuery);
+				syncQuery = -1;
+			}
+			GL33.glQueryCounter(syncQuery = GL15.glGenQueries(), GL33.GL_TIMESTAMP);
 
 			objCount = 0;
 

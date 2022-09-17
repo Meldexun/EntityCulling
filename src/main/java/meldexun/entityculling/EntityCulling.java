@@ -29,7 +29,7 @@ public class EntityCulling {
 	public static final ITimer cpuTimer = new CPUTimer("CPU (Cull Main)", 100);
 
 	public static boolean useOpenGlBasedCulling() {
-		return EntityCullingConfig.openglBasedCulling && GLUtil.CAPS.OpenGL43;
+		return EntityCullingConfig.openglBasedCulling && GLUtil.CAPS.OpenGL44;
 	}
 
 	@EventHandler

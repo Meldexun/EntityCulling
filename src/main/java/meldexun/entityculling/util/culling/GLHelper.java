@@ -6,6 +6,7 @@ import java.nio.ByteOrder;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL43;
 import org.lwjgl.opengl.GL45;
 
@@ -30,13 +31,25 @@ public class GLHelper {
 	private static boolean colorMaskBlue;
 	private static boolean colorMaskAlpha;
 
-	public static void clearBufferData(int buffer, int data) {
+	public static void clearBufferSubData(int buffer, long offset, long size, int data) {
 		if (GLUtil.CAPS.OpenGL45) {
-			GL45.glClearNamedBufferData(buffer, GL30.GL_R32UI, GL30.GL_RED_INTEGER, GL11.GL_UNSIGNED_INT, BUFFER.putInt(0, data));
+			GL45.glClearNamedBufferSubData(buffer, GL30.GL_R32UI, offset, size, GL30.GL_RED_INTEGER, GL11.GL_UNSIGNED_INT, BUFFER.putInt(0, data));
 		} else {
 			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, buffer);
-			GL43.glClearBufferData(GL15.GL_ARRAY_BUFFER, GL30.GL_R32UI, GL30.GL_RED_INTEGER, GL11.GL_UNSIGNED_INT, BUFFER.putInt(0, data));
+			GL43.glClearBufferSubData(GL15.GL_ARRAY_BUFFER, GL30.GL_R32UI, offset, size, GL30.GL_RED_INTEGER, GL11.GL_UNSIGNED_INT, BUFFER.putInt(0, data));
 			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+		}
+	}
+
+	public static void copyBufferSubData(int readBuffer, int writeBuffer, long readOffset, long writeOffset, long size) {
+		if (GLUtil.CAPS.OpenGL45) {
+			GL45.glCopyNamedBufferSubData(readBuffer, writeBuffer, readOffset, writeOffset, size);
+		} else {
+			GL15.glBindBuffer(GL31.GL_COPY_READ_BUFFER, readBuffer);
+			GL15.glBindBuffer(GL31.GL_COPY_WRITE_BUFFER, writeBuffer);
+			GL31.glCopyBufferSubData(GL31.GL_COPY_READ_BUFFER, GL31.GL_COPY_WRITE_BUFFER, readOffset, writeOffset, size);
+			GL15.glBindBuffer(GL31.GL_COPY_READ_BUFFER, 0);
+			GL15.glBindBuffer(GL31.GL_COPY_WRITE_BUFFER, 0);
 		}
 	}
 
