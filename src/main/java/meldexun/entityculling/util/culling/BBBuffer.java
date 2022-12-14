@@ -1,7 +1,6 @@
 package meldexun.entityculling.util.culling;
 
-import org.lwjgl.MemoryUtil;
-
+import meldexun.matrixutil.MemoryUtil;
 import meldexun.matrixutil.UnsafeUtil;
 import meldexun.renderlib.util.GLBuffer;
 import meldexun.renderlib.util.GLUtil;
@@ -29,15 +28,15 @@ public class BBBuffer extends GLBuffer {
 	}
 
 	public void put(float x, float y, float z, float sizeX, float sizeY, float sizeZ, int id) {
-		Unsafe unsafe = UnsafeUtil.instance();
-		long curr;
-		unsafe.putFloat(curr = address + id * 28, x);
-		unsafe.putFloat(curr += 4, y);
-		unsafe.putFloat(curr += 4, z);
-		unsafe.putFloat(curr += 4, sizeX);
-		unsafe.putFloat(curr += 4, sizeY);
-		unsafe.putFloat(curr += 4, sizeZ);
-		unsafe.putInt(curr += 4, id);
+		Unsafe unsafe = UnsafeUtil.UNSAFE;
+		long address = this.address + id * 28;
+		unsafe.putFloat(address, x);
+		unsafe.putFloat(address + 4, y);
+		unsafe.putFloat(address + 8, z);
+		unsafe.putFloat(address + 12, sizeX);
+		unsafe.putFloat(address + 16, sizeY);
+		unsafe.putFloat(address + 20, sizeZ);
+		unsafe.putInt(address + 24, id);
 	}
 
 }
