@@ -1,0 +1,14 @@
+pluginManagement {
+    repositories {
+        maven { url 'https://maven.minecraftforge.net' }
+        maven { url 'https://maven.gofancy.wtf/releases' }
+        maven { url 'https://repo.spongepowered.org/maven' }
+    }
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.toString() == 'org.spongepowered.mixin') {
+                useModule("org.spongepowered:mixingradle:${requested.version}")
+            }
+        }
+    }
+}

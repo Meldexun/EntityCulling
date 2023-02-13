@@ -1,44 +1,25 @@
-buildscript {
-    repositories {
-        maven { url = 'https://maven.minecraftforge.net' }
-        mavenCentral()
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: "${forge_gradle_version}", changing: true
-        classpath group: 'org.spongepowered', name: 'mixingradle', version: "${mixin_gradle_version}"
+plugins {
+    id 'net.minecraftforge.gradle' version "${forge_gradle_version}"
+    id 'wtf.gofancy.fancygradle' version "${fancy_gradle_version}"
+    id 'org.spongepowered.mixin' version "${mixin_gradle_version}"
+}
+
+fancyGradle {
+    patches {
+        resources
+        coremods
+        asm
+        mergetool
     }
 }
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'eclipse'
-apply plugin: 'org.spongepowered.mixin'
 
-version = "${mc_version}-${mod_version}-${mod_stage}"
-group = "meldexun.${mod_id}"
+version = "${mc_version}-${mod_version}"
+group = "${mod_group}"
 archivesBaseName = "${mod_name}"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 
-configurations {
-    atDependencies
-    implementation.extendsFrom(atDependencies)
-
-    includedDependencies
-    implementation.extendsFrom(includedDependencies)
-
-    buildDependencies
-}
-
 repositories {
-    ivy {
-        url 'https://github.com/'
-
-        patternLayout {
-            artifact '[organisation]/[module]/releases/download/v[revision]/[module]-[revision].[ext]'
-        }
-
-        metadataSources { artifact() } 
-    }
-
     maven { url = 'https://www.cursemaven.com' }
 }
 
@@ -47,20 +28,13 @@ dependencies {
     implementation "org.spongepowered:mixin:${mixin_version}"
     annotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
 
-    atDependencies fg.deobf('meldexun:RenderLib:1.12.2-1.1.10@jar')
-
-    buildDependencies 'curse.maven:CubicChunks-292243:3546640'
-    buildDependencies 'curse.maven:Hats-229073:2960397'
+    implementation fg.deobf('curse.maven:RenderLib-624967:4168831')
 }
 
 minecraft {
     mappings channel: "${mappings_channel}", version: "${mappings_version}"
 
-    def atDepFileTree = files(configurations.atDependencies.collect { zipTree(it) }).getAsFileTree()
-    accessTransformer = files(
-        'src/main/resources/META-INF/accesstransformer.cfg',
-        atDepFileTree.matching { include 'META-INF/accesstransformer.cfg' }
-    )
+    accessTransformer = 'src/main/resources/META-INF/accesstransformer.cfg'
 
     runs {
         client {
@@ -68,7 +42,7 @@ minecraft {
             environment 'MC_VERSION', "${mc_version}"
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'info'
-            property 'fml.coreMods.load', "${mod_plugin_class},meldexun.renderlib.asm.RenderLibPlugin"
+            property 'fml.coreMods.load', "${mod_plugin_class}"
         }
 
         server {
@@ -76,18 +50,16 @@ minecraft {
             environment 'MC_VERSION', "${mc_version}"
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'info'
-            property 'fml.coreMods.load', "${mod_plugin_class}"
         }
     }
 }
 
 mixin {
     add sourceSets.main, "mixins.${mod_id}.refmap.json"
-    config "mixins.${mod_id}.json"
 }
 
 processResources {
-    inputs.property('version', "${mod_stage}" != "" ? "${mod_version}-${mod_stage}" : "${mod_version}")
+    inputs.property('version', "${mod_version}")
 
     filesMatching('mcmod.info') {
         expand version: inputs.properties.get('version')
@@ -98,11 +70,6 @@ jar {
     archiveBaseName = mod_name
     archiveAppendix = mc_version
     archiveVersion = mod_version
-    archiveClassifier = mod_stage
-
-    from {
-        configurations.includedDependencies.collect { it.isDirectory() ? it : zipTree(it) }
-    }
 
     manifest {
         attributes 'ModSide': 'CLIENT'
@@ -117,7 +84,3 @@ jar {
 }
 
 jar.finalizedBy('reobfJar')
-
-compileJava {
-    classpath = sourceSets.main.compileClasspath + configurations.buildDependencies
-}
