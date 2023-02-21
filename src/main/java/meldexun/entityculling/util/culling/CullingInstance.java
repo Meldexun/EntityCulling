@@ -14,6 +14,7 @@ import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.util.ICullable.CullInfo;
 import meldexun.entityculling.util.ResourceSupplier;
 import meldexun.matrixutil.Matrix4f;
+import meldexun.matrixutil.UnsafeUtil;
 import meldexun.renderlib.util.BufferUtil;
 import meldexun.renderlib.util.GLBuffer;
 import meldexun.renderlib.util.GLShader;
@@ -22,6 +23,7 @@ import meldexun.renderlib.util.RenderUtil;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.CullFace;
 import net.minecraft.util.ResourceLocation;
+import sun.misc.Unsafe;
 
 public class CullingInstance {
 
@@ -38,7 +40,7 @@ public class CullingInstance {
 
 	public final int cubeVertexBuffer;
 	public final int cubeIndexBuffer;
-	private final BBBuffer vboBuffer;
+	private final GLBuffer vboBuffer;
 	private final int vao;
 	private final GLBuffer cpuSSBO;
 	private final GLBuffer gpuSSBO;
@@ -134,14 +136,17 @@ public class CullingInstance {
 				&& (RenderUtil.getCameraZ() >= minZ && RenderUtil.getCameraZ() <= maxZ)) {
 			return;
 		}
-		vboBuffer.put(
-				(float) (minX - RenderUtil.getCameraEntityX()),
-				(float) (minY - RenderUtil.getCameraEntityY()),
-				(float) (minZ - RenderUtil.getCameraEntityZ()),
-				(float) (maxX - minX),
-				(float) (maxY - minY),
-				(float) (maxZ - minZ),
-				objCount);
+
+		Unsafe unsafe = UnsafeUtil.UNSAFE;
+		long address = vboBuffer.getAddress() + objCount * 28;
+		unsafe.putFloat(address, (float) (minX - RenderUtil.getCameraEntityX()));
+		unsafe.putFloat(address + 4, (float) (minY - RenderUtil.getCameraEntityY()));
+		unsafe.putFloat(address + 8, (float) (minZ - RenderUtil.getCameraEntityZ()));
+		unsafe.putFloat(address + 12, (float) (maxX - minX));
+		unsafe.putFloat(address + 16, (float) (maxY - minY));
+		unsafe.putFloat(address + 20, (float) (maxZ - minZ));
+		unsafe.putInt(address + 24, objCount);
+
 		cullInfo.setLastTimeUpdated(frame);
 		cullInfo.setId(objCount);
 		objCount++;
