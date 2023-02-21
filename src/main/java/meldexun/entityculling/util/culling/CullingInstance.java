@@ -53,7 +53,7 @@ public class CullingInstance {
 				.addShader(GL20.GL_FRAGMENT_SHADER, new ResourceSupplier(new ResourceLocation(EntityCulling.MOD_ID, "shaders/frag.glsl")))
 				.build();
 
-		vboBuffer = new BBBuffer(MAX_OBJ_COUNT * 7 * 4, GL30.GL_MAP_WRITE_BIT, GL15.GL_STREAM_DRAW, true, GL30.GL_MAP_WRITE_BIT);
+		vboBuffer = new GLBuffer(MAX_OBJ_COUNT * 7 * 4, GL30.GL_MAP_WRITE_BIT, 0, true, GL30.GL_MAP_WRITE_BIT);
 
 		cpuSSBO = new GLBuffer(MAX_OBJ_COUNT * 4, GL30.GL_MAP_READ_BIT | GL44.GL_CLIENT_STORAGE_BIT, 0, true, GL30.GL_MAP_READ_BIT);
 		gpuSSBO = new GLBuffer(MAX_OBJ_COUNT * 4, 0, 0);
