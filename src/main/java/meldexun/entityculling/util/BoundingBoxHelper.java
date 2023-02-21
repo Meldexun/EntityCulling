@@ -1,7 +1,5 @@
 package meldexun.entityculling.util;
 
-import java.nio.ByteBuffer;
-
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
@@ -10,12 +8,12 @@ import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.util.culling.GLHelper;
 import meldexun.matrixutil.Matrix4f;
 import meldexun.renderlib.api.IBoundingBoxCache;
+import meldexun.renderlib.util.BufferUtil;
 import meldexun.renderlib.util.GLShader;
 import meldexun.renderlib.util.GLUtil;
 import meldexun.renderlib.util.MutableAABB;
 import meldexun.renderlib.util.RenderUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
@@ -39,7 +37,7 @@ public class BoundingBoxHelper {
 	public BoundingBoxHelper() {
 		cubeVertexBuffer = GL15.glGenBuffers();
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, cubeVertexBuffer);
-		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, asByteBuffer(new byte[] {
+		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, BufferUtil.buffer(new byte[] {
 				0, 0, 0,
 				0, 0, 1,
 				0, 1, 0,
@@ -53,14 +51,14 @@ public class BoundingBoxHelper {
 
 		triangleStripCubeIndexBuffer = GL15.glGenBuffers();
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, triangleStripCubeIndexBuffer);
-		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, asByteBuffer(new byte[] {
+		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, BufferUtil.buffer(new byte[] {
 				7, 3, 5, 1, 0, 3, 2, 7, 6, 5, 4, 0, 6, 2
 		}), GL15.GL_STATIC_DRAW);
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
 
 		linesCubeIndexBuffer = GL15.glGenBuffers();
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, linesCubeIndexBuffer);
-		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, asByteBuffer(new byte[] {
+		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, BufferUtil.buffer(new byte[] {
 				0, 1, 1, 5, 5, 4, 4, 0,
 				0, 2, 1, 3, 5, 7, 4, 6,
 				2, 3, 3, 7, 7, 6, 6, 2
@@ -69,7 +67,7 @@ public class BoundingBoxHelper {
 
 		quadsCubeIndexBuffer = GL15.glGenBuffers();
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, quadsCubeIndexBuffer);
-		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, asByteBuffer(new byte[] {
+		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, BufferUtil.buffer(new byte[] {
 				0, 4, 5, 1,
 				3, 7, 6, 2,
 				4, 0, 2, 6,
@@ -85,10 +83,6 @@ public class BoundingBoxHelper {
 			instance = new BoundingBoxHelper();
 		}
 		return instance;
-	}
-
-	private static ByteBuffer asByteBuffer(byte[] data) {
-		return (ByteBuffer) GLAllocation.createDirectByteBuffer(data.length).put(data).flip();
 	}
 
 	public void drawRenderBoxes(double partialTicks) {

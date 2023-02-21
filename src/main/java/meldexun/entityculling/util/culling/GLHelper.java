@@ -1,7 +1,6 @@
 package meldexun.entityculling.util.culling;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
@@ -10,12 +9,13 @@ import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL43;
 import org.lwjgl.opengl.GL45;
 
+import meldexun.renderlib.util.BufferUtil;
 import meldexun.renderlib.util.GLUtil;
 import net.minecraft.client.renderer.GlStateManager;
 
 public class GLHelper {
 
-	private static final ByteBuffer BUFFER = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder());
+	private static final ByteBuffer BUFFER = BufferUtil.allocate(4);
 	private static boolean blend;
 	private static int blendSrcFactor;
 	private static int blendDstFactor;
