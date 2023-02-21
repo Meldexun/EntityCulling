@@ -124,7 +124,7 @@ public class CullingInstance {
 			GL15.glDeleteQueries(syncQuery);
 			syncQuery = -1;
 		}
-		return cpuSSBO.getByteBuffer().getInt(cullInfo.getId(frame) * 4) == 1;
+		return UnsafeUtil.UNSAFE.getBoolean(null, cpuSSBO.getAddress() + cullInfo.getId(frame) * 4);
 	}
 
 	public void addBox(CullInfo cullInfo, double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
