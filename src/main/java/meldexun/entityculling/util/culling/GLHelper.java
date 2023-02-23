@@ -9,16 +9,14 @@ import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL43;
 import org.lwjgl.opengl.GL45;
 
-import meldexun.matrixutil.MemoryUtil;
-import meldexun.matrixutil.UnsafeUtil;
 import meldexun.renderlib.util.BufferUtil;
 import meldexun.renderlib.util.GLUtil;
+import meldexun.renderlib.util.UnsafeBuffer;
 import net.minecraft.client.renderer.GlStateManager;
 
 public class GLHelper {
 
-	private static final ByteBuffer BUFFER = BufferUtil.allocate(4);
-	private static final long BUFFER_ADDRESS = MemoryUtil.getAddress(BUFFER);
+	private static final UnsafeBuffer<ByteBuffer> BYTE_BUFFER = new UnsafeBuffer<>(BufferUtil.allocate(4));
 	private static boolean blend;
 	private static int blendSrcFactor;
 	private static int blendDstFactor;
@@ -35,12 +33,12 @@ public class GLHelper {
 	private static boolean colorMaskAlpha;
 
 	public static void clearBufferSubData(int buffer, long offset, long size, int data) {
-		UnsafeUtil.UNSAFE.putInt(BUFFER_ADDRESS, data);
+		BYTE_BUFFER.putInt(0L, data);
 		if (GLUtil.CAPS.OpenGL45) {
-			GL45.glClearNamedBufferSubData(buffer, GL30.GL_R32UI, offset, size, GL30.GL_RED_INTEGER, GL11.GL_UNSIGNED_INT, BUFFER);
+			GL45.glClearNamedBufferSubData(buffer, GL30.GL_R32UI, offset, size, GL30.GL_RED_INTEGER, GL11.GL_UNSIGNED_INT, BYTE_BUFFER.getBuffer());
 		} else {
 			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, buffer);
-			GL43.glClearBufferSubData(GL15.GL_ARRAY_BUFFER, GL30.GL_R32UI, offset, size, GL30.GL_RED_INTEGER, GL11.GL_UNSIGNED_INT, BUFFER);
+			GL43.glClearBufferSubData(GL15.GL_ARRAY_BUFFER, GL30.GL_R32UI, offset, size, GL30.GL_RED_INTEGER, GL11.GL_UNSIGNED_INT, BYTE_BUFFER.getBuffer());
 			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 		}
 	}
