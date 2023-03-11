@@ -52,4 +52,18 @@ public class MathUtil {
 		return x2 * x2 + y2 * y2 + z2 * z2;
 	}
 
+	public static double dist(double x1, double y1, double x2, double y2) {
+		return Math.sqrt(distSqr(x1, y1, x2, y2));
+	}
+
+	public static double distSqr(double x1, double y1, double x2, double y2) {
+		x2 -= x1;
+		y2 -= y1;
+		return x2 * x2 + y2 * y2;
+	}
+
+	public static double square(double d) {
+		return d * d;
+	}
+
 }

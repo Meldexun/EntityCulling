@@ -2,6 +2,7 @@ package meldexun.entityculling.util.raytracing;
 
 import java.util.function.IntSupplier;
 
+import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.util.MathUtil;
 
 public class RaytracingEngine {
@@ -63,8 +64,11 @@ public class RaytracingEngine {
 	}
 
 	private boolean isTooFarAway(double x, double y, double z) {
-		int i = (renderDistSupplier.getAsInt() + 1) << 4;
-		return MathUtil.distSqr(camX, camY, camZ, x, y, z) > i * i;
+		double distSqr = EntityCullingConfig.raytraceDistanceCalculator.distSqr(camX, camY, camZ, x, y, z);
+		double maxDistSqr = MathUtil.square(((renderDistSupplier.getAsInt() << 4)
+				+ EntityCullingConfig.raytraceDistanceLimitAdder)
+				* EntityCullingConfig.raytraceDistanceLimitMultiplier);
+		return distSqr > maxDistSqr;
 	}
 
 	private boolean raytraceThreshold(double startX, double startY, double startZ, double endX, double endY, double endZ, double threshold) {

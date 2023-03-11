@@ -1,6 +1,7 @@
 package meldexun.entityculling.config;
 
 import meldexun.entityculling.EntityCulling;
+import meldexun.entityculling.util.raytracing.RaytraceDistanceCalculator;
 import meldexun.renderlib.util.ResourceLocationMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
@@ -27,6 +28,17 @@ public class EntityCullingConfig {
 
 	@Config.Comment("If enabled and OpenGl 4.4 is supported OpenGl based culling is used which is a lot faster and more accurate. If you have a weak GPU you might want to disable this.")
 	public static boolean openglBasedCulling = true;
+
+	@Config.Comment("Mode that is used to calculate the distance from camera to a raytrace end point.")
+	public static RaytraceDistanceCalculator raytraceDistanceCalculator = RaytraceDistanceCalculator.SPHERICAL;
+
+	@Config.Comment("Used to calculate the raytrace distance limit. Points farther away than the limit are not raytraced. Distance limit = (renderDistance * 16 + adder) * multiplier")
+	@Config.RangeDouble(min = 0.0D, max = 1024.0D)
+	public static double raytraceDistanceLimitAdder = 16.0D;
+
+	@Config.Comment("Used to calculate the raytrace distance limit. Points farther away than the limit are not raytraced. Distance limit = (renderDistance * 16 + adder) * multiplier")
+	@Config.RangeDouble(min = 0.0D, max = 1024.0D)
+	public static double raytraceDistanceLimitMultiplier = 1.0D;
 
 	@Config.Comment("If you feel the need to increase this value because of entities being culled falsely then another modder probably messed up their render bounding boxes and you should report the issue to them. Alternatively you can use the (tile-)entityBoundingBoxGrowthList settings to fix bounding boxes on your own.")
 	@Config.RangeDouble(min = 0.0D, max = 1024.0D)
