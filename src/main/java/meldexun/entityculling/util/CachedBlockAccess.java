@@ -9,7 +9,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
@@ -19,7 +18,6 @@ import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 public class CachedBlockAccess implements IBlockAccess {
 
-	private final MutableBlockPos mutable = new MutableBlockPos();
 	private World level;
 	private Chunk cachedChunk;
 	private ExtendedBlockStorage cachedSection;
@@ -46,9 +44,6 @@ public class CachedBlockAccess implements IBlockAccess {
 
 	@Nullable
 	private ExtendedBlockStorage getChunkSection(int chunkX, int chunkY, int chunkZ) {
-		if (this.level.isOutsideBuildHeight(mutable.setPos(chunkX << 4, chunkY << 4, chunkZ << 4))) {
-			return null;
-		}
 		if (EntityCulling.isCubicChunksInstalled) {
 			this.cachedSection = CubicChunks.getBlockStorage(this.level, chunkX, chunkY, chunkZ);
 		} else {
@@ -72,6 +67,9 @@ public class CachedBlockAccess implements IBlockAccess {
 
 	@Override
 	public IBlockState getBlockState(BlockPos pos) {
+		if (this.level.isOutsideBuildHeight(pos)) {
+			return Blocks.AIR.getDefaultState();
+		}
 		ExtendedBlockStorage section = this.getChunkSection(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
 		if (section == null) {
 			return Blocks.AIR.getDefaultState();
