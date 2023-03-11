@@ -13,6 +13,7 @@ import meldexun.renderlib.api.IBoundingBoxCache;
 import meldexun.renderlib.api.IEntityRendererCache;
 import meldexun.renderlib.api.ILoadable;
 import meldexun.renderlib.api.ITileEntityRendererCache;
+import meldexun.renderlib.config.RenderLibConfig;
 import meldexun.renderlib.integration.Optifine;
 import meldexun.renderlib.util.MutableAABB;
 import meldexun.renderlib.util.timer.CPUTimer;
@@ -41,15 +42,17 @@ public class CullingThread extends Thread {
 	public final ITimer timer = new ITimer() {
 
 		private final ITimer timer = new CPUTimer("CPU (Cull Async)", 100);
-		private volatile String avgString;
-		private volatile String minString;
-		private volatile String maxString;
+		private volatile String avgString = "0.0ms";
+		private volatile String minString = "0.0ms";
+		private volatile String maxString = "0.0ms";
 
 		@Override
 		public void update() {
-			this.avgString = this.timer.avgString();
-			this.minString = this.timer.minString();
-			this.maxString = this.timer.maxString();
+			if (RenderLibConfig.showFrameTimes) {
+				this.avgString = this.timer.avgString();
+				this.minString = this.timer.minString();
+				this.maxString = this.timer.maxString();
+			}
 			this.timer.update();
 		}
 
