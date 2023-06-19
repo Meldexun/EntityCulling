@@ -48,7 +48,7 @@ public class CullingInstance {
 	private int frame;
 
 	public CullingInstance() {
-		shader = new GLShader.Builder()
+		shader = GLShader.builder()
 				.addShader(GL20.GL_VERTEX_SHADER, new ResourceSupplier(new ResourceLocation(EntityCulling.MOD_ID, "shaders/vert.glsl")))
 				.addShader(GL20.GL_FRAGMENT_SHADER, new ResourceSupplier(new ResourceLocation(EntityCulling.MOD_ID, "shaders/frag.glsl")))
 				.build();
