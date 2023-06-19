@@ -1,7 +1,5 @@
 package meldexun.entityculling.util.culling;
 
-import java.nio.ByteBuffer;
-
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL30;
@@ -9,14 +7,13 @@ import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL43;
 import org.lwjgl.opengl.GL45;
 
-import meldexun.renderlib.util.BufferUtil;
 import meldexun.renderlib.util.GLUtil;
-import meldexun.renderlib.util.UnsafeBuffer;
 import net.minecraft.client.renderer.GlStateManager;
+import meldexun.renderlib.util.memory.MemoryUtil;
+import meldexun.renderlib.util.memory.UnsafeByteBuffer;
 
 public class GLHelper {
 
-	private static final UnsafeBuffer<ByteBuffer> BYTE_BUFFER = new UnsafeBuffer<>(BufferUtil.allocate(4));
 	private static boolean blend;
 	private static int blendSrcFactor;
 	private static int blendDstFactor;
@@ -31,6 +28,7 @@ public class GLHelper {
 	private static boolean colorMaskGreen;
 	private static boolean colorMaskBlue;
 	private static boolean colorMaskAlpha;
+	private static final UnsafeByteBuffer BYTE_BUFFER = MemoryUtil.allocateByte(4);
 
 	public static void clearBufferSubData(int buffer, long offset, long size, int data) {
 		BYTE_BUFFER.putInt(0L, data);
