@@ -14,11 +14,11 @@ import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.util.ICullable.CullInfo;
 import meldexun.entityculling.util.ResourceSupplier;
 import meldexun.matrixutil.Matrix4f;
-import meldexun.renderlib.util.BufferUtil;
 import meldexun.renderlib.util.GLBuffer;
 import meldexun.renderlib.util.GLShader;
 import meldexun.renderlib.util.GLUtil;
 import meldexun.renderlib.util.RenderUtil;
+import meldexun.renderlib.util.memory.BufferUtil;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.CullFace;
 import net.minecraft.util.ResourceLocation;
@@ -60,7 +60,7 @@ public class CullingInstance {
 
 		cubeVertexBuffer = GL15.glGenBuffers();
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, cubeVertexBuffer);
-		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, BufferUtil.buffer(new byte[] {
+		BufferUtil.tempByteBuffer(new byte[] {
 				0, 0, 0,
 				0, 0, 1,
 				0, 1, 0,
@@ -69,14 +69,14 @@ public class CullingInstance {
 				1, 0, 1,
 				1, 1, 0,
 				1, 1, 1
-		}), GL15.GL_STATIC_DRAW);
+		}, buffer -> GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, GL15.GL_STATIC_DRAW));
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 
 		cubeIndexBuffer = GL15.glGenBuffers();
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, cubeIndexBuffer);
-		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, BufferUtil.buffer(new byte[] {
+		BufferUtil.tempByteBuffer(new byte[] {
 				7, 3, 5, 1, 0, 3, 2, 7, 6, 5, 4, 0, 6, 2
-		}), GL15.GL_STATIC_DRAW);
+		}, buffer -> GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, buffer, GL15.GL_STATIC_DRAW));
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
 
 		vao = GL30.glGenVertexArrays();
