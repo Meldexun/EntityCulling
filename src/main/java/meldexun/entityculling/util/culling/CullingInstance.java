@@ -134,6 +134,9 @@ public class CullingInstance {
 				&& (RenderUtil.getCameraZ() >= minZ && RenderUtil.getCameraZ() <= maxZ)) {
 			return;
 		}
+		if (maxX - minX > 1.0E9D || maxY - minY > 1.0E9D || maxZ - minZ > 1.0E9D) {
+			return;
+		}
 
 		vboBuffer.putFloat(objCount * 28, (float) (minX - RenderUtil.getCameraEntityX()));
 		vboBuffer.putFloat(objCount * 28 + 4, (float) (minY - RenderUtil.getCameraEntityY()));
