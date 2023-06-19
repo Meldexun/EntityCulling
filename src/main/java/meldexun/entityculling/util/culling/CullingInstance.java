@@ -188,7 +188,7 @@ public class CullingInstance {
 	}
 
 	private void setupRenderState() {
-		GLHelper.saveShaderGLState();
+		GLUtil.saveShaderGLState();
 
 		GlStateManager.disableBlend();
 
@@ -203,7 +203,7 @@ public class CullingInstance {
 	}
 
 	private void clearRenderState() {
-		GLHelper.restoreShaderGLState();
+		GLUtil.restoreShaderGLState();
 	}
 
 }
