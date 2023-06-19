@@ -1,9 +1,8 @@
 package meldexun.entityculling.asm;
 
-import meldexun.asmutil.transformer.clazz.AbstractClassTransformer;
 import net.minecraft.launchwrapper.IClassTransformer;
 
-public class EntityCullingClassTransformer extends AbstractClassTransformer implements IClassTransformer {
+public class EntityCullingClassTransformer implements IClassTransformer {
 
 	public static final boolean OPTIFINE_DETECTED;
 	static {
@@ -18,8 +17,8 @@ public class EntityCullingClassTransformer extends AbstractClassTransformer impl
 	}
 
 	@Override
-	protected void registerTransformers() {
-
+	public byte[] transform(String name, String transformedName, byte[] basicClass) {
+		return basicClass;
 	}
 
 }
