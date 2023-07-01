@@ -8,12 +8,12 @@ import org.lwjgl.opengl.GL43;
 import org.lwjgl.opengl.GL45;
 
 import meldexun.renderlib.util.GLUtil;
-import meldexun.renderlib.util.memory.MemoryUtil;
+import meldexun.renderlib.util.memory.UnsafeBufferUtil;
 import meldexun.renderlib.util.memory.UnsafeByteBuffer;
 
 public class GLHelper {
 
-	private static final UnsafeByteBuffer BYTE_BUFFER = MemoryUtil.allocateByte(4);
+	private static final UnsafeByteBuffer BYTE_BUFFER = UnsafeBufferUtil.allocateByte(4);
 
 	public static void clearBufferSubData(int buffer, long offset, long size, int data) {
 		BYTE_BUFFER.putInt(0L, data);
