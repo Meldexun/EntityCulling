@@ -1,18 +1,10 @@
-buildscript {
-    repositories {
-        maven { url = 'https://maven.minecraftforge.net' }
-        mavenCentral()
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: "${forge_gradle_version}", changing: true
-        classpath group: 'org.spongepowered', name: 'mixingradle', version: "${mixin_gradle_version}"
-    }
+plugins {
+    id 'eclipse'
+    id 'net.minecraftforge.gradle' version "${forge_gradle_version}"
+    id 'org.spongepowered.mixin' version "${mixin_gradle_version}"
 }
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'eclipse'
-apply plugin: 'org.spongepowered.mixin'
 
-version = "${mc_version}-${mod_version}-${mod_stage}"
+version = "${mod_stage}" != "" ? "${mc_version}-${mod_version}-${mod_stage}" : "${mc_version}-${mod_version}"
 group = "meldexun.${mod_id}"
 archivesBaseName = "${mod_name}"
 
@@ -61,6 +53,12 @@ minecraft {
         'src/main/resources/META-INF/accesstransformer.cfg',
         atDepFileTree.matching { include 'META-INF/accesstransformer.cfg' }
     )
+    accessTransformer = files(
+        'src/main/resources/META-INF/accesstransformer.cfg',
+        files(configurations.atDependencies.collect { zipTree(it) }).getAsFileTree().matching {
+            include 'META-INF/accesstransformer.cfg'
+        }
+    )
 
     runs {
         client {
@@ -76,7 +74,6 @@ minecraft {
             environment 'MC_VERSION', "${mc_version}"
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'info'
-            property 'fml.coreMods.load', "${mod_plugin_class}"
         }
     }
 }
