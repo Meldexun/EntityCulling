@@ -48,11 +48,6 @@ dependencies {
 minecraft {
     mappings channel: "${mappings_channel}", version: "${mappings_version}"
 
-    def atDepFileTree = files(configurations.atDependencies.collect { zipTree(it) }).getAsFileTree()
-    accessTransformer = files(
-        'src/main/resources/META-INF/accesstransformer.cfg',
-        atDepFileTree.matching { include 'META-INF/accesstransformer.cfg' }
-    )
     accessTransformer = files(
         'src/main/resources/META-INF/accesstransformer.cfg',
         files(configurations.atDependencies.collect { zipTree(it) }).getAsFileTree().matching {
