@@ -18,7 +18,7 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
-@Mod(modid = EntityCulling.MOD_ID, dependencies = "required-after:renderlib@[1.3.1,)")
+@Mod(modid = EntityCulling.MOD_ID, acceptableRemoteVersions = "*", dependencies = "required-after:renderlib@[1.3.1,)")
 public class EntityCulling {
 
 	public static final String MOD_ID = "entityculling";
