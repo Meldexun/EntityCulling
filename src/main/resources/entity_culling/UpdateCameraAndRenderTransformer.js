@@ -26,6 +26,8 @@ function initializeCoreMod() {
 					targetNode1 = ASMAPI.findFirstMethodCallBefore(methodNode, ASMAPI.MethodType.INTERFACE, "net/minecraft/profiler/IProfiler", ASMAPI.mapMethod("func_219895_b"), "(Ljava/lang/String;)V", methodNode.instructions.indexOf(targetNode1));
 					
 					var targetNode2 = ASMAPI.findFirstMethodCall(methodNode, ASMAPI.MethodType.SPECIAL, "net/minecraft/client/renderer/WorldRenderer", ASMAPI.mapMethod("func_228418_a_"), "(Lnet/minecraft/entity/Entity;DDDFLcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/client/renderer/IRenderTypeBuffer;)V");
+					if (targetNode2 == null)
+						targetNode2 = ASMAPI.findFirstMethodCall(methodNode, ASMAPI.MethodType.VIRTUAL, "net/minecraft/client/renderer/WorldRenderer", ASMAPI.mapMethod("func_228418_a_"), "(Lnet/minecraft/entity/Entity;DDDFLcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/client/renderer/IRenderTypeBuffer;)V");
 					//targetNode2 = ASMAPI.findFirstInstructionBefore(methodNode, Opcodes.ASTORE, methodNode.instructions.indexOf(targetNode2));
 					{
 						for (var i = methodNode.instructions.indexOf(targetNode2); i >= 0; i--) {
