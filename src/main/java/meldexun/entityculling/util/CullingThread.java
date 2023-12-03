@@ -480,7 +480,7 @@ public class CullingThread extends Thread {
 			if (IntUtil.anyMatch(
 					0, stepsY,
 					0, stepsZ,
-					(y, z) -> engine.raytraceUncachedThreshold(minX, minY + y * dy, minZ + z * dz, EntityCullingConfig.raytraceThreshold))) {
+					(y, z) -> engine.raytraceUncachedThreshold(maxX, minY + y * dy, minZ + z * dz, EntityCullingConfig.raytraceThreshold))) {
 				return true;
 			}
 		}
@@ -495,7 +495,7 @@ public class CullingThread extends Thread {
 			if (IntUtil.anyMatch(
 					this.camX < minX ? 1 : 0, this.camX > maxX ? stepsX - 1 : stepsX,
 					0, stepsZ,
-					(x, z) -> engine.raytraceUncachedThreshold(minX + x * dx, minY, minZ + z * dz, EntityCullingConfig.raytraceThreshold))) {
+					(x, z) -> engine.raytraceUncachedThreshold(minX + x * dx, maxY, minZ + z * dz, EntityCullingConfig.raytraceThreshold))) {
 				return true;
 			}
 		}
@@ -510,7 +510,7 @@ public class CullingThread extends Thread {
 			if (IntUtil.anyMatch(
 					this.camX < minX ? 1 : 0, this.camX > maxX ? stepsX - 1 : stepsX,
 					this.camY < minY ? 1 : 0, this.camY > maxX ? stepsY - 1 : stepsY,
-					(x, y) -> engine.raytraceUncachedThreshold(minX + x * dx, minY + y * dy, minZ, EntityCullingConfig.raytraceThreshold))) {
+					(x, y) -> engine.raytraceUncachedThreshold(minX + x * dx, minY + y * dy, maxZ, EntityCullingConfig.raytraceThreshold))) {
 				return true;
 			}
 		}
