@@ -1,5 +1,6 @@
 package meldexun.entityculling.util.raytracing;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.IntPredicate;
 
 import it.unimi.dsi.fastutil.HashCommon;
@@ -20,6 +21,14 @@ class Int2BoolMap extends Int2BooleanOpenHashMap {
 		final int pos = find(k);
 		if (pos >= 0) return value[pos];
 		final boolean newValue = mappingFunction.test(k);
+		insert(-pos - 1, k, newValue);
+		return newValue;
+	}
+
+	public boolean computeIfAbsent(final int k, final BooleanSupplier mappingFunction) {
+		final int pos = find(k);
+		if (pos >= 0) return value[pos];
+		final boolean newValue = mappingFunction.getAsBoolean();
 		insert(-pos - 1, k, newValue);
 		return newValue;
 	}

@@ -4,6 +4,9 @@ import java.util.function.IntSupplier;
 
 import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.util.MathUtil;
+import meldexun.entityculling.util.function.IntIntInt2BooleanFunction;
+import meldexun.entityculling.util.function.LazyIntIntInt2BooleanFunction;
+import meldexun.entityculling.util.function.LazyIntIntIntDouble2BooleanFunction;
 
 public class RaytracingEngine {
 
@@ -15,13 +18,15 @@ public class RaytracingEngine {
 	private int camBlockZ;
 	private final IRaytracingCache resultCache;
 	private final IRaytracingCache opacityCache;
-	private final Int2BoolTriFunction isOpaqueFunction;
+	private final LazyIntIntIntDouble2BooleanFunction raytraceUncachedThresholdFunction = new LazyIntIntIntDouble2BooleanFunction(this::raytraceUncachedThreshold);
+	private final LazyIntIntInt2BooleanFunction raytraceUncachedFunction = new LazyIntIntInt2BooleanFunction(this::raytraceUncached);
+	private final LazyIntIntInt2BooleanFunction isOpaqueFunction;
 	private final IntSupplier renderDistSupplier;
 
-	public RaytracingEngine(int cacheSize, Int2BoolTriFunction isOpaqueFunction, IntSupplier renderDistSupplier) {
+	public RaytracingEngine(int cacheSize, IntIntInt2BooleanFunction isOpaqueFunction, IntSupplier renderDistSupplier) {
 		this.resultCache = new RaytracingMapCache();
 		this.opacityCache = new RaytracingArrayCache(cacheSize);
-		this.isOpaqueFunction = isOpaqueFunction;
+		this.isOpaqueFunction = new LazyIntIntInt2BooleanFunction(isOpaqueFunction);
 		this.renderDistSupplier = renderDistSupplier;
 	}
 
@@ -42,13 +47,15 @@ public class RaytracingEngine {
 	public boolean raytraceCachedThreshold(int endX, int endY, int endZ, double threshold) {
 		if (isTooFarAway(endX, endY, endZ))
 			return true;
-		return resultCache.getOrSetCachedValue(endX - camBlockX, endY - camBlockY, endZ - camBlockZ, () -> raytraceUncachedThreshold(endX, endY, endZ, threshold));
+		raytraceUncachedThresholdFunction.setXYZD(endX, endY, endZ, threshold);
+		return resultCache.getOrSetCachedValue(endX - camBlockX, endY - camBlockY, endZ - camBlockZ, raytraceUncachedThresholdFunction);
 	}
 
 	public boolean raytraceCached(int endX, int endY, int endZ) {
 		if (isTooFarAway(endX, endY, endZ))
 			return true;
-		return resultCache.getOrSetCachedValue(endX - camBlockX, endY - camBlockY, endZ - camBlockZ, () -> raytraceUncached(endX, endY, endZ));
+		raytraceUncachedFunction.setXYZ(endX, endY, endZ);
+		return resultCache.getOrSetCachedValue(endX - camBlockX, endY - camBlockY, endZ - camBlockZ, raytraceUncachedFunction);
 	}
 
 	public boolean raytraceUncachedThreshold(double endX, double endY, double endZ, double threshold) {
@@ -200,7 +207,8 @@ public class RaytracingEngine {
 	}
 
 	private boolean isOpaque(int x, int y, int z) {
-		return opacityCache.getOrSetCachedValue(x - camBlockX, y - camBlockY, z - camBlockZ, () -> isOpaqueFunction.applyAsBool(x, y, z));
+		isOpaqueFunction.setXYZ(x, y, z);
+		return opacityCache.getOrSetCachedValue(x - camBlockX, y - camBlockY, z - camBlockZ, isOpaqueFunction);
 	}
 
 }

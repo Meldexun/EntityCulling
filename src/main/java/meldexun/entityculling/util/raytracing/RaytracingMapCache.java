@@ -12,7 +12,7 @@ class RaytracingMapCache implements IRaytracingCache {
 		if (i < 0) {
 			return function.getAsBoolean();
 		}
-		return map.computeIfAbsent(i, k -> function.getAsBoolean());
+		return map.computeIfAbsent(i, function);
 	}
 
 	private int index(int x, int y, int z) {
