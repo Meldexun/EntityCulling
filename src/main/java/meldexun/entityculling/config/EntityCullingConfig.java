@@ -64,6 +64,7 @@ public class EntityCullingConfig {
 		public boolean alwaysRenderEntitiesWithName = true;
 		public boolean alwaysRenderPlayers = true;
 		public boolean alwaysRenderViewEntity = true;
+		public boolean ignoreEndCrystalsWithBeam = true;
 		@Config.Comment("Skip rendering of entities that are not visible (hidden behind blocks). This might cause issues where an entity is partly behind a block and thus does not get rendered but it's usually not really noticable.")
 		public boolean skipHiddenEntityRendering = true;
 		@Config.Comment("Entities with a width or height greater than this value will always get rendered.")

@@ -16,6 +16,7 @@ import meldexun.renderlib.util.MutableAABB;
 import meldexun.renderlib.util.RenderUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityEnderCrystal;
 import net.minecraft.entity.player.EntityPlayer;
 
 @Mixin(EntityRenderer.class)
@@ -60,6 +61,9 @@ public class MixinEntityRenderer {
 				}
 				if (EntityCullingConfig.entity.alwaysRenderViewEntity && entity == Minecraft.getMinecraft().getRenderViewEntity()) {
 					return false;
+				}
+				if (EntityCullingConfig.entity.ignoreEndCrystalsWithBeam && entity instanceof EntityEnderCrystal && ((EntityEnderCrystal) entity).getBeamTarget() != null) {
+					return true;
 				}
 				if (EntityCullingConfig.entity.skipHiddenEntityRenderingBlacklistImpl.get(entity)) {
 					return false;

@@ -24,6 +24,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityEnderCrystal;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -231,6 +232,9 @@ public class CullingThread extends Thread {
 		if (EntityCullingConfig.entity.alwaysRenderViewEntity && entity == Minecraft.getMinecraft().getRenderViewEntity()) {
 			return true;
 		}
+		if (EntityCullingConfig.entity.ignoreEndCrystalsWithBeam && entity instanceof EntityEnderCrystal && ((EntityEnderCrystal) entity).getBeamTarget() != null) {
+			return true;
+		}
 		if (EntityCullingConfig.entity.skipHiddenEntityRenderingBlacklistImpl.get(entity)) {
 			return true;
 		}
@@ -321,6 +325,9 @@ public class CullingThread extends Thread {
 				return true;
 			}
 			if (EntityCullingConfig.entity.alwaysRenderViewEntity && entity == Minecraft.getMinecraft().getRenderViewEntity()) {
+				return true;
+			}
+			if (EntityCullingConfig.entity.ignoreEndCrystalsWithBeam && entity instanceof EntityEnderCrystal && ((EntityEnderCrystal) entity).getBeamTarget() != null) {
 				return true;
 			}
 			if (EntityCullingConfig.entity.skipHiddenEntityRenderingBlacklistImpl.get(entity)) {
