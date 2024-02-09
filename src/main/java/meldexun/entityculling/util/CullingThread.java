@@ -8,6 +8,8 @@ import java.util.stream.LongStream;
 import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.config.EntityCullingConfig;
 import meldexun.entityculling.integration.Hats;
+import meldexun.entityculling.util.function.DoubleDoubleDouble2BooleanFunction;
+import meldexun.entityculling.util.function.IntIntInt2BooleanFunction;
 import meldexun.entityculling.util.raytracing.RaytracingEngine;
 import meldexun.renderlib.api.IBoundingBoxCache;
 import meldexun.renderlib.api.IEntityRendererCache;
@@ -404,51 +406,68 @@ public class CullingThread extends Thread {
 			return true;
 		}
 		if (this.camX < startX) {
-			if (IntUtil.anyMatch(
-					startY, endY,
-					startZ, endZ,
-					(y, z) -> engine.raytraceCachedThreshold(startX, y, z, EntityCullingConfig.raytraceThreshold))) {
+			if (checkRectangleCached(startY, endY, startZ, endZ, startX, this::raytraceCachedYZX)) {
 				return true;
 			}
 		} else if (this.camX > endX) {
-			if (IntUtil.anyMatch(
-					startY, endY,
-					startZ, endZ,
-					(y, z) -> engine.raytraceCachedThreshold(endX, y, z, EntityCullingConfig.raytraceThreshold))) {
+			if (checkRectangleCached(startY, endY, startZ, endZ, endX, this::raytraceCachedYZX)) {
 				return true;
 			}
 		}
 		if (this.camY < startY) {
-			if (IntUtil.anyMatch(
-					this.camX < startX ? startX + 1 : startX, this.camX > endX ? endX - 1 : endX,
-					startZ, endZ,
-					(x, z) -> engine.raytraceCachedThreshold(x, startY, z, EntityCullingConfig.raytraceThreshold))) {
+			int x0 = this.camX < startX ? startX + 1 : startX;
+			int x1 = this.camX > endX ? endX - 1 : endX;
+			if (checkRectangleCached(x0, x1, startZ, endZ, startY, this::raytraceCachedXZY)) {
 				return true;
 			}
 		} else if (this.camY > endY) {
-			if (IntUtil.anyMatch(
-					this.camX < startX ? startX + 1 : startX, this.camX > endX ? endX - 1 : endX,
-					startZ, endZ,
-					(x, z) -> engine.raytraceCachedThreshold(x, endY, z, EntityCullingConfig.raytraceThreshold))) {
+			int x0 = this.camX < startX ? startX + 1 : startX;
+			int x1 = this.camX > endX ? endX - 1 : endX;
+			if (checkRectangleCached(x0, x1, startZ, endZ, endY, this::raytraceCachedXZY)) {
 				return true;
 			}
 		}
 		if (this.camZ < startZ) {
-			if (IntUtil.anyMatch(
-					this.camX < startX ? startX + 1 : startX, this.camX > endX ? endX - 1 : endX,
-					this.camY < startY ? startY + 1 : startY, this.camY > endY ? endY - 1 : endY,
-					(x, y) -> engine.raytraceCachedThreshold(x, y, startZ, EntityCullingConfig.raytraceThreshold))) {
+			int x0 = this.camX < startX ? startX + 1 : startX;
+			int x1 = this.camX > endX ? endX - 1 : endX;
+			int y0 = this.camY < startY ? startY + 1 : startY;
+			int y1 = this.camY > endY ? endY - 1 : endY;
+			if (checkRectangleCached(x0, x1, y0, y1, startZ, this::raytraceCachedXYZ)) {
 				return true;
 			}
 		} else if (this.camZ > endZ) {
-			if (IntUtil.anyMatch(
-					this.camX < startX ? startX + 1 : startX, this.camX > endX ? endX - 1 : endX,
-					this.camY < startY ? startY + 1 : startY, this.camY > endY ? endY - 1 : endY,
-					(x, y) -> engine.raytraceCachedThreshold(x, y, endZ, EntityCullingConfig.raytraceThreshold))) {
+			int x0 = this.camX < startX ? startX + 1 : startX;
+			int x1 = this.camX > endX ? endX - 1 : endX;
+			int y0 = this.camY < startY ? startY + 1 : startY;
+			int y1 = this.camY > endY ? endY - 1 : endY;
+			if (checkRectangleCached(x0, x1, y0, y1, endZ, this::raytraceCachedXYZ)) {
 				return true;
 			}
 		}
 
+		return false;
+	}
+
+	private boolean raytraceCachedYZX(int y, int z, int x) {
+		return engine.raytraceCachedThreshold(x, y, z, EntityCullingConfig.raytraceThreshold);
+	}
+
+	private boolean raytraceCachedXZY(int x, int z, int y) {
+		return engine.raytraceCachedThreshold(x, y, z, EntityCullingConfig.raytraceThreshold);
+	}
+
+	private boolean raytraceCachedXYZ(int x, int y, int z) {
+		return engine.raytraceCachedThreshold(x, y, z, EntityCullingConfig.raytraceThreshold);
+	}
+
+	private static boolean checkRectangleCached(int minX, int maxX, int minY, int maxY, int z, IntIntInt2BooleanFunction f) {
+		for (int x = minX; x <= maxX; x++) {
+			for (int y = minY; y <= maxY; y++) {
+				if (f.applyAsBool(x, y, z)) {
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 
@@ -470,51 +489,68 @@ public class CullingThread extends Thread {
 		double dz = deltaZ / stepsZ;
 
 		if (this.camX < minX) {
-			if (IntUtil.anyMatch(
-					0, stepsY,
-					0, stepsZ,
-					(y, z) -> engine.raytraceUncachedThreshold(minX, minY + y * dy, minZ + z * dz, EntityCullingConfig.raytraceThreshold))) {
+			if (checkRectangleUncached(0, stepsY, minY, dy, 0, stepsZ, minZ, dz, minX, this::raytraceUncachedYZX)) {
 				return true;
 			}
 		} else if (this.camX > maxX) {
-			if (IntUtil.anyMatch(
-					0, stepsY,
-					0, stepsZ,
-					(y, z) -> engine.raytraceUncachedThreshold(maxX, minY + y * dy, minZ + z * dz, EntityCullingConfig.raytraceThreshold))) {
+			if (checkRectangleUncached(0, stepsY, minY, dy, 0, stepsZ, minZ, dz, maxX, this::raytraceUncachedYZX)) {
 				return true;
 			}
 		}
 		if (this.camY < minY) {
-			if (IntUtil.anyMatch(
-					this.camX < minX ? 1 : 0, this.camX > maxX ? stepsX - 1 : stepsX,
-					0, stepsZ,
-					(x, z) -> engine.raytraceUncachedThreshold(minX + x * dx, minY, minZ + z * dz, EntityCullingConfig.raytraceThreshold))) {
+			int x0 = this.camX < minX ? 1 : 0;
+			int x1 = this.camX > maxX ? stepsX - 1 : stepsX;
+			if (checkRectangleUncached(x0, x1, minX, dx, 0, stepsZ, minZ, dz, minY, this::raytraceUncachedXZY)) {
 				return true;
 			}
 		} else if (this.camY > maxY) {
-			if (IntUtil.anyMatch(
-					this.camX < minX ? 1 : 0, this.camX > maxX ? stepsX - 1 : stepsX,
-					0, stepsZ,
-					(x, z) -> engine.raytraceUncachedThreshold(minX + x * dx, maxY, minZ + z * dz, EntityCullingConfig.raytraceThreshold))) {
+			int x0 = this.camX < minX ? 1 : 0;
+			int x1 = this.camX > maxX ? stepsX - 1 : stepsX;
+			if (checkRectangleUncached(x0, x1, minX, dx, 0, stepsZ, minZ, dz, maxY, this::raytraceUncachedXZY)) {
 				return true;
 			}
 		}
 		if (this.camZ < minZ) {
-			if (IntUtil.anyMatch(
-					this.camX < minX ? 1 : 0, this.camX > maxX ? stepsX - 1 : stepsX,
-					this.camY < minY ? 1 : 0, this.camY > maxY ? stepsY - 1 : stepsY,
-					(x, y) -> engine.raytraceUncachedThreshold(minX + x * dx, minY + y * dy, minZ, EntityCullingConfig.raytraceThreshold))) {
+			int x0 = this.camX < minX ? 1 : 0;
+			int x1 = this.camX > maxX ? stepsX - 1 : stepsX;
+			int y0 = this.camY < minY ? 1 : 0;
+			int y1 = this.camY > maxY ? stepsY - 1 : stepsY;
+			if (checkRectangleUncached(x0, x1, minX, dx, y0, y1, minY, dy, minZ, this::raytraceUncachedXYZ)) {
 				return true;
 			}
 		} else if (this.camZ > maxZ) {
-			if (IntUtil.anyMatch(
-					this.camX < minX ? 1 : 0, this.camX > maxX ? stepsX - 1 : stepsX,
-					this.camY < minY ? 1 : 0, this.camY > maxY ? stepsY - 1 : stepsY,
-					(x, y) -> engine.raytraceUncachedThreshold(minX + x * dx, minY + y * dy, maxZ, EntityCullingConfig.raytraceThreshold))) {
+			int x0 = this.camX < minX ? 1 : 0;
+			int x1 = this.camX > maxX ? stepsX - 1 : stepsX;
+			int y0 = this.camY < minY ? 1 : 0;
+			int y1 = this.camY > maxY ? stepsY - 1 : stepsY;
+			if (checkRectangleUncached(x0, x1, minX, dx, y0, y1, minY, dy, maxZ, this::raytraceUncachedXYZ)) {
 				return true;
 			}
 		}
 
+		return false;
+	}
+
+	private boolean raytraceUncachedYZX(double y, double z, double x) {
+		return engine.raytraceUncachedThreshold(x, y, z, EntityCullingConfig.raytraceThreshold);
+	}
+
+	private boolean raytraceUncachedXZY(double x, double z, double y) {
+		return engine.raytraceUncachedThreshold(x, y, z, EntityCullingConfig.raytraceThreshold);
+	}
+
+	private boolean raytraceUncachedXYZ(double x, double y, double z) {
+		return engine.raytraceUncachedThreshold(x, y, z, EntityCullingConfig.raytraceThreshold);
+	}
+
+	private static boolean checkRectangleUncached(int x0, int x1, double minX, double dx, int y0, int y1, double minY, double dy, double z, DoubleDoubleDouble2BooleanFunction f) {
+		for (int x = x0; x <= x1; x++) {
+			for (int y = y0; y <= y1; y++) {
+				if (f.applyAsBool(minX + x * dx, minY + y * dy, z)) {
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 
