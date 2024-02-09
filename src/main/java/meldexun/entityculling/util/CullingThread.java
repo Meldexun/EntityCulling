@@ -502,14 +502,14 @@ public class CullingThread extends Thread {
 		if (this.camZ < minZ) {
 			if (IntUtil.anyMatch(
 					this.camX < minX ? 1 : 0, this.camX > maxX ? stepsX - 1 : stepsX,
-					this.camY < minY ? 1 : 0, this.camY > maxX ? stepsY - 1 : stepsY,
+					this.camY < minY ? 1 : 0, this.camY > maxY ? stepsY - 1 : stepsY,
 					(x, y) -> engine.raytraceUncachedThreshold(minX + x * dx, minY + y * dy, minZ, EntityCullingConfig.raytraceThreshold))) {
 				return true;
 			}
 		} else if (this.camZ > maxZ) {
 			if (IntUtil.anyMatch(
 					this.camX < minX ? 1 : 0, this.camX > maxX ? stepsX - 1 : stepsX,
-					this.camY < minY ? 1 : 0, this.camY > maxX ? stepsY - 1 : stepsY,
+					this.camY < minY ? 1 : 0, this.camY > maxY ? stepsY - 1 : stepsY,
 					(x, y) -> engine.raytraceUncachedThreshold(minX + x * dx, minY + y * dy, maxZ, EntityCullingConfig.raytraceThreshold))) {
 				return true;
 			}
