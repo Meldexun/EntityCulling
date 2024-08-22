@@ -28,7 +28,6 @@ import net.minecraft.entity.item.EntityEnderCrystal;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -36,9 +35,8 @@ import net.minecraft.world.World;
 public class CullingThread extends Thread {
 
 	private final CachedBlockAccess cachedBlockAccess = new CachedBlockAccess();
-	private final MutableBlockPos mutablePos = new MutableBlockPos();
 	private final RaytracingEngine engine = new RaytracingEngine(EntityCullingConfig.cacheSize, (x, y, z) -> {
-		return this.cachedBlockAccess.getBlockState(this.mutablePos.setPos(x, y, z)).isOpaqueCube();
+		return this.cachedBlockAccess.getBlockState(x, y, z).isOpaqueCube();
 	}, () -> Minecraft.getMinecraft().gameSettings.renderDistanceChunks);
 	private double sleepOverhead = 0.0D;
 
@@ -125,7 +123,7 @@ public class CullingThread extends Thread {
 				Entity renderViewEntity = mc.getRenderViewEntity();
 
 				if (world != null && player != null && renderViewEntity != null) {
-					this.cachedBlockAccess.setupCached(world);
+					this.cachedBlockAccess.init(world);
 					this.spectator = player.isSpectator();
 					float partialTicks = mc.getRenderPartialTicks();
 					this.x = renderViewEntity.lastTickPosX + (renderViewEntity.posX - renderViewEntity.lastTickPosX) * partialTicks;
@@ -170,7 +168,7 @@ public class CullingThread extends Thread {
 			} catch (Throwable e) {
 				mc.crashed(new CrashReport("Culling Thread crashed!", e));
 			} finally {
-				this.cachedBlockAccess.clearCache();
+				this.cachedBlockAccess.clear();
 				this.engine.clearCache();
 			}
 	

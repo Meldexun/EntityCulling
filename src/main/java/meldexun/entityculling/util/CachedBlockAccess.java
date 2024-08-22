@@ -4,102 +4,81 @@ import javax.annotation.Nullable;
 
 import meldexun.entityculling.EntityCulling;
 import meldexun.entityculling.integration.CubicChunks;
+import meldexun.entityculling.util.function.ObjIntIntInt2ObjFunction;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldType;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
-public class CachedBlockAccess implements IBlockAccess {
+public class CachedBlockAccess {
 
-	private World level;
-	private Chunk cachedChunk;
+	private World world;
+	private ObjIntIntInt2ObjFunction<World, ExtendedBlockStorage> sectionGetter;
 	private ExtendedBlockStorage cachedSection;
+	private int cachedSectionX = Integer.MAX_VALUE;
+	private int cachedSectionY = Integer.MAX_VALUE;
+	private int cachedSectionZ = Integer.MAX_VALUE;
 
-	public void setupCached(World level) {
-		this.level = level;
-		this.cachedChunk = null;
-		this.cachedSection = null;
-	}
-
-	public void clearCache() {
-		this.level = null;
-		this.cachedChunk = null;
-		this.cachedSection = null;
-	}
-
-	private Chunk getChunk(int chunkX, int chunkZ) {
-		if (this.cachedChunk == null || this.cachedChunk.x != chunkX || this.cachedChunk.z != chunkZ) {
-			this.cachedChunk = this.level.getChunk(chunkX, chunkZ);
-			this.cachedSection = null;
+	public void init(World world) {
+		this.world = world;
+		if (world == null) {
+			this.sectionGetter = (world1, sectionX, sectionY, setionZ) -> null;
+		} else if (EntityCulling.isCubicChunksInstalled && CubicChunks.isCubicWorld(world)) {
+			this.sectionGetter = (world1, sectionX, sectionY, sectionZ) -> {
+				if (CubicChunks.isOutsideBuildHeight(world1, sectionY << 4)) {
+					return null;
+				}
+				return CubicChunks.getBlockStorage(world1, sectionX, sectionY, sectionZ);
+			};
+		} else {
+			this.sectionGetter = (world1, sectionX, sectionY, sectionZ) -> {
+				if (sectionY < 0 || sectionY >= 16) {
+					return null;
+				}
+				Chunk chunk = world1.getChunkProvider().getLoadedChunk(sectionX, sectionZ);
+				if (chunk == null) {
+					return null;
+				}
+				return chunk.getBlockStorageArray()[sectionY];
+			};
 		}
-		return this.cachedChunk;
+		this.cachedSection = null;
+		this.cachedSectionX = Integer.MAX_VALUE;
+		this.cachedSectionY = Integer.MAX_VALUE;
+		this.cachedSectionZ = Integer.MAX_VALUE;
+	}
+
+	public void clear() {
+		this.world = null;
+		this.sectionGetter = null;
+		this.cachedSection = null;
+		this.cachedSectionX = Integer.MAX_VALUE;
+		this.cachedSectionY = Integer.MAX_VALUE;
+		this.cachedSectionZ = Integer.MAX_VALUE;
+	}
+
+	public IBlockState getBlockState(int x, int y, int z) {
+		try {
+			ExtendedBlockStorage section = this.getChunkSection(x >> 4, y >> 4, z >> 4);
+			if (section == null) {
+				return Blocks.AIR.getDefaultState();
+			}
+			return section.get(x & 15, y & 15, z & 15);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return Blocks.AIR.getDefaultState();
+		}
 	}
 
 	@Nullable
-	private ExtendedBlockStorage getChunkSection(int chunkX, int chunkY, int chunkZ) {
-		if (EntityCulling.isCubicChunksInstalled) {
-			this.cachedSection = CubicChunks.getBlockStorage(this.level, chunkX, chunkY, chunkZ);
-		} else {
-			Chunk chunk = this.getChunk(chunkX, chunkZ);
-			if (this.cachedSection == null || this.cachedSection.getYLocation() >> 4 != chunkY) {
-				this.cachedSection = chunk.getBlockStorageArray()[chunkY];
-			}
+	private ExtendedBlockStorage getChunkSection(int sectionX, int sectionY, int sectionZ) {
+		if (this.cachedSectionX != sectionX || this.cachedSectionY != sectionY || this.cachedSectionZ != sectionZ) {
+			this.cachedSection = this.sectionGetter.apply(this.world, sectionX, sectionY, sectionZ);
+			this.cachedSectionX = sectionX;
+			this.cachedSectionY = sectionY;
+			this.cachedSectionZ = sectionZ;
 		}
 		return this.cachedSection;
-	}
-
-	@Override
-	public TileEntity getTileEntity(BlockPos pos) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public int getCombinedLight(BlockPos pos, int lightValue) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public IBlockState getBlockState(BlockPos pos) {
-		if (this.level.isOutsideBuildHeight(pos)) {
-			return Blocks.AIR.getDefaultState();
-		}
-		ExtendedBlockStorage section = this.getChunkSection(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
-		if (section == null) {
-			return Blocks.AIR.getDefaultState();
-		}
-		return section.get(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15);
-	}
-
-	@Override
-	public boolean isAirBlock(BlockPos pos) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Biome getBiome(BlockPos pos) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public int getStrongPower(BlockPos pos, EnumFacing direction) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public WorldType getWorldType() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean isSideSolid(BlockPos pos, EnumFacing side, boolean _default) {
-		throw new UnsupportedOperationException();
 	}
 
 }
