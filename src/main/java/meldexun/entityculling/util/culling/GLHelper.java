@@ -7,9 +7,9 @@ import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL43;
 import org.lwjgl.opengl.GL45;
 
+import meldexun.memoryutil.UnsafeBufferUtil;
+import meldexun.memoryutil.UnsafeByteBuffer;
 import meldexun.renderlib.util.GLUtil;
-import meldexun.renderlib.util.memory.UnsafeBufferUtil;
-import meldexun.renderlib.util.memory.UnsafeByteBuffer;
 
 public class GLHelper {
 
