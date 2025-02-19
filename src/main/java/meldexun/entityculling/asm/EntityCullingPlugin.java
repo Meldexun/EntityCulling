@@ -15,7 +15,7 @@ public class EntityCullingPlugin implements IFMLLoadingPlugin {
 
 	@Override
 	public String[] getASMTransformerClass() {
-		return new String[] { "meldexun.entityculling.asm.EntityCullingClassTransformer" };
+		return null;
 	}
 
 	@Override
